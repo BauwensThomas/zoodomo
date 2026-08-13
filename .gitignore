@@ -39,3 +39,14 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Zoodomo — dossiers de travail exclus du repo (section 7 du brief)
+/docs/
+/backups/
+/passwords/
+/resources/
+
+# Fichiers d'instructions agents IA — gardés à la racine (requis pour l'auto-chargement),
+# mais jamais commités
+/AGENTS.md
+/CLAUDE.md
