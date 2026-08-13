@@ -10,14 +10,15 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { SitePreviewMockup } from "@/components/SitePreviewMockup";
 import { FeatureHighlights } from "@/components/FeatureHighlights";
 import type { Locale } from "@/types";
-import { loginAction, type LoginState } from "./login-actions";
+import { signupAction, type SignupState } from "../signup-actions";
 
-const initialState: LoginState = {};
+const initialState: SignupState = {};
 
-export default function Home() {
-  const [state, formAction, pending] = useActionState(loginAction, initialState);
+export default function InscriptionPage() {
+  const [state, formAction, pending] = useActionState(signupAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
-  const t = useTranslations("admin.login");
+  const t = useTranslations("admin.signup");
+  const tLogin = useTranslations("admin.login");
   const locale = useLocale() as Locale;
 
   return (
@@ -37,6 +38,17 @@ export default function Home() {
 
             <form action={formAction} className="mt-8 space-y-4">
               <div>
+                <label htmlFor="nom" className="block text-sm font-medium text-foreground">
+                  {t("name")}
+                </label>
+                <input
+                  id="nom"
+                  name="nom"
+                  required
+                  className="mt-1.5 w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground"
+                />
+              </div>
+              <div>
                 <label htmlFor="email" className="block text-sm font-medium text-foreground">
                   {t("email")}
                 </label>
@@ -45,7 +57,7 @@ export default function Home() {
                   name="email"
                   type="email"
                   required
-                  autoComplete="username"
+                  autoComplete="email"
                   className="mt-1.5 w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground"
                 />
               </div>
@@ -59,13 +71,13 @@ export default function Home() {
                     name="password"
                     type={showPassword ? "text" : "password"}
                     required
-                    autoComplete="current-password"
+                    autoComplete="new-password"
                     className="w-full rounded-xl border border-border px-3.5 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-foreground"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+                    aria-label={showPassword ? tLogin("hidePassword") : tLogin("showPassword")}
                     className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-foreground/40 hover:text-foreground"
                   >
                     {showPassword ? (
@@ -88,29 +100,23 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="mt-8 rounded-xl bg-muted p-4 text-xs text-foreground/80">
-              <p className="font-medium text-foreground">{t("demoTitle")}</p>
-              <p className="mt-1">contact@refugequatrepattes.test</p>
-              <p>contact@elevageboisfleuri.test</p>
-            </div>
-
             <p className="mt-6 text-center text-sm text-foreground/80">
-              {t("noAccount")}{" "}
-              <Link href="/inscription" className="font-medium text-foreground underline">
-                {t("signUp")}
+              {t("haveAccount")}{" "}
+              <Link href="/" className="font-medium text-foreground underline">
+                {t("login")}
               </Link>
             </p>
 
             <p className="mt-6 text-center text-xs text-foreground/70">
-              {t("legalPrefix")}{" "}
+              {tLogin("legalPrefix")}{" "}
               <Link href="/conditions-utilisation" className="underline">
-                {t("termsOfService")}
+                {tLogin("termsOfService")}
               </Link>{" "}
-              {t("legalAnd")}{" "}
+              {tLogin("legalAnd")}{" "}
               <Link href="/politique-confidentialite" className="underline">
-                {t("privacyPolicy")}
+                {tLogin("privacyPolicy")}
               </Link>
-              {t("legalSuffix")}
+              {tLogin("legalSuffix")}
             </p>
           </div>
         </div>
@@ -119,9 +125,9 @@ export default function Home() {
       <div className="relative hidden overflow-hidden border-l border-border bg-muted lg:flex lg:flex-col lg:justify-center lg:gap-10 lg:px-16 lg:py-12">
         <div>
           <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
-            {t("heroTitle")}
+            {tLogin("heroTitle")}
           </h2>
-          <p className="mt-4 text-foreground/80">{t("heroSubtitle")}</p>
+          <p className="mt-4 text-foreground/80">{tLogin("heroSubtitle")}</p>
           <div className="mt-8">
             <FeatureHighlights />
           </div>

@@ -48,5 +48,5 @@ next-env.d.ts
 
 # Fichiers d'instructions agents IA — gardés à la racine (requis pour l'auto-chargement),
 # mais jamais commités
-/AGENTS.md
-/CLAUDE.md
+AGENTS.md
+CLAUDE.md
