@@ -25,7 +25,7 @@ export function EspaceNav() {
   ];
 
   return (
-    <nav className="mx-auto flex max-w-5xl gap-1 overflow-x-auto px-6">
+    <nav className="mx-auto flex max-w-[100rem] gap-1 overflow-x-auto px-6">
       {tabs.map((tab) => {
         const active =
           tab.href === "/espace" ? pathname === "/espace" : pathname.startsWith(tab.href);
@@ -36,7 +36,7 @@ export function EspaceNav() {
             className={`flex shrink-0 items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors ${
               active
                 ? "border-foreground text-foreground"
-                : "border-transparent text-foreground/50 hover:text-foreground"
+                : "border-transparent text-foreground"
             }`}
           >
             <tab.icon className="h-4 w-4" />

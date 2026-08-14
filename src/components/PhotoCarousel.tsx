@@ -29,7 +29,7 @@ export function PhotoCarousel({
 
   if (photos.length === 0) {
     return (
-      <div className="relative flex aspect-4/3 flex-col items-center justify-center gap-2 rounded-2xl bg-muted text-sm text-foreground/40">
+      <div className="relative flex aspect-4/3 flex-col items-center justify-center gap-2 rounded-2xl bg-muted text-sm text-foreground">
         <ImageOff className="h-8 w-8" />
         {noPhotoLabel}
         {statutOverlay && (

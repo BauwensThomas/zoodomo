@@ -34,7 +34,7 @@ export default function InscriptionPage() {
             <h1 className="font-heading text-3xl font-medium tracking-tight text-foreground">
               {t("title")}
             </h1>
-            <p className="mt-2 text-sm text-foreground/80">{t("subtitle")}</p>
+            <p className="mt-2 text-sm text-foreground">{t("subtitle")}</p>
 
             <form action={formAction} className="mt-8 space-y-4">
               <div>
@@ -78,7 +78,7 @@ export default function InscriptionPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? tLogin("hidePassword") : tLogin("showPassword")}
-                    className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-foreground/40 hover:text-foreground"
+                    className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -100,14 +100,14 @@ export default function InscriptionPage() {
               </button>
             </form>
 
-            <p className="mt-6 text-center text-sm text-foreground/80">
+            <p className="mt-6 text-center text-sm text-foreground">
               {t("haveAccount")}{" "}
               <Link href="/" className="font-medium text-foreground underline">
                 {t("login")}
               </Link>
             </p>
 
-            <p className="mt-6 text-center text-xs text-foreground/70">
+            <p className="mt-6 text-center text-xs text-foreground">
               {tLogin("legalPrefix")}{" "}
               <Link href="/conditions-utilisation" className="underline">
                 {tLogin("termsOfService")}
@@ -127,7 +127,7 @@ export default function InscriptionPage() {
           <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
             {tLogin("heroTitle")}
           </h2>
-          <p className="mt-4 text-foreground/80">{tLogin("heroSubtitle")}</p>
+          <p className="mt-4 text-foreground">{tLogin("heroSubtitle")}</p>
           <div className="mt-8">
             <FeatureHighlights />
           </div>

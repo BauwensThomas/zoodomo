@@ -7,7 +7,8 @@
     "discoverAnimals": "Découvrez les animaux disponibles, par espèce.",
     "emptyGalleries": "Aucun animal disponible pour le moment, revenez bientôt !",
     "discoverUs": "Nous découvrir",
-    "generalQuestion": "Une question générale ?"
+    "generalQuestion": "Une question générale ?",
+    "speciesCount": "{count, plural, =0 {Aucun animal disponible} one {# animal disponible} other {# animaux disponibles}}"
   },
   "gallery": {
     "availableTitle": "{species} disponibles",
@@ -141,9 +142,22 @@
       "colStatus": "Statut",
       "colViews": "Vues",
       "colCreated": "Créée le",
+      "colUpdatedAt": "Modifiée le",
       "colAdoptedDate": "Adoptée le",
       "colReservedDate": "Réservée le",
       "colVisibleDays": "Visible encore",
+      "colRace": "Race",
+      "colSex": "Sexe",
+      "colNeutered": "Stérilisé",
+      "colBirth": "Naissance",
+      "colIdNumber": "N° ID",
+      "colArrival": "Arrivée",
+      "colOrigin": "Origine",
+      "colPrice": "Prix",
+      "statThisMonth": "ce mois-ci",
+      "statThisYear": "cette année",
+      "addressMissingNotice": "Complétez votre adresse dans Compte pour l'afficher sur votre page publique et les fiches imprimées.",
+      "addressMissingAction": "Compléter",
       "visibleDaysValue": "{days} j",
       "visibleLastDayValue": "Dernier jour",
       "visibleExpiredValue": "Retiré des pages publiques",
@@ -154,6 +168,8 @@
       "add": "Ajouter un animal",
       "empty": "Aucune fiche pour l'instant.",
       "colActions": "Actions",
+      "viewPublicAria": "Voir la fiche publique de {name}",
+      "viewPublicTooltip": "Voir la fiche publique",
       "editAria": "Modifier {name}",
       "markAvailableAria": "Remettre {name} en disponible",
       "markReservedAria": "Marquer {name} comme réservé",
@@ -164,12 +180,23 @@
       "markReservedTooltip": "Marquer réservé",
       "markAdoptedTooltip": "Marquer adopté",
       "deleteTooltip": "Supprimer",
+      "markAvailableConfirm": "Remettre {name} en disponible ?",
+      "markReservedConfirm": "Marquer {name} comme réservé ?",
+      "markAdoptedConfirm": "Marquer {name} comme adopté ? La fiche restera visible 7 jours sur les pages publiques puis disparaîtra automatiquement.",
+      "deleteConfirm": "Supprimer {name} ? Cette action est irréversible.",
+      "confirmButton": "Confirmer",
+      "cancelButton": "Annuler",
       "exportStartDateLabel": "Date de début",
       "exportEndDateLabel": "Date de fin",
-      "exportEmptyTooltip": "Aucune fiche {label} sur cette période"
+      "exportEmptyTooltip": "Aucune fiche {label} sur cette période",
+      "createdConfirmation": "Fiche créée !",
+      "savedConfirmation": "Modifications enregistrées !",
+      "searchPlaceholder": "Rechercher...",
+      "searchNoResults": "Aucun résultat pour « {query} »."
     },
     "form": {
       "optional": "optionnel",
+      "backToList": "Retour à Mes fiches",
       "requiredHint": "Les champs marqués d'un * sont obligatoires, les autres non.",
       "sectionIdentity": "Identité",
       "name": "Nom",
@@ -231,7 +258,22 @@
       "loginEmail": "Email de connexion",
       "publicEmail": "Email de contact public",
       "publicPhone": "Téléphone de contact public",
+      "sectionAddress": "Informations légales",
+      "address": "Adresse",
+      "addressVisibleLabel": "Communiquer mon adresse (page publique et fiches imprimées)",
+      "companyNumber": "Numéro d'entreprise (TVA)",
+      "companyNumberVisibleLabel": "Communiquer mon numéro d'entreprise (page publique et fiches imprimées)",
+      "sectionAbout": "Présentation",
+      "aboutHint": "Texte et photos affichés dans la section « Nous découvrir » de votre page publique.",
+      "aboutLabel": "Texte de présentation",
+      "aboutPhotosLabel": "Photos de présentation (jusqu'à 2)",
+      "aboutPhotosMaxReached": "Nombre maximum de photos atteint (2).",
+      "sectionWebsite": "Site web",
+      "websiteUrlLabel": "Adresse de votre site",
+      "websiteUrlHint": "Utilisée pour le lien \"Retour sur notre site\" affiché sur vos pages publiques.",
+      "websiteUrlPlaceholder": "https://votre-site.be",
       "loginEmailHint": "Seul l'email de connexion ne peut pas être modifié ici.",
+      "savedConfirmation": "Modifications enregistrées !",
       "sectionLangues": "Langues de rédaction du contenu",
       "languesHint": "Choisissez dans quelles langues vous rédigez vos fiches animaux (description, foyer idéal). Si vous en cochez plusieurs, il faudra remplir le contenu dans chacune. Vos visiteurs pourront basculer entre ces langues sur vos pages publiques.",
       "save": "Enregistrer"
@@ -243,8 +285,77 @@
     },
     "personnalisation": {
       "title": "Personnalisation",
-      "text1": "Le choix de police, des couleurs, du logo et de la disposition de galerie arrive à l'étape suivante.",
-      "text2": "Ces réglages sont déjà pris en compte techniquement (les couleurs de votre compte s'appliquent déjà aux pages publiques), il manque juste ce formulaire pour les modifier vous-même."
+      "intro": "Ces réglages s'appliquent à toutes vos pages publiques : accueil, catégories et fiches animaux.",
+      "previewToggle": "Visualisation",
+      "sectionPolice": "Police",
+      "policeHint": "Choisissez le style d'écriture de vos pages publiques.",
+      "police": {
+        "default": "Chaleureuse",
+        "moderne": "Moderne",
+        "classique": "Élégante",
+        "arrondie": "Douce"
+      },
+      "sectionColors": "Couleurs",
+      "colorsHint": "Appliquées aux boutons, titres et fonds de vos pages publiques.",
+      "colorPrimary": "Couleur primaire",
+      "colorPrimaryHint": "Utilisée pour les boutons, les icônes, les liens et les badges de vos pages publiques (pas le nom de votre structure, qui reste toujours en noir).",
+      "colorSecondary": "Couleur secondaire",
+      "colorSecondaryHint": "Utilisée pour l'en-tête, le pied de page, le bloc de contact et les fonds doux (icônes, cartes) de vos pages publiques.",
+      "sectionLogo": "Logo",
+      "logoHint": "Affiché en haut de chaque page publique, pour que vos visiteurs reconnaissent bien votre structure.",
+      "logoDropLabel": "Cliquez ou glissez votre logo ici",
+      "logoMaxReached": "Un seul logo à la fois : supprimez l'actuel pour en mettre un autre.",
+      "logoRemoveAria": "Retirer le logo",
+      "sectionEspeces": "Accueil : cadres des espèces",
+      "especesHint": "Comment les espèces (Chien, Chat, ...) s'affichent sur la page d'accueil de votre compte.",
+      "especes": {
+        "liste": {
+          "label": "Liste",
+          "hint": "Une espèce par ligne, pleine largeur."
+        },
+        "cote_a_cote": {
+          "label": "Côte à côte",
+          "hint": "Grandes cartes, 4 par ligne."
+        },
+        "vitrine": {
+          "label": "Vitrine",
+          "hint": "Grandes cartes colorées avec icône, sans photo."
+        }
+      },
+      "sectionPresentation": "Accueil : section « Nous découvrir »",
+      "presentationHint": "Comment votre texte de présentation et vos photos de compte s'affichent sur la page d'accueil.",
+      "presentation": {
+        "texte_photos": {
+          "label": "Texte puis photos",
+          "hint": "Le texte centré, vos photos alignées en dessous."
+        },
+        "photo_texte": {
+          "label": "Photo et texte",
+          "hint": "Vos photos (en plus petit) à gauche, le texte encadré à droite."
+        },
+        "texte_photo": {
+          "label": "Texte et photo",
+          "hint": "Le texte encadré à gauche, vos photos (en plus petit) à droite."
+        }
+      },
+      "sectionDisposition": "Disposition de la galerie",
+      "dispositionHint": "S'applique à la liste des animaux par catégorie ; la fiche animal individuelle garde toujours une mise en page fixe.",
+      "disposition": {
+        "grille": {
+          "label": "Grille",
+          "hint": "Cartes alignées, plusieurs par ligne."
+        },
+        "empilee": {
+          "label": "Empilée",
+          "hint": "Une fiche par ligne, photo et infos côte à côte."
+        },
+        "alternee": {
+          "label": "Alternée",
+          "hint": "Les fiches alternent photo à gauche puis à droite."
+        }
+      },
+      "savedConfirmation": "Modifications enregistrées !",
+      "save": "Enregistrer"
     }
   }
 }

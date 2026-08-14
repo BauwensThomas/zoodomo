@@ -39,7 +39,7 @@ export function SitePreviewMockup() {
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
         <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
-        <span className="ml-2 rounded-md bg-white px-3 py-1 text-xs text-foreground/70 shadow-sm">
+        <span className="ml-2 rounded-md bg-white px-3 py-1 text-xs text-foreground shadow-sm">
           zoodomo.com/refuge-x/chiens
         </span>
       </div>
@@ -74,7 +74,7 @@ export function SitePreviewMockup() {
             </div>
             <div className="space-y-0.5 p-1.5">
               <p className="truncate text-xs font-medium text-foreground">{card.name}</p>
-              <p className="truncate text-[10px] text-foreground/70">{card.status}</p>
+              <p className="truncate text-[10px] text-foreground">{card.status}</p>
             </div>
           </div>
         ))}

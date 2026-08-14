@@ -1,0 +1,258 @@
+{
+  "account": {
+    "nomAffichage": "Refuge Exemple",
+    "aPropos": {
+      "fr": "Ceci est un exemple de texte de présentation.\n\nIl sert à visualiser comment votre page d'accueil s'affichera une fois votre police, vos couleurs et vos dispositions choisies : chaque compte voit ici le même contenu de démonstration, quel que soit ce qu'il a déjà rempli sur son propre compte.\n\nRemplacez ce texte par votre propre présentation dans l'onglet Compte.",
+      "nl": "Dit is een voorbeeld van een presentatietekst.\n\nHet dient om te visualiseren hoe uw startpagina eruitziet zodra uw lettertype, kleuren en indelingen gekozen zijn: elk account ziet hier dezelfde demo-inhoud, ongeacht wat al is ingevuld op het eigen account.\n\nVervang deze tekst door uw eigen presentatie in het tabblad Account.",
+      "en": "This is an example presentation text.\n\nIt shows how your home page will look once your font, colors and layouts are chosen: every account sees the same demo content here, regardless of what has already been filled in on their own account.\n\nReplace this text with your own presentation under the Account tab."
+    },
+    "languesActives": ["fr", "nl", "en"],
+    "contactEmailPublic": "contact@exemple.zoodomo.test",
+    "contactTelephonePublic": "02 000 00 00",
+    "adresse": "Rue de l'Exemple 1, 1000 Bruxelles",
+    "adresseVisible": true,
+    "numeroEntreprise": "BE 0000.000.000",
+    "numeroEntrepriseVisible": true
+  },
+  "accountPhotos": [
+    { "id": "demo-photo-compte-1", "url": "/mock/accounts/refuge-quatre-pattes-1.jpg" },
+    { "id": "demo-photo-compte-2", "url": "/mock/accounts/refuge-quatre-pattes-2.jpg" }
+  ],
+  "especes": [
+    { "id": "demo-espece-chien", "slug": "chien", "nom": "Chien", "animalCount": 2 },
+    { "id": "demo-espece-chat", "slug": "chat", "nom": "Chat", "animalCount": 2 },
+    { "id": "demo-espece-lapin", "slug": "lapin", "nom": "Lapin", "animalCount": 2 }
+  ],
+  "sampleEspece": { "slug": "chien", "nom": "Chien" },
+  "sampleAnimaux": [
+    {
+      "id": "demo-animal-buddy",
+      "account_id": "demo-account",
+      "nom": "Buddy",
+      "espece_id": "demo-espece-chien",
+      "race": "Berger allemand",
+      "sexe": "male",
+      "sterilise": true,
+      "annee_naissance": 2019,
+      "date_naissance": null,
+      "numero_identification": "056 000 000 000 001",
+      "date_arrivee": "2025-09-12",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Buddy est un exemple de fiche animal : calme et affectueux, habitué à la vie au refuge depuis plusieurs mois. Il adore les longues promenades et cherche une famille patiente.",
+        "nl": "Buddy is een voorbeeld van een dierenfiche: rustig en aanhankelijk, al enkele maanden gewend aan het leven in het asiel. Hij houdt van lange wandelingen en zoekt een geduldig gezin.",
+        "en": "Buddy is an example animal listing: calm and affectionate, used to shelter life for several months now. He loves long walks and is looking for a patient family."
+      },
+      "foyer_ideal": {
+        "fr": "Jardin clôturé\nPas de jeunes enfants\nMaître expérimenté avec la race",
+        "nl": "Omheinde tuin\nGeen jonge kinderen\nEen baasje met ervaring met het ras",
+        "en": "Fenced garden\nNo young children\nAn owner experienced with the breed"
+      },
+      "prix": 250,
+      "statut": "disponible",
+      "date_adoption": null,
+      "date_reservation": null,
+      "slug": "buddy",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2025-09-12T10:00:00.000Z",
+      "updated_at": "2026-07-20T10:00:00.000Z"
+    },
+    {
+      "id": "demo-animal-rocky",
+      "account_id": "demo-account",
+      "nom": "Rocky",
+      "espece_id": "demo-espece-chien",
+      "race": "Croisé",
+      "sexe": "male",
+      "sterilise": false,
+      "annee_naissance": 2023,
+      "date_naissance": null,
+      "numero_identification": null,
+      "date_arrivee": "2026-08-01",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Rocky est un jeune chien croisé joueur, réservé par une famille en attente de finaliser l'adoption.",
+        "nl": "Rocky is een jonge, speelse gekruiste hond, gereserveerd door een gezin dat de adoptie nog moet afronden.",
+        "en": "Rocky is a young, playful mixed-breed dog, reserved by a family finalizing the adoption."
+      },
+      "foyer_ideal": {},
+      "prix": null,
+      "statut": "reserve",
+      "date_adoption": null,
+      "date_reservation": "2026-08-05T10:00:00.000Z",
+      "slug": "rocky",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2026-08-01T10:00:00.000Z",
+      "updated_at": "2026-08-05T10:00:00.000Z"
+    },
+    {
+      "id": "demo-animal-mimi",
+      "account_id": "demo-account",
+      "nom": "Mimi",
+      "espece_id": "demo-espece-chat",
+      "race": "Croisé",
+      "sexe": "femelle",
+      "sterilise": true,
+      "annee_naissance": 2019,
+      "date_naissance": null,
+      "numero_identification": "056 000 000 000 002",
+      "date_arrivee": "2023-03-04",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Mimi attend une famille depuis longtemps. Discrète au début, elle se révèle très câline une fois en confiance.",
+        "nl": "Mimi wacht al lang op een gezin. Ze is aanvankelijk terughoudend, maar blijkt erg aanhankelijk zodra ze vertrouwen krijgt.",
+        "en": "Mimi has been waiting for a family for a long time. Shy at first, she turns out to be very affectionate once she trusts you."
+      },
+      "foyer_ideal": {
+        "fr": "Environnement calme\nPas d'autres animaux",
+        "nl": "Rustige omgeving\nGeen andere huisdieren",
+        "en": "Calm environment\nNo other pets"
+      },
+      "prix": 100,
+      "statut": "disponible",
+      "date_adoption": null,
+      "date_reservation": null,
+      "slug": "mimi",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2023-03-04T10:00:00.000Z",
+      "updated_at": "2026-07-28T10:00:00.000Z"
+    },
+    {
+      "id": "demo-animal-simba",
+      "account_id": "demo-account",
+      "nom": "Simba",
+      "espece_id": "demo-espece-chat",
+      "race": "Siamois",
+      "sexe": "male",
+      "sterilise": true,
+      "annee_naissance": 2022,
+      "date_naissance": null,
+      "numero_identification": "056 000 000 000 003",
+      "date_arrivee": "2026-06-01",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Simba a été trouvé errant, aujourd'hui en pleine forme. Il est vif, joueur et réclame beaucoup de câlins.",
+        "nl": "Simba werd zwervend gevonden en is nu helemaal hersteld. Hij is levendig, speels en houdt van veel knuffels.",
+        "en": "Simba was found as a stray and is now fully healed. He is lively, playful and loves lots of cuddles."
+      },
+      "foyer_ideal": {
+        "fr": "Accès extérieur sécurisé apprécié\nOk avec autres chats",
+        "nl": "Beveiligde buitentoegang is een pluspunt\nKan overweg met andere katten",
+        "en": "Secure outdoor access appreciated\nGood with other cats"
+      },
+      "prix": 120,
+      "statut": "disponible",
+      "date_adoption": null,
+      "date_reservation": null,
+      "slug": "simba",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2026-06-01T10:00:00.000Z",
+      "updated_at": "2026-08-01T10:00:00.000Z"
+    },
+    {
+      "id": "demo-animal-noisette",
+      "account_id": "demo-account",
+      "nom": "Noisette",
+      "espece_id": "demo-espece-lapin",
+      "race": "Nain",
+      "sexe": "femelle",
+      "sterilise": false,
+      "annee_naissance": 2025,
+      "date_naissance": "2025-03-12",
+      "numero_identification": null,
+      "date_arrivee": "2026-05-15",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Noisette est une jeune lapine naine très sociable, à l'aise avec les enfants.",
+        "nl": "Noisette is een jong, zeer sociaal dwergkonijntje dat goed overweg kan met kinderen.",
+        "en": "Noisette is a young, very sociable dwarf rabbit, comfortable around children."
+      },
+      "foyer_ideal": {
+        "fr": "Cage spacieuse ou clapier\nSorties surveillées",
+        "nl": "Ruime kooi of hok\nBegeleide uitjes",
+        "en": "Spacious cage or hutch\nSupervised time outside"
+      },
+      "prix": 40,
+      "statut": "disponible",
+      "date_adoption": null,
+      "date_reservation": null,
+      "slug": "noisette",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2026-05-15T10:00:00.000Z",
+      "updated_at": "2026-05-15T10:00:00.000Z"
+    },
+    {
+      "id": "demo-animal-caramel",
+      "account_id": "demo-account",
+      "nom": "Caramel",
+      "espece_id": "demo-espece-lapin",
+      "race": "Bélier",
+      "sexe": "male",
+      "sterilise": true,
+      "annee_naissance": 2024,
+      "date_naissance": null,
+      "numero_identification": null,
+      "date_arrivee": "2026-04-02",
+      "origine": "Belgique",
+      "description": {
+        "fr": "Caramel est calme et curieux, il apprécie les sorties surveillées au jardin.",
+        "nl": "Caramel is rustig en nieuwsgierig, hij geniet van begeleide uitjes in de tuin.",
+        "en": "Caramel is calm and curious, he enjoys supervised time in the garden."
+      },
+      "foyer_ideal": {},
+      "prix": 45,
+      "statut": "disponible",
+      "date_adoption": null,
+      "date_reservation": null,
+      "slug": "caramel",
+      "contact_email": null,
+      "contact_telephone": null,
+      "created_at": "2026-04-02T10:00:00.000Z",
+      "updated_at": "2026-04-02T10:00:00.000Z"
+    }
+  ],
+  "photosByAnimal": {
+    "demo-animal-buddy": [
+      { "id": "demo-photo-buddy-1", "animal_id": "demo-animal-buddy", "url": "/mock/animals/rex-1.jpg", "ordre": 1 },
+      { "id": "demo-photo-buddy-2", "animal_id": "demo-animal-buddy", "url": "/mock/animals/rex-2.jpg", "ordre": 2 }
+    ],
+    "demo-animal-rocky": [
+      { "id": "demo-photo-rocky-1", "animal_id": "demo-animal-rocky", "url": "/mock/animals/charlie-1.jpg", "ordre": 1 },
+      { "id": "demo-photo-rocky-2", "animal_id": "demo-animal-rocky", "url": "/mock/animals/charlie-2.jpg", "ordre": 2 }
+    ],
+    "demo-animal-mimi": [
+      { "id": "demo-photo-mimi-1", "animal_id": "demo-animal-mimi", "url": "/mock/animals/fifi-1.jpg", "ordre": 1 },
+      { "id": "demo-photo-mimi-2", "animal_id": "demo-animal-mimi", "url": "/mock/animals/fifi-2.jpg", "ordre": 2 }
+    ],
+    "demo-animal-simba": [
+      { "id": "demo-photo-simba-1", "animal_id": "demo-animal-simba", "url": "/mock/animals/luna-1.jpg", "ordre": 1 },
+      { "id": "demo-photo-simba-2", "animal_id": "demo-animal-simba", "url": "/mock/animals/luna-2.jpg", "ordre": 2 }
+    ],
+    "demo-animal-noisette": [
+      { "id": "demo-photo-noisette-1", "animal_id": "demo-animal-noisette", "url": "/mock/animals/nino-1.jpg", "ordre": 1 }
+    ],
+    "demo-animal-caramel": [
+      { "id": "demo-photo-caramel-1", "animal_id": "demo-animal-caramel", "url": "/mock/animals/bella-1.jpg", "ordre": 1 }
+    ]
+  },
+  "badgesByAnimal": {
+    "demo-animal-buddy": [
+      { "id": "demo-badge-buddy-senior", "animal_id": "demo-animal-buddy", "type": "senior", "label": "Senior", "ordre": 1 }
+    ],
+    "demo-animal-rocky": [],
+    "demo-animal-mimi": [
+      { "id": "demo-badge-mimi-coeur-patient", "animal_id": "demo-animal-mimi", "type": "coeur_patient", "label": "Cœur patient depuis 2023", "ordre": 1 }
+    ],
+    "demo-animal-simba": [
+      { "id": "demo-badge-simba-sos", "animal_id": "demo-animal-simba", "type": "sos", "label": "SOS", "ordre": 1 }
+    ],
+    "demo-animal-noisette": [],
+    "demo-animal-caramel": []
+  },
+  "sampleContact": { "email": "contact@exemple.zoodomo.test", "telephone": "02 000 00 00" }
+}

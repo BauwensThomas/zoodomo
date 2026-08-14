@@ -1,19 +1,44 @@
 import type { Metadata } from "next";
-import { Varela_Round, Nunito_Sans } from "next/font/google";
+import {
+  Varela_Round,
+  Nunito_Sans,
+  Poppins,
+  Inter,
+  Playfair_Display,
+  Source_Sans_3,
+  Fredoka,
+  Quicksand,
+} from "next/font/google";
 import { getLocale, getMessages } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
 import "./globals.css";
 
-const varelaRound = Varela_Round({
-  variable: "--font-heading",
-  weight: "400",
-  subsets: ["latin"],
-});
+// Chaque paire (titre + texte) est préchargée une fois ici avec sa propre variable CSS ;
+// le compte choisit une "police" dans Personnalisation, et [compte]/layout.tsx redéfinit
+// --font-heading/--font-body pour pointer vers la paire choisie (voir POLICE_OPTIONS dans
+// src/lib/fonts.ts). Permet de changer de police par compte sans charger de police à la volée.
+const varelaRound = Varela_Round({ variable: "--font-heading-default", weight: "400", subsets: ["latin"] });
+const nunitoSans = Nunito_Sans({ variable: "--font-body-default", subsets: ["latin"] });
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
+const poppins = Poppins({ variable: "--font-heading-moderne", weight: ["400", "500", "600", "700"], subsets: ["latin"] });
+const inter = Inter({ variable: "--font-body-moderne", subsets: ["latin"] });
+
+const playfairDisplay = Playfair_Display({ variable: "--font-heading-classique", weight: ["400", "500", "600", "700"], subsets: ["latin"] });
+const sourceSans3 = Source_Sans_3({ variable: "--font-body-classique", subsets: ["latin"] });
+
+const fredoka = Fredoka({ variable: "--font-heading-arrondie", weight: ["400", "500", "600", "700"], subsets: ["latin"] });
+const quicksand = Quicksand({ variable: "--font-body-arrondie", weight: ["400", "500", "600", "700"], subsets: ["latin"] });
+
+const FONT_VARIABLES = [
+  varelaRound.variable,
+  nunitoSans.variable,
+  poppins.variable,
+  inter.variable,
+  playfairDisplay.variable,
+  sourceSans3.variable,
+  fredoka.variable,
+  quicksand.variable,
+].join(" ");
 
 export const metadata: Metadata = {
   title: "Zoodomo",
@@ -25,10 +50,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const messages = await getMessages();
 
   return (
-    <html
-      lang={locale}
-      className={`${varelaRound.variable} ${nunitoSans.variable} h-full antialiased`}
-    >
+    <html lang={locale} className={`${FONT_VARIABLES} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </body>

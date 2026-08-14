@@ -10,9 +10,9 @@ export default async function StatistiquesPage() {
         {t("title")}
       </h1>
       <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-dashed border-border bg-muted/60 p-12 text-center">
-        <BarChart3 className="h-8 w-8 text-foreground/30" />
-        <p className="text-foreground/60">{t("text1")}</p>
-        <p className="text-sm text-foreground/40">{t("text2")}</p>
+        <BarChart3 className="h-8 w-8 text-foreground" />
+        <p className="text-foreground">{t("text1")}</p>
+        <p className="text-sm text-foreground">{t("text2")}</p>
       </div>
     </div>
   );

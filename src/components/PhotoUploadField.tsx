@@ -105,7 +105,7 @@ export function PhotoUploadField({
           className={`mt-1.5 flex cursor-pointer flex-col items-center gap-2 rounded-xl border-2 border-dashed p-6 text-center text-sm transition-colors ${
             isDragging
               ? "border-foreground bg-muted text-foreground"
-              : "border-border text-foreground/50 hover:border-foreground/40"
+              : "border-border text-foreground hover:border-foreground/40"
           }`}
         >
           <ImagePlus className="h-6 w-6" />
@@ -114,15 +114,15 @@ export function PhotoUploadField({
           </span>
         </div>
       ) : (
-        <p className="mt-1.5 text-sm text-foreground/50">{maxReachedLabel}</p>
+        <p className="mt-1.5 text-sm text-foreground">{maxReachedLabel}</p>
       )}
 
       {photos.length > 0 && (
-        <div className="mt-3 grid grid-cols-5 gap-2">
+        <div className="mt-3 flex flex-wrap gap-2">
           {photos.map((url, index) => (
             <div
               key={index}
-              className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted"
+              className="relative h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-border bg-muted"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="h-full w-full object-cover" />

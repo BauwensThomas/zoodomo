@@ -137,7 +137,7 @@ export default async function AnimalPage({
       <div className="flex justify-end">
         <Link
           href={`/${account.slug}/${espece.slug}`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/60 transition-colors hover:text-(--account-primary)"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-(--account-primary)"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("backToGallery")}
@@ -158,7 +158,7 @@ export default async function AnimalPage({
             <h1 className="font-heading text-3xl font-medium tracking-tight text-foreground">
               {animal.nom}
             </h1>
-            <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground/70">
+            <span className="inline-flex shrink-0 items-center rounded-full bg-muted px-3 py-1 text-xs font-semibold text-foreground">
               {tStatus(animal.statut)}
             </span>
           </div>
@@ -168,7 +168,7 @@ export default async function AnimalPage({
               <div key={info.label} className="flex items-start gap-2.5">
                 <info.icon className="mt-0.5 h-4 w-4 shrink-0 text-(--account-primary)" />
                 <div>
-                  <dt className="text-xs text-foreground/50">{info.label}</dt>
+                  <dt className="text-xs text-foreground">{info.label}</dt>
                   <dd className="font-medium text-foreground">{info.value}</dd>
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default async function AnimalPage({
           <h2 className="font-heading text-xl font-medium text-foreground">
             {t("about", { name: animal.nom })}
           </h2>
-          <p className="mt-3 whitespace-pre-line leading-relaxed text-foreground/70">
+          <p className="mt-3 whitespace-pre-line leading-relaxed text-foreground">
             {description}
           </p>
           {descriptionFallbackNote && (
@@ -208,7 +208,7 @@ export default async function AnimalPage({
           </h2>
           <ul className="mt-3 space-y-2">
             {foyerIdeal.split("\n").map((line) => (
-              <li key={line} className="flex items-start gap-2.5 text-foreground/70">
+              <li key={line} className="flex items-start gap-2.5 text-foreground">
                 <Home className="mt-0.5 h-4 w-4 shrink-0 text-(--account-primary)" />
                 {line}
               </li>

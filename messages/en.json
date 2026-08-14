@@ -7,7 +7,8 @@
     "discoverAnimals": "Discover the available animals, by species.",
     "emptyGalleries": "No animal available at the moment, check back soon!",
     "discoverUs": "Discover us",
-    "generalQuestion": "A general question?"
+    "generalQuestion": "A general question?",
+    "speciesCount": "{count, plural, =0 {No animals available} one {# animal available} other {# animals available}}"
   },
   "gallery": {
     "availableTitle": "Available {species}",
@@ -141,9 +142,22 @@
       "colStatus": "Status",
       "colViews": "Views",
       "colCreated": "Created on",
+      "colUpdatedAt": "Modified on",
       "colAdoptedDate": "Adopted on",
       "colReservedDate": "Reserved on",
       "colVisibleDays": "Still visible",
+      "colRace": "Breed",
+      "colSex": "Sex",
+      "colNeutered": "Neutered",
+      "colBirth": "Born",
+      "colIdNumber": "ID No.",
+      "colArrival": "Arrival",
+      "colOrigin": "Origin",
+      "colPrice": "Price",
+      "statThisMonth": "this month",
+      "statThisYear": "this year",
+      "addressMissingNotice": "Add your address in Account to show it on your public page and printed listings.",
+      "addressMissingAction": "Complete it",
       "visibleDaysValue": "{days}d",
       "visibleLastDayValue": "Last day",
       "visibleExpiredValue": "Removed from public pages",
@@ -154,6 +168,8 @@
       "add": "Add an animal",
       "empty": "No animals yet.",
       "colActions": "Actions",
+      "viewPublicAria": "View {name}'s public listing",
+      "viewPublicTooltip": "View public listing",
       "editAria": "Edit {name}",
       "markAvailableAria": "Set {name} back to available",
       "markReservedAria": "Mark {name} as reserved",
@@ -164,12 +180,23 @@
       "markReservedTooltip": "Mark reserved",
       "markAdoptedTooltip": "Mark adopted",
       "deleteTooltip": "Delete",
+      "markAvailableConfirm": "Set {name} back to available?",
+      "markReservedConfirm": "Mark {name} as reserved?",
+      "markAdoptedConfirm": "Mark {name} as adopted? The listing will stay visible on the public pages for 7 days, then disappear automatically.",
+      "deleteConfirm": "Delete {name}? This action cannot be undone.",
+      "confirmButton": "Confirm",
+      "cancelButton": "Cancel",
       "exportStartDateLabel": "Start date",
       "exportEndDateLabel": "End date",
-      "exportEmptyTooltip": "No {label} listing for this period"
+      "exportEmptyTooltip": "No {label} listing for this period",
+      "createdConfirmation": "Listing created!",
+      "savedConfirmation": "Changes saved!",
+      "searchPlaceholder": "Search...",
+      "searchNoResults": "No results for \"{query}\"."
     },
     "form": {
       "optional": "optional",
+      "backToList": "Back to My animals",
       "requiredHint": "Fields marked with * are required, the others are not.",
       "sectionIdentity": "Identity",
       "name": "Name",
@@ -231,7 +258,22 @@
       "loginEmail": "Login email",
       "publicEmail": "Public contact email",
       "publicPhone": "Public contact phone",
+      "sectionAddress": "Legal information",
+      "address": "Address",
+      "addressVisibleLabel": "Share my address (public page and printed listings)",
+      "companyNumber": "Company / VAT number",
+      "companyNumberVisibleLabel": "Share my company number (public page and printed listings)",
+      "sectionAbout": "About us",
+      "aboutHint": "Text and photos shown in the \"Discover us\" section of your public page.",
+      "aboutLabel": "Presentation text",
+      "aboutPhotosLabel": "Presentation photos (up to 2)",
+      "aboutPhotosMaxReached": "Maximum number of photos reached (2).",
+      "sectionWebsite": "Website",
+      "websiteUrlLabel": "Your website address",
+      "websiteUrlHint": "Used for the \"Back to our website\" link shown on your public pages.",
+      "websiteUrlPlaceholder": "https://your-site.com",
       "loginEmailHint": "Only the login email cannot be changed here.",
+      "savedConfirmation": "Changes saved!",
       "sectionLangues": "Content writing languages",
       "languesHint": "Choose which languages you write your animal profiles in (description, ideal home). If you check several, you will need to fill in the content in each. Your visitors will be able to switch between these languages on your public pages.",
       "save": "Save"
@@ -243,8 +285,77 @@
     },
     "personnalisation": {
       "title": "Customization",
-      "text1": "Choosing a font, colors, logo and gallery layout is coming in the next step.",
-      "text2": "These settings are already applied technically (your account's colors already apply to the public pages), only this form to change them yourself is still missing."
+      "intro": "These settings apply to all your public pages: home, categories and animal listings.",
+      "previewToggle": "Preview",
+      "sectionPolice": "Font",
+      "policeHint": "Choose the writing style for your public pages.",
+      "police": {
+        "default": "Warm",
+        "moderne": "Modern",
+        "classique": "Elegant",
+        "arrondie": "Soft"
+      },
+      "sectionColors": "Colors",
+      "colorsHint": "Applied to buttons, titles and backgrounds on your public pages.",
+      "colorPrimary": "Primary color",
+      "colorPrimaryHint": "Used for buttons, icons, links and badges on your public pages (not your organization's name, which always stays black).",
+      "colorSecondary": "Secondary color",
+      "colorSecondaryHint": "Used for the header, footer, contact block and soft backgrounds (icons, cards) on your public pages.",
+      "sectionLogo": "Logo",
+      "logoHint": "Shown at the top of every public page, so your visitors clearly recognize your organization.",
+      "logoDropLabel": "Click or drag your logo here",
+      "logoMaxReached": "Only one logo at a time: remove the current one to add another.",
+      "logoRemoveAria": "Remove the logo",
+      "sectionEspeces": "Home: species cards",
+      "especesHint": "How species (Dog, Cat, ...) are displayed on your account's home page.",
+      "especes": {
+        "liste": {
+          "label": "List",
+          "hint": "One species per row, full width."
+        },
+        "cote_a_cote": {
+          "label": "Side by side",
+          "hint": "Larger cards, 4 per row."
+        },
+        "vitrine": {
+          "label": "Showcase",
+          "hint": "Large colored cards with an icon, no photo."
+        }
+      },
+      "sectionPresentation": "Home: \"Discover us\" section",
+      "presentationHint": "How your presentation text and account photos are displayed on the home page.",
+      "presentation": {
+        "texte_photos": {
+          "label": "Text then photos",
+          "hint": "Centered text, your photos aligned below."
+        },
+        "photo_texte": {
+          "label": "Photo and text",
+          "hint": "Your photos (smaller) on the left, the text framed on the right."
+        },
+        "texte_photo": {
+          "label": "Text and photo",
+          "hint": "The text framed on the left, your photos (smaller) on the right."
+        }
+      },
+      "sectionDisposition": "Gallery layout",
+      "dispositionHint": "Applies to the animal list per category; the individual animal listing always keeps a fixed layout.",
+      "disposition": {
+        "grille": {
+          "label": "Grid",
+          "hint": "Aligned cards, several per row."
+        },
+        "empilee": {
+          "label": "Stacked",
+          "hint": "One listing per row, photo and info side by side."
+        },
+        "alternee": {
+          "label": "Alternating",
+          "hint": "Listings alternate photo left then right."
+        }
+      },
+      "savedConfirmation": "Changes saved!",
+      "save": "Save"
     }
   }
 }

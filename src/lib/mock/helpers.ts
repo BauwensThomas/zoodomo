@@ -1,5 +1,4 @@
 import type { Account, Animal, Locale } from "@/types";
-import { mockAccountThemes, mockAccountPhotos } from "./accounts";
 import { mockEspeces } from "./especes";
 import { mockAnimalViews } from "./views";
 import {
@@ -7,6 +6,8 @@ import {
   listAnimauxByAccountAll,
   listBadgesForAnimalMutable,
   listPhotosForAnimalMutable,
+  listAccountPhotosMutable,
+  getAccountThemeMutable,
 } from "./store";
 
 export function getViewCount(animalId: string) {
@@ -71,13 +72,11 @@ export function getAccountBySlug(slug: string) {
 }
 
 export function getAccountTheme(accountId: string) {
-  return mockAccountThemes.find((t) => t.account_id === accountId);
+  return getAccountThemeMutable(accountId);
 }
 
 export function getAccountPhotos(accountId: string) {
-  return mockAccountPhotos
-    .filter((p) => p.account_id === accountId)
-    .sort((a, b) => a.ordre - b.ordre);
+  return listAccountPhotosMutable(accountId);
 }
 
 export function getEspeceBySlug(slug: string) {

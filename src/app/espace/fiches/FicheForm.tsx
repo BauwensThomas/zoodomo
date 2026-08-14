@@ -2,35 +2,24 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Image as ImageIcon } from "lucide-react";
+import {
+  Award,
+  CircleDollarSign,
+  FileText,
+  Image as ImageIcon,
+  Info,
+  Phone,
+  Save,
+  Tags,
+  User,
+} from "lucide-react";
 import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { SectionCard } from "@/components/SectionCard";
+import { FieldLabel } from "@/components/FieldLabel";
 import type { Animal, AnimalBadge, AnimalPhoto, Espece, Locale } from "@/types";
 
 function inputClass() {
   return "mt-1.5 w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground";
-}
-
-function FieldLabel({
-  htmlFor,
-  label,
-  required = false,
-  optionalLabel,
-}: {
-  htmlFor: string;
-  label: string;
-  required?: boolean;
-  optionalLabel: string;
-}) {
-  return (
-    <label htmlFor={htmlFor} className="block text-sm font-medium text-foreground">
-      {label}
-      {required ? (
-        <span className="text-red-500"> *</span>
-      ) : (
-        <span className="ml-1 text-xs font-normal text-foreground/40">({optionalLabel})</span>
-      )}
-    </label>
-  );
 }
 
 interface FicheFormProps {
@@ -65,14 +54,14 @@ export function FicheForm({
   const existingBadge = badges[0];
 
   return (
-    <form action={action} className="space-y-8">
-      <p className="text-xs text-foreground/50">{t("requiredHint")}</p>
+    <form action={action} className="space-y-6">
+      <div className="flex items-start gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-sm text-amber-900">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>{t("requiredHint")}</p>
+      </div>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionIdentity")}
-        </h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <SectionCard icon={User} accent="indigo" title={t("sectionIdentity")}>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <FieldLabel htmlFor="nom" label={t("name")} required optionalLabel={optionalLabel} />
             <input
@@ -172,16 +161,13 @@ export function FicheForm({
               defaultValue={animal?.date_naissance ?? undefined}
               className={inputClass()}
             />
-            <p className="mt-1 text-xs text-foreground/50">{t("birthDatePreciseHint")}</p>
+            <p className="mt-1 text-xs text-foreground">{t("birthDatePreciseHint")}</p>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionTraceability")}
-        </h2>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <SectionCard icon={Tags} accent="purple" title={t("sectionTraceability")}>
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <FieldLabel
               htmlFor="numero_identification"
@@ -219,14 +205,15 @@ export function FicheForm({
             />
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionStatusPrice")}
-        </h2>
-        <p className="mt-1 text-xs text-foreground/50">{t("statusHint")}</p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <SectionCard
+        icon={CircleDollarSign}
+        accent="emerald"
+        title={t("sectionStatusPrice")}
+        hint={t("statusHint")}
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <FieldLabel htmlFor="statut" label={t("status")} required optionalLabel={optionalLabel} />
             <select
@@ -253,16 +240,12 @@ export function FicheForm({
             />
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionContent")}
-        </h2>
-        <p className="mt-1 text-xs text-foreground/50">{t("contentHint")}</p>
-        <div className="mt-3 space-y-6">
+      <SectionCard icon={FileText} accent="amber" title={t("sectionContent")} hint={t("contentHint")}>
+        <div className="space-y-6">
           {languesActives.map((locale) => (
-            <div key={locale} className="rounded-2xl border border-border p-4">
+            <div key={locale} className="rounded-2xl border border-border bg-muted/30 p-4">
               <p className="text-sm font-semibold text-foreground">{tLocales(locale)}</p>
               <div className="mt-3">
                 <FieldLabel
@@ -275,7 +258,7 @@ export function FicheForm({
                   name={`description_${locale}`}
                   rows={3}
                   defaultValue={animal?.description?.[locale]}
-                  className={inputClass()}
+                  className={`${inputClass()} bg-white`}
                 />
               </div>
               <div className="mt-3">
@@ -289,29 +272,28 @@ export function FicheForm({
                   name={`foyer_ideal_${locale}`}
                   rows={3}
                   defaultValue={animal?.foyer_ideal?.[locale]}
-                  className={inputClass()}
+                  className={`${inputClass()} bg-white`}
                 />
               </div>
             </div>
           ))}
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionBadges")}
-        </h2>
-        <p className="mt-1 text-xs text-foreground/50">
-          {t("badgesHint")} ({optionalLabel})
-        </p>
-        <div className="mt-3 flex items-center gap-3 rounded-xl border border-dashed border-border bg-muted/40 p-3">
+      <SectionCard
+        icon={Award}
+        accent="pink"
+        title={t("sectionBadges")}
+        hint={`${t("badgesHint")} (${optionalLabel})`}
+      >
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-muted/40 p-3">
           <div className="relative flex h-16 w-24 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <ImageIcon className="h-6 w-6 text-foreground/30" />
+            <ImageIcon className="h-6 w-6 text-foreground" />
             <span className="absolute left-1.5 top-1.5 rounded-full bg-foreground px-2 py-0.5 text-[10px] font-semibold text-background">
               {t("badgeSenior")}
             </span>
           </div>
-          <p className="text-xs text-foreground/60">{t("badgePreviewCaption")}</p>
+          <p className="text-xs text-foreground">{t("badgePreviewCaption")}</p>
         </div>
         <div className="mt-3">
           <FieldLabel htmlFor="badge_label" label={t("badgeLabel")} optionalLabel={optionalLabel} />
@@ -324,15 +306,14 @@ export function FicheForm({
             className={`${inputClass()} max-w-xs`}
           />
         </div>
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionPhotos")}
-        </h2>
-        <p className="mt-1 text-xs text-foreground/50">
-          {t("photosHint")} ({optionalLabel})
-        </p>
+      <SectionCard
+        icon={ImageIcon}
+        accent="cyan"
+        title={t("sectionPhotos")}
+        hint={`${t("photosHint")} (${optionalLabel})`}
+      >
         <PhotoUploadField
           name="photos"
           defaultPhotos={photos.map((p) => p.url)}
@@ -341,16 +322,15 @@ export function FicheForm({
           maxReachedLabel={t("photosMaxReached")}
           removeLabel={t("photosRemoveAria")}
         />
-      </section>
+      </SectionCard>
 
-      <section>
-        <h2 className="font-heading text-lg font-medium text-foreground">
-          {t("sectionContact")}
-        </h2>
-        <p className="mt-1 text-xs text-foreground/50">
-          {t("contactHint")} ({optionalLabel})
-        </p>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
+      <SectionCard
+        icon={Phone}
+        accent="teal"
+        title={t("sectionContact")}
+        hint={`${t("contactHint")} (${optionalLabel})`}
+      >
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <FieldLabel
               htmlFor="contact_email"
@@ -379,14 +359,17 @@ export function FicheForm({
             />
           </div>
         </div>
-      </section>
+      </SectionCard>
 
-      <button
-        type="submit"
-        className="inline-flex cursor-pointer items-center rounded-full bg-foreground px-6 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90"
-      >
-        {submitLabel}
-      </button>
+      <div className="flex items-center justify-end">
+        <button
+          type="submit"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+        >
+          <Save className="h-4 w-4" />
+          {submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

@@ -10,16 +10,9 @@ import { LOCALES, type Locale } from "@/types";
 
 interface LocaleSwitcherProps {
   current: Locale;
-  /**
-   * Langues proposées. Omis (ou toutes les langues) pour le sélecteur de langue de
-   * l'espace membre (le personnel peut travailler en fr/nl/en quel que soit le contenu
-   * du compte). Restreint aux langues actives du compte pour le sélecteur visiteur des
-   * pages publiques, où le composant se masque s'il n'y a qu'une seule langue.
-   */
-  active?: Locale[];
 }
 
-export function LocaleSwitcher({ current, active }: LocaleSwitcherProps) {
+export function LocaleSwitcher({ current }: LocaleSwitcherProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -37,10 +30,12 @@ export function LocaleSwitcher({ current, active }: LocaleSwitcherProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  if (active && active.length <= 1) return null;
-
-  const available = active ?? LOCALES;
-  const others = LOCALES.filter((locale) => available.includes(locale) && locale !== current);
+  // Toujours proposer les 3 langues de l'interface, quel que soit le nombre de langues
+  // de contenu actives du compte visité : un visiteur doit pouvoir lire l'interface dans
+  // sa langue même si le contenu (description, foyer idéal, présentation du compte)
+  // n'existe que dans une seule langue, auquel cas la mention "disponible seulement en
+  // ..." s'affiche à la place (voir pickLocalized/localesWithContent).
+  const others = LOCALES.filter((locale) => locale !== current);
 
   function choose(locale: Locale) {
     setOpen(false);
@@ -62,7 +57,7 @@ export function LocaleSwitcher({ current, active }: LocaleSwitcherProps) {
       >
         <FlagIcon locale={current} className="h-4 w-4 rounded-full" />
         <ChevronDown
-          className={`h-3.5 w-3.5 text-foreground/50 transition-transform ${open ? "rotate-180" : ""}`}
+          className={`h-3.5 w-3.5 text-foreground transition-transform ${open ? "rotate-180" : ""}`}
         />
       </button>
 

@@ -1,16 +1,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
-import { AlertCircle, ArrowLeft, Heart, Sparkles, Star } from "lucide-react";
+import { getLocale, getTranslations } from "next-intl/server";
+import { AlertCircle, ArrowLeft, Cake, Heart, Mars, Sparkles, Star, Tag, Venus } from "lucide-react";
 import {
   getAccountBySlug,
+  getAccountTheme,
   getEspeceBySlug,
   getAnimauxVisibles,
   getPhotosForAnimal,
   getBadgesForAnimal,
+  getSexeLabelKey,
+  pickLocalized,
+  localesWithContent,
 } from "@/lib/mock";
-import type { TypeBadge } from "@/types";
+import type { Animal, AnimalBadge, AnimalPhoto, Locale, TypeBadge } from "@/types";
 
 const BADGE_ICONS: Record<TypeBadge, typeof Star> = {
   senior: Star,
@@ -26,6 +30,187 @@ const STATUT_DOT: Record<string, string> = {
   adopte: "bg-neutral-400",
 };
 
+type Translator = (key: string, values?: Record<string, string | number>) => string;
+
+interface CardProps {
+  animal: Animal;
+  photo: AnimalPhoto | undefined;
+  badges: AnimalBadge[];
+  href: string;
+  statutLabel: string;
+  priority: boolean;
+  sizes: string;
+  tAnimal: Translator;
+  tLocales: Translator;
+  locale: Locale;
+  languesActives: Locale[];
+}
+
+function AnimalPhotoBox({ animal, photo, badges, statutLabel, priority, sizes }: CardProps) {
+  return (
+    <div className="relative aspect-4/3 bg-muted">
+      {photo && (
+        <Image
+          src={photo.url}
+          alt={animal.nom}
+          fill
+          sizes={sizes}
+          priority={priority}
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          unoptimized={photo.url.startsWith("data:")}
+        />
+      )}
+      {badges.length > 0 && (
+        <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
+          {badges.map((badge) => {
+            const BadgeIcon = BADGE_ICONS[badge.type];
+            return (
+              <span
+                key={badge.id}
+                className="inline-flex items-center gap-1 rounded-full bg-(--account-primary) px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
+              >
+                <BadgeIcon className="h-3 w-3" />
+                {badge.label}
+              </span>
+            );
+          })}
+        </div>
+      )}
+      {animal.statut !== "disponible" && (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden bg-black/10">
+          <span
+            className={`-rotate-6 px-6 py-2 text-xl font-bold uppercase tracking-wide text-white shadow-lg ${
+              animal.statut === "reserve" ? "bg-amber-500" : "bg-rose-500"
+            }`}
+          >
+            {statutLabel}
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AnimalInfo({
+  animal,
+  statutLabel,
+  tAnimal,
+  tLocales,
+  locale,
+  languesActives,
+  variant,
+}: {
+  animal: Animal;
+  statutLabel: string;
+  tAnimal: Translator;
+  tLocales: Translator;
+  locale: Locale;
+  languesActives: Locale[];
+  variant: "card" | "row";
+}) {
+  const sexeKey = getSexeLabelKey(animal);
+  const age = animal.date_naissance
+    ? new Date(animal.date_naissance).toLocaleDateString(locale === "en" ? "en-GB" : locale)
+    : animal.annee_naissance
+      ? String(animal.annee_naissance)
+      : null;
+
+  const description = pickLocalized(animal.description, locale, languesActives);
+  const descriptionFallbackNote =
+    description && !animal.description[locale]
+      ? tAnimal("textOnlyAvailableIn", {
+          languages: new Intl.ListFormat(locale === "en" ? "en" : locale, {
+            style: "long",
+            type: "conjunction",
+          }).format(localesWithContent(animal.description).map((l) => tLocales(l))),
+        })
+      : null;
+
+  return (
+    <div className="p-4">
+      <div className="flex items-center justify-between">
+        <h2 className="font-heading text-lg font-medium text-foreground">{animal.nom}</h2>
+        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
+          <span className={`h-1.5 w-1.5 rounded-full ${STATUT_DOT[animal.statut]}`} />
+          {statutLabel}
+        </span>
+      </div>
+      {animal.race && <p className="mt-1 text-sm text-foreground">{animal.race}</p>}
+
+      {/* Plus de place disponible dans les dispositions "empilée"/"alternée" (photo à
+          côté du texte plutôt qu'au-dessus) : quelques infos utiles en plus, en icônes,
+          pour ne pas laisser un grand vide à côté de la photo. */}
+      {variant === "row" && (sexeKey || age || animal.prix !== null) && (
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-foreground">
+          {sexeKey && (
+            <span className="inline-flex items-center gap-1.5">
+              {animal.sexe === "male" ? (
+                <Mars className="h-4 w-4 text-(--account-primary)" />
+              ) : (
+                <Venus className="h-4 w-4 text-(--account-primary)" />
+              )}
+              {tAnimal(sexeKey)}
+            </span>
+          )}
+          {age && (
+            <span className="inline-flex items-center gap-1.5">
+              <Cake className="h-4 w-4 text-(--account-primary)" />
+              {age}
+            </span>
+          )}
+          {animal.prix !== null && (
+            <span className="inline-flex items-center gap-1.5">
+              <Tag className="h-4 w-4 text-(--account-primary)" />
+              {animal.prix} €
+            </span>
+          )}
+        </div>
+      )}
+
+      {variant === "row" && description && (
+        <div className="mt-3">
+          <p className="line-clamp-3 whitespace-pre-line text-sm text-foreground">{description}</p>
+          {descriptionFallbackNote && (
+            <p className="mt-1 text-xs text-amber-600">{descriptionFallbackNote}</p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Carte verticale (photo au-dessus, infos en dessous) : disposition "grille". */
+function AnimalCard(props: CardProps) {
+  return (
+    <Link
+      href={props.href}
+      className="group block overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+    >
+      <AnimalPhotoBox {...props} />
+      <AnimalInfo {...props} variant="card" />
+    </Link>
+  );
+}
+
+/** Ligne horizontale (photo à côté des infos) : dispositions "empilée" et "alternée". */
+function AnimalRow(props: CardProps & { reverse: boolean }) {
+  return (
+    <Link
+      href={props.href}
+      className={`group flex flex-col overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-all hover:shadow-lg sm:flex-row ${
+        props.reverse ? "sm:flex-row-reverse" : ""
+      }`}
+    >
+      <div className="sm:w-64 md:w-80 sm:shrink-0">
+        <AnimalPhotoBox {...props} />
+      </div>
+      <div className="flex-1">
+        <AnimalInfo {...props} variant="row" />
+      </div>
+    </Link>
+  );
+}
+
 export default async function EspeceGaleriePage({
   params,
 }: {
@@ -39,9 +224,14 @@ export default async function EspeceGaleriePage({
   if (!espece) notFound();
 
   const animaux = getAnimauxVisibles(account.id, espece.id);
+  const theme = getAccountTheme(account.id);
+  const disposition = theme?.disposition_photos ?? "grille";
   const t = await getTranslations("gallery");
   const tStatus = await getTranslations("status");
   const tSpecies = await getTranslations("species");
+  const tAnimal = await getTranslations("animal");
+  const tLocales = await getTranslations("locales");
+  const locale = (await getLocale()) as Locale;
   const especeNom = tSpecies.has(espece.slug) ? tSpecies(espece.slug) : espece.nom;
 
   return (
@@ -52,7 +242,7 @@ export default async function EspeceGaleriePage({
         </h1>
         <Link
           href={`/${account.slug}`}
-          className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground/60 transition-colors hover:text-(--account-primary)"
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-foreground transition-colors hover:text-(--account-primary)"
         >
           <ArrowLeft className="h-4 w-4" />
           {t("allSpecies")}
@@ -60,80 +250,53 @@ export default async function EspeceGaleriePage({
       </div>
 
       {animaux.length === 0 ? (
-        <p className="mt-10 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground/60">
+        <p className="mt-10 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
           {t("empty")}
         </p>
+      ) : disposition === "empilee" || disposition === "alternee" ? (
+        <div className="mt-8 flex flex-col gap-5">
+          {animaux.map((animal, index) => {
+            const photo = getPhotosForAnimal(animal.id)[0];
+            const badges = getBadgesForAnimal(animal.id);
+            return (
+              <AnimalRow
+                key={animal.id}
+                animal={animal}
+                photo={photo}
+                badges={badges}
+                href={`/${account.slug}/${espece.slug}/${animal.slug}`}
+                statutLabel={tStatus(animal.statut)}
+                priority={index === 0}
+                sizes="(min-width: 640px) 320px, 100vw"
+                tAnimal={tAnimal}
+                tLocales={tLocales}
+                locale={locale}
+                languesActives={account.langues_actives}
+                reverse={disposition === "alternee" && index % 2 === 1}
+              />
+            );
+          })}
+        </div>
       ) : (
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {animaux.map((animal, index) => {
             const photo = getPhotosForAnimal(animal.id)[0];
             const badges = getBadgesForAnimal(animal.id);
-
             return (
-              <Link
+              <AnimalCard
                 key={animal.id}
+                animal={animal}
+                photo={photo}
+                badges={badges}
                 href={`/${account.slug}/${espece.slug}/${animal.slug}`}
-                className="group overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
-              >
-                <div className="relative aspect-4/3 bg-muted">
-                  {photo && (
-                    <Image
-                      src={photo.url}
-                      alt={animal.nom}
-                      fill
-                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-                      priority={index === 0}
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      unoptimized={photo.url.startsWith("data:")}
-                    />
-                  )}
-                  {badges.length > 0 && (
-                    <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
-                      {badges.map((badge) => {
-                        const BadgeIcon = BADGE_ICONS[badge.type];
-                        return (
-                          <span
-                            key={badge.id}
-                            className="inline-flex items-center gap-1 rounded-full bg-(--account-primary) px-2.5 py-1 text-xs font-semibold text-white shadow-sm"
-                          >
-                            <BadgeIcon className="h-3 w-3" />
-                            {badge.label}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {animal.statut !== "disponible" && (
-                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden bg-black/10">
-                      <span
-                        className={`-rotate-6 px-6 py-2 text-xl font-bold uppercase tracking-wide text-white shadow-lg ${
-                          animal.statut === "reserve" ? "bg-amber-500" : "bg-rose-500"
-                        }`}
-                      >
-                        {tStatus(animal.statut)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="p-4">
-                  <div className="flex items-center justify-between">
-                    <h2 className="font-heading text-lg font-medium text-foreground">
-                      {animal.nom}
-                    </h2>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground/60">
-                      <span
-                        className={`h-1.5 w-1.5 rounded-full ${STATUT_DOT[animal.statut]}`}
-                      />
-                      {tStatus(animal.statut)}
-                    </span>
-                  </div>
-                  {animal.race && (
-                    <p className="mt-1 text-sm text-foreground/50">
-                      {animal.race}
-                    </p>
-                  )}
-                </div>
-              </Link>
+                statutLabel={tStatus(animal.statut)}
+                priority={index === 0}
+                sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                tAnimal={tAnimal}
+                tLocales={tLocales}
+                locale={locale}
+                languesActives={account.langues_actives}
+              />
             );
           })}
         </div>

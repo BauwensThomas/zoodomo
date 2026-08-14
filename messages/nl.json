@@ -7,7 +7,8 @@
     "discoverAnimals": "Ontdek de beschikbare dieren, per diersoort.",
     "emptyGalleries": "Op dit moment geen dier beschikbaar, kom snel terug!",
     "discoverUs": "Ontdek ons",
-    "generalQuestion": "Een algemene vraag?"
+    "generalQuestion": "Een algemene vraag?",
+    "speciesCount": "{count, plural, =0 {Geen dier beschikbaar} one {# dier beschikbaar} other {# dieren beschikbaar}}"
   },
   "gallery": {
     "availableTitle": "Beschikbare {species}",
@@ -141,9 +142,22 @@
       "colStatus": "Status",
       "colViews": "Weergaven",
       "colCreated": "Aangemaakt op",
+      "colUpdatedAt": "Gewijzigd op",
       "colAdoptedDate": "Geadopteerd op",
       "colReservedDate": "Gereserveerd op",
       "colVisibleDays": "Nog zichtbaar",
+      "colRace": "Ras",
+      "colSex": "Geslacht",
+      "colNeutered": "Gesteriliseerd",
+      "colBirth": "Geboren",
+      "colIdNumber": "Chipnr.",
+      "colArrival": "Aankomst",
+      "colOrigin": "Herkomst",
+      "colPrice": "Prijs",
+      "statThisMonth": "deze maand",
+      "statThisYear": "dit jaar",
+      "addressMissingNotice": "Vul uw adres in bij Account om het te tonen op uw openbare pagina en afgedrukte fiches.",
+      "addressMissingAction": "Aanvullen",
       "visibleDaysValue": "{days} d",
       "visibleLastDayValue": "Laatste dag",
       "visibleExpiredValue": "Verwijderd van de openbare pagina's",
@@ -154,6 +168,8 @@
       "add": "Dier toevoegen",
       "empty": "Nog geen dieren.",
       "colActions": "Acties",
+      "viewPublicAria": "Openbare fiche van {name} bekijken",
+      "viewPublicTooltip": "Openbare fiche bekijken",
       "editAria": "{name} bewerken",
       "markAvailableAria": "{name} terugzetten op beschikbaar",
       "markReservedAria": "{name} markeren als gereserveerd",
@@ -164,12 +180,23 @@
       "markReservedTooltip": "Markeren als gereserveerd",
       "markAdoptedTooltip": "Markeren als geadopteerd",
       "deleteTooltip": "Verwijderen",
+      "markAvailableConfirm": "{name} terugzetten op beschikbaar?",
+      "markReservedConfirm": "{name} markeren als gereserveerd?",
+      "markAdoptedConfirm": "{name} markeren als geadopteerd? De fiche blijft nog 7 dagen zichtbaar op de openbare pagina's en verdwijnt daarna automatisch.",
+      "deleteConfirm": "{name} verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "confirmButton": "Bevestigen",
+      "cancelButton": "Annuleren",
       "exportStartDateLabel": "Startdatum",
       "exportEndDateLabel": "Einddatum",
-      "exportEmptyTooltip": "Geen dieren {label} in deze periode"
+      "exportEmptyTooltip": "Geen dieren {label} in deze periode",
+      "createdConfirmation": "Profiel aangemaakt!",
+      "savedConfirmation": "Wijzigingen opgeslagen!",
+      "searchPlaceholder": "Zoeken...",
+      "searchNoResults": "Geen resultaten voor \"{query}\"."
     },
     "form": {
       "optional": "optioneel",
+      "backToList": "Terug naar Mijn dieren",
       "requiredHint": "Velden met een * zijn verplicht, de andere niet.",
       "sectionIdentity": "Identiteit",
       "name": "Naam",
@@ -231,7 +258,22 @@
       "loginEmail": "Inlog-e-mail",
       "publicEmail": "Openbaar contact e-mail",
       "publicPhone": "Openbaar contact telefoon",
+      "sectionAddress": "Juridische informatie",
+      "address": "Adres",
+      "addressVisibleLabel": "Mijn adres delen (openbare pagina en afgedrukte fiches)",
+      "companyNumber": "Ondernemingsnummer (btw)",
+      "companyNumberVisibleLabel": "Mijn ondernemingsnummer delen (openbare pagina en afgedrukte fiches)",
+      "sectionAbout": "Voorstelling",
+      "aboutHint": "Tekst en foto's getoond in de sectie \"Ontdek ons\" van uw openbare pagina.",
+      "aboutLabel": "Voorstellingstekst",
+      "aboutPhotosLabel": "Presentatiefoto's (max. 2)",
+      "aboutPhotosMaxReached": "Maximum aantal foto's bereikt (2).",
+      "sectionWebsite": "Website",
+      "websiteUrlLabel": "Adres van uw website",
+      "websiteUrlHint": "Gebruikt voor de link \"Terug naar onze website\" op uw openbare pagina's.",
+      "websiteUrlPlaceholder": "https://uw-site.be",
       "loginEmailHint": "Alleen het inlog-e-mailadres kan hier niet worden gewijzigd.",
+      "savedConfirmation": "Wijzigingen opgeslagen!",
       "sectionLangues": "Talen voor de inhoud",
       "languesHint": "Kies in welke talen u uw dierenfiches schrijft (beschrijving, ideaal thuis). Als u er meerdere aanvinkt, moet u de inhoud in elke taal invullen. Uw bezoekers kunnen tussen deze talen wisselen op uw openbare pagina's.",
       "save": "Opslaan"
@@ -243,8 +285,77 @@
     },
     "personnalisation": {
       "title": "Personalisatie",
-      "text1": "De keuze van lettertype, kleuren, logo en galerij-indeling komt in de volgende stap.",
-      "text2": "Deze instellingen worden al technisch toegepast (de kleuren van uw account gelden al op de openbare pagina's), enkel dit formulier om ze zelf te wijzigen ontbreekt nog."
+      "intro": "Deze instellingen gelden voor al uw openbare pagina's: startpagina, categorieën en dierenfiches.",
+      "previewToggle": "Voorvertoning",
+      "sectionPolice": "Lettertype",
+      "policeHint": "Kies de schrijfstijl van uw openbare pagina's.",
+      "police": {
+        "default": "Warm",
+        "moderne": "Modern",
+        "classique": "Elegant",
+        "arrondie": "Zacht"
+      },
+      "sectionColors": "Kleuren",
+      "colorsHint": "Toegepast op knoppen, titels en achtergronden van uw openbare pagina's.",
+      "colorPrimary": "Primaire kleur",
+      "colorPrimaryHint": "Gebruikt voor knoppen, iconen, links en badges op uw publieke pagina's (niet de naam van uw organisatie, die altijd zwart blijft).",
+      "colorSecondary": "Secundaire kleur",
+      "colorSecondaryHint": "Gebruikt voor de header, de voettekst, het contactblok en zachte achtergronden (iconen, kaarten) op uw publieke pagina's.",
+      "sectionLogo": "Logo",
+      "logoHint": "Getoond bovenaan elke openbare pagina, zodat uw bezoekers uw organisatie meteen herkennen.",
+      "logoDropLabel": "Klik of sleep uw logo hierheen",
+      "logoMaxReached": "Slechts één logo tegelijk: verwijder het huidige om een ander toe te voegen.",
+      "logoRemoveAria": "Logo verwijderen",
+      "sectionEspeces": "Startpagina: soortkaarten",
+      "especesHint": "Hoe soorten (Hond, Kat, ...) worden getoond op de startpagina van uw account.",
+      "especes": {
+        "liste": {
+          "label": "Lijst",
+          "hint": "Eén soort per rij, volledige breedte."
+        },
+        "cote_a_cote": {
+          "label": "Naast elkaar",
+          "hint": "Grote kaarten, 4 per rij."
+        },
+        "vitrine": {
+          "label": "Etalage",
+          "hint": "Grote gekleurde kaarten met icoon, zonder foto."
+        }
+      },
+      "sectionPresentation": "Startpagina: sectie \"Ontdek ons\"",
+      "presentationHint": "Hoe uw voorstellingstekst en accountfoto's worden getoond op de startpagina.",
+      "presentation": {
+        "texte_photos": {
+          "label": "Tekst dan foto's",
+          "hint": "De tekst gecentreerd, uw foto's eronder uitgelijnd."
+        },
+        "photo_texte": {
+          "label": "Foto en tekst",
+          "hint": "Uw foto's (kleiner) links, de tekst in een kader rechts."
+        },
+        "texte_photo": {
+          "label": "Tekst en foto",
+          "hint": "De tekst in een kader links, uw foto's (kleiner) rechts."
+        }
+      },
+      "sectionDisposition": "Galerij-indeling",
+      "dispositionHint": "Geldt voor de dierenlijst per categorie; de individuele dierenfiche behoudt altijd een vaste indeling.",
+      "disposition": {
+        "grille": {
+          "label": "Raster",
+          "hint": "Uitgelijnde kaarten, meerdere per rij."
+        },
+        "empilee": {
+          "label": "Gestapeld",
+          "hint": "Eén fiche per rij, foto en info naast elkaar."
+        },
+        "alternee": {
+          "label": "Afwisselend",
+          "hint": "Fiches wisselen foto links dan rechts af."
+        }
+      },
+      "savedConfirmation": "Wijzigingen opgeslagen!",
+      "save": "Opslaan"
     }
   }
 }

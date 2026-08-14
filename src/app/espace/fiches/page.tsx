@@ -1,18 +1,30 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Plus } from "lucide-react";
+import { CheckCircle2, Plus } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
-import { listAnimauxByAccountAll, getEspeceById, getViewCount, visibiliteState } from "@/lib/mock";
+import {
+  listAnimauxByAccountAll,
+  getEspeceById,
+  getViewCount,
+  visibiliteState,
+  isAnimalVisiblePublicly,
+} from "@/lib/mock";
 import { deleteAnimalAction, changeStatutAction } from "../actions";
-import { PdfExportButton } from "@/components/MonthlyPdfExport";
-import { FichesTable, type FicheRow } from "@/components/FichesTable";
-import type { Locale, StatutAnimal } from "@/types";
+import { FichesSections, type FichesSectionConfig } from "@/components/FichesSections";
+import { AutoDismiss } from "@/components/AutoDismiss";
+import type { FicheRow } from "@/components/FichesTable";
+import type { Locale } from "@/types";
 
-export default async function MesFichesPage() {
+export default async function MesFichesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ saved?: string }>;
+}) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
+  const { saved } = await searchParams;
   const t = await getTranslations("admin.fiches");
   const tDashboard = await getTranslations("admin.dashboard");
   const tSpecies = await getTranslations("species");
@@ -33,13 +45,29 @@ export default async function MesFichesPage() {
       id: animal.id,
       nom: animal.nom,
       especeNom,
+      race: animal.race,
+      sexe: animal.sexe,
+      sterilise: animal.sterilise,
+      annee_naissance: animal.annee_naissance,
+      date_naissance: animal.date_naissance,
+      numero_identification: animal.numero_identification,
+      date_arrivee: animal.date_arrivee,
+      origine: animal.origine,
+      prix: animal.prix,
       vues: getViewCount(animal.id),
       statut: animal.statut,
       created_at: animal.created_at,
+      updated_at: animal.updated_at,
       date_reservation: animal.date_reservation,
       date_adoption: animal.date_adoption,
       visState: visResult.state,
       visDays: visResult.state === "days" ? visResult.days : undefined,
+      // Une fiche adoptée dont la fenêtre de 7 jours est dépassée n'est plus visible
+      // publiquement (voir isAnimalVisiblePublicly) : pas de lien vers une page qui 404.
+      publicUrl:
+        espece && isAnimalVisiblePublicly(animal)
+          ? `/${account.slug}/${espece.slug}/${animal.slug}`
+          : null,
       deleteAction: deleteAnimalAction.bind(null, animal.id),
       setDisponibleAction: changeStatutAction.bind(null, animal.id, "disponible"),
       setReserveAction: changeStatutAction.bind(null, animal.id, "reserve"),
@@ -50,31 +78,41 @@ export default async function MesFichesPage() {
   const exportRows = rows.map((r) => ({
     nom: r.nom,
     especeNom: r.especeNom,
+    race: r.race,
+    sexe: r.sexe,
+    sterilise: r.sterilise,
+    annee_naissance: r.annee_naissance,
+    date_naissance: r.date_naissance,
+    numero_identification: r.numero_identification,
+    date_arrivee: r.date_arrivee,
+    origine: r.origine,
+    prix: r.prix,
     statut: r.statut,
     vues: r.vues,
     created_at: r.created_at,
+    updated_at: r.updated_at,
     date_reservation: r.date_reservation,
     date_adoption: r.date_adoption,
+    visState: r.visState,
+    visDays: r.visDays,
   }));
 
-  type DateColumn = { labelKey: string; field: "date_adoption" | "date_reservation"; showVisibleDays: boolean };
-
-  const sections: {
-    statut: StatutAnimal;
-    titleKey: string;
-    dateColumn: DateColumn | null;
-    defaultSortKey: "created_at" | "date_reservation" | "date_adoption";
-  }[] = [
-    { statut: "disponible", titleKey: "statAvailable", dateColumn: null, defaultSortKey: "created_at" },
+  const sections: FichesSectionConfig[] = [
+    {
+      statut: "disponible",
+      title: tDashboard("statAvailable"),
+      dateColumn: null,
+      defaultSortKey: "created_at",
+    },
     {
       statut: "reserve",
-      titleKey: "statReserved",
+      title: tDashboard("statReserved"),
       dateColumn: { labelKey: "colReservedDate", field: "date_reservation", showVisibleDays: false },
       defaultSortKey: "date_reservation",
     },
     {
       statut: "adopte",
-      titleKey: "statAdopted",
+      title: tDashboard("statAdopted"),
       dateColumn: { labelKey: "colAdoptedDate", field: "date_adoption", showVisibleDays: true },
       defaultSortKey: "date_adoption",
     },
@@ -95,31 +133,27 @@ export default async function MesFichesPage() {
         </Link>
       </div>
 
+      {(saved === "created" || saved === "updated") && (
+        <AutoDismiss>
+          <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+            <CheckCircle2 className="h-4 w-4" />
+            {saved === "created" ? t("createdConfirmation") : t("savedConfirmation")}
+          </p>
+        </AutoDismiss>
+      )}
+
       {animaux.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground/60">
+        <p className="mt-6 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
           {t("empty")}
         </p>
       ) : (
-        sections.map(({ statut, titleKey, dateColumn, defaultSortKey }) => {
-          const list = rows.filter((r) => r.statut === statut);
-          if (list.length === 0) return null;
-          return (
-            <section key={statut} className="mt-8 first:mt-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="font-heading text-lg font-medium text-foreground">
-                  {tDashboard(titleKey)} ({list.length})
-                </h2>
-                <PdfExportButton statut={statut} rows={exportRows} accountName={account.nom_affichage} />
-              </div>
-              <FichesTable
-                rows={list}
-                dateColumn={dateColumn}
-                dateLocale={dateLocale}
-                defaultSortKey={defaultSortKey}
-              />
-            </section>
-          );
-        })
+        <FichesSections
+          rows={rows}
+          exportRows={exportRows}
+          sections={sections}
+          dateLocale={dateLocale}
+          accountName={account.nom_affichage}
+        />
       )}
     </div>
   );

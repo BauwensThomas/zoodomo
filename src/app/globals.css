@@ -6,6 +6,11 @@
   --muted: #efe9e0;
   --border: #e5ddd0;
   color-scheme: light;
+  /* Police par défaut (Zoodomo, espace membre, connexion) ; les pages publiques d'un
+     compte (`[compte]/layout.tsx`) redéfinissent ces deux variables localement selon la
+     police choisie dans Personnalisation, voir src/lib/fonts.ts. */
+  --font-heading: var(--font-heading-default);
+  --font-body: var(--font-body-default);
 }
 
 @theme inline {

@@ -5,6 +5,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { ExternalLink, PawPrint } from "lucide-react";
 import { getAccountBySlug, getAccountTheme } from "@/lib/mock";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { POLICE_FONT_VARS, isPoliceId } from "@/lib/fonts";
 import type { Locale } from "@/types";
 
 export default async function CompteLayout({
@@ -27,13 +28,18 @@ export default async function CompteLayout({
   const yearLabel =
     currentYear > launchYear ? `${launchYear} - ${currentYear}` : `${launchYear}`;
 
+  const policeId = theme?.police && isPoliceId(theme.police) ? theme.police : "default";
+  const policeFonts = POLICE_FONT_VARS[policeId];
+
   return (
     <div
-      className="flex min-h-screen flex-1 flex-col bg-background"
+      className="flex min-h-screen flex-1 flex-col bg-background font-body"
       style={
         {
           "--account-primary": theme?.couleur_primaire ?? "#221c16",
           "--account-secondary": theme?.couleur_secondaire ?? "#efe9e0",
+          "--font-heading": policeFonts.heading,
+          "--font-body": policeFonts.body,
         } as React.CSSProperties
       }
     >
@@ -49,6 +55,7 @@ export default async function CompteLayout({
                 alt={`Logo ${account.nom_affichage}`}
                 width={44}
                 height={44}
+                unoptimized={theme.logo_url.startsWith("data:")}
                 className="h-9 w-9 shrink-0 rounded-full border-2 border-white object-cover shadow-sm sm:h-11 sm:w-11"
               />
             ) : (
@@ -71,15 +78,15 @@ export default async function CompteLayout({
                 <ExternalLink className="h-3.5 w-3.5" />
               </a>
             )}
-            <LocaleSwitcher active={account.langues_actives} current={locale} />
+            <LocaleSwitcher current={locale} />
           </div>
         </div>
       </header>
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-border bg-muted px-6 py-8 text-center">
-        <p className="text-sm text-foreground/60">{t("createdWith", { year: yearLabel })}</p>
+      <footer className="border-t border-border bg-(--account-secondary) px-6 py-8 text-center">
+        <p className="text-sm text-foreground">{t("createdWith", { year: yearLabel })}</p>
       </footer>
     </div>
   );

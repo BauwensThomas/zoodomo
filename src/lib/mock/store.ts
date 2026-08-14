@@ -1,5 +1,15 @@
-import type { Account, Animal, AnimalBadge, AnimalPhoto, Locale, StatutAnimal, TypeBadge } from "@/types";
-import { mockAccounts } from "./accounts";
+import type {
+  Account,
+  AccountPhoto,
+  AccountTheme,
+  Animal,
+  AnimalBadge,
+  AnimalPhoto,
+  Locale,
+  StatutAnimal,
+  TypeBadge,
+} from "@/types";
+import { mockAccounts, mockAccountThemes, mockAccountPhotos } from "./accounts";
 import { mockAnimaux, mockAnimalBadges, mockAnimalPhotos } from "./animaux";
 import { slugify } from "@/lib/slugify";
 
@@ -9,6 +19,8 @@ import { slugify } from "@/lib/slugify";
  * serveur de dev, remplacé par de vraies requêtes Supabase plus tard.
  */
 let accounts: Account[] = [...mockAccounts];
+let accountThemes: AccountTheme[] = [...mockAccountThemes];
+let accountPhotos: AccountPhoto[] = [...mockAccountPhotos];
 let animaux: Animal[] = [...mockAnimaux];
 let animalBadges: AnimalBadge[] = [...mockAnimalBadges];
 let animalPhotos: AnimalPhoto[] = [...mockAnimalPhotos];
@@ -31,10 +43,60 @@ export interface AccountInfoInput {
   nom_affichage: string;
   contact_email_public: string | null;
   contact_telephone_public: string | null;
+  adresse: string | null;
+  adresse_visible: boolean;
+  numero_entreprise: string | null;
+  numero_entreprise_visible: boolean;
+  a_propos: Partial<Record<Locale, string>>;
 }
 
 export function updateAccountInfo(accountId: string, input: AccountInfoInput) {
   accounts = accounts.map((a) => (a.id === accountId ? { ...a, ...input } : a));
+}
+
+export function listAccountPhotosMutable(accountId: string) {
+  return accountPhotos.filter((p) => p.account_id === accountId).sort((a, b) => a.ordre - b.ordre);
+}
+
+export function replaceAccountPhotos(accountId: string, urls: string[]) {
+  accountPhotos = accountPhotos.filter((p) => p.account_id !== accountId);
+  urls
+    .map((u) => u.trim())
+    .filter(Boolean)
+    .forEach((url, index) => {
+      accountPhotos.push({
+        id: `account-photo-${accountId}-${index}`,
+        account_id: accountId,
+        url,
+        ordre: index + 1,
+        created_at: new Date().toISOString(),
+      });
+    });
+}
+
+export function getAccountThemeMutable(accountId: string) {
+  return accountThemes.find((t) => t.account_id === accountId);
+}
+
+export function updateAccountTheme(
+  accountId: string,
+  input: Partial<
+    Pick<
+      AccountTheme,
+      | "lien_retour_site"
+      | "police"
+      | "couleur_primaire"
+      | "couleur_secondaire"
+      | "disposition_photos"
+      | "disposition_especes"
+      | "disposition_presentation"
+      | "logo_url"
+    >
+  >
+) {
+  accountThemes = accountThemes.map((t) =>
+    t.account_id === accountId ? { ...t, ...input, updated_at: new Date().toISOString() } : t
+  );
 }
 
 function uniqueAccountSlug(base: string) {
@@ -55,10 +117,30 @@ export function createAccount(input: { nom_affichage: string; email: string }): 
     slug: uniqueAccountSlug(input.nom_affichage),
     contact_email_public: input.email,
     contact_telephone_public: null,
+    adresse: null,
+    adresse_visible: true,
+    numero_entreprise: null,
+    numero_entreprise_visible: true,
+    a_propos: {},
     langues_actives: ["fr"],
     created_at: new Date().toISOString(),
   };
   accounts = [...accounts, account];
+  accountThemes = [
+    ...accountThemes,
+    {
+      account_id: account.id,
+      police: "default",
+      couleur_primaire: "#2f6b4f",
+      couleur_secondaire: "#f4f1ea",
+      disposition_photos: "grille",
+      disposition_especes: "liste",
+      disposition_presentation: "photo_texte",
+      logo_url: null,
+      lien_retour_site: null,
+      updated_at: account.created_at,
+    },
+  ];
   return account;
 }
 

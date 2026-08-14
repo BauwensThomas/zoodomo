@@ -33,7 +33,7 @@ export default function Home() {
             <h1 className="font-heading text-3xl font-medium tracking-tight text-foreground">
               {t("title")}
             </h1>
-            <p className="mt-2 text-sm text-foreground/80">{t("subtitle")}</p>
+            <p className="mt-2 text-sm text-foreground">{t("subtitle")}</p>
 
             <form action={formAction} className="mt-8 space-y-4">
               <div>
@@ -66,7 +66,7 @@ export default function Home() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     aria-label={showPassword ? t("hidePassword") : t("showPassword")}
-                    className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-foreground/40 hover:text-foreground"
+                    className="absolute right-0 top-0 flex h-full w-10 cursor-pointer items-center justify-center text-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -88,20 +88,20 @@ export default function Home() {
               </button>
             </form>
 
-            <div className="mt-8 rounded-xl bg-muted p-4 text-xs text-foreground/80">
+            <div className="mt-8 rounded-xl bg-muted p-4 text-xs text-foreground">
               <p className="font-medium text-foreground">{t("demoTitle")}</p>
               <p className="mt-1">contact@refugequatrepattes.test</p>
               <p>contact@elevageboisfleuri.test</p>
             </div>
 
-            <p className="mt-6 text-center text-sm text-foreground/80">
+            <p className="mt-6 text-center text-sm text-foreground">
               {t("noAccount")}{" "}
               <Link href="/inscription" className="font-medium text-foreground underline">
                 {t("signUp")}
               </Link>
             </p>
 
-            <p className="mt-6 text-center text-xs text-foreground/70">
+            <p className="mt-6 text-center text-xs text-foreground">
               {t("legalPrefix")}{" "}
               <Link href="/conditions-utilisation" className="underline">
                 {t("termsOfService")}
@@ -121,7 +121,7 @@ export default function Home() {
           <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
             {t("heroTitle")}
           </h2>
-          <p className="mt-4 text-foreground/80">{t("heroSubtitle")}</p>
+          <p className="mt-4 text-foreground">{t("heroSubtitle")}</p>
           <div className="mt-8">
             <FeatureHighlights />
           </div>

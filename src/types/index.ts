@@ -15,7 +15,13 @@ export const LOCALES: Locale[] = ["fr", "nl", "en"];
 
 export type StatutAnimal = "disponible" | "reserve" | "adopte";
 
-export type DispositionGalerie = "grille" | "empilee" | "alternee" | "carrousel";
+export type DispositionGalerie = "grille" | "empilee" | "alternee";
+
+/** Disposition des cartes d'espèces sur la page d'accueil publique (`/[compte]`). */
+export type DispositionEspeces = "liste" | "cote_a_cote" | "vitrine";
+
+/** Disposition de la section "Nous découvrir" (texte de présentation + photos du compte). */
+export type DispositionPresentation = "texte_photos" | "photo_texte" | "texte_photo";
 
 export type TypeBadge =
   | "senior"
@@ -32,6 +38,36 @@ export interface Account {
   contact_email_public: string | null;
   contact_telephone_public: string | null;
   /**
+   * Adresse postale du compte (absent du schéma SQL du brief, écart documenté dans
+   * DECISIONS.md). Affichée dans le bloc de contact de la page publique du compte
+   * (`/[compte]`) et sur la future fiche animal imprimée (section 8), sous réserve de
+   * `adresse_visible`.
+   */
+  adresse: string | null;
+  /**
+   * Certains comptes (éleveurs particuliers notamment) ne souhaitent pas communiquer leur
+   * adresse, ni publiquement ni sur un document imprimé, pour des raisons de sécurité/vie
+   * privée. `true` par défaut : si une adresse est renseignée, elle est affichée sauf
+   * désactivation explicite ici (case à décocher dans l'onglet Compte).
+   */
+  adresse_visible: boolean;
+  /**
+   * Numéro d'entreprise/TVA (numéro BCE en Belgique), absent du schéma SQL du brief. Un
+   * vendeur professionnel doit généralement pouvoir justifier ce numéro sur ses annonces
+   * commerciales ; une association/refuge peut aussi en avoir un (ASBL) mais n'y est pas
+   * toujours tenu de la même façon. Champ générique optionnel, pas de distinction de type
+   * de compte (refuge/vendeur) dans le modèle de données actuel.
+   */
+  numero_entreprise: string | null;
+  /** Même principe que `adresse_visible`, `true` par défaut. */
+  numero_entreprise_visible: boolean;
+  /**
+   * Texte de présentation du compte affiché dans la section "Nous découvrir" de la page
+   * publique (`/[compte]`), au même principe multilingue que `Animal.description` : une
+   * entrée par langue active du compte. Absent du schéma SQL du brief.
+   */
+  a_propos: Partial<Record<Locale, string>>;
+  /**
    * Langues dans lesquelles le compte rédige son contenu (description, foyer idéal).
    * Choisi dans l'espace membre (onglet Compte) ; non présent dans le schéma SQL du brief
    * section 5, ajouté pour l'exigence i18n de la section 6. Le visiteur choisit parmi ces
@@ -47,6 +83,10 @@ export interface AccountTheme {
   couleur_primaire: string;
   couleur_secondaire: string;
   disposition_photos: DispositionGalerie;
+  /** Absent du schéma SQL du brief, ajouté pour personnaliser la page d'accueil publique. */
+  disposition_especes: DispositionEspeces;
+  /** Absent du schéma SQL du brief, ajouté pour personnaliser la section "Nous découvrir". */
+  disposition_presentation: DispositionPresentation;
   logo_url: string | null;
   lien_retour_site: string | null;
   updated_at: string;
