@@ -1,16 +1,23 @@
 import type {
   Account,
+  AccountMessage,
+  AccountMessageKind,
   AccountPhoto,
   AccountTheme,
   Animal,
   AnimalBadge,
   AnimalPhoto,
+  AnimalView,
   Locale,
+  MessageStatus,
   StatutAnimal,
+  SupportMessage,
+  SupportReason,
   TypeBadge,
 } from "@/types";
 import { mockAccounts, mockAccountThemes, mockAccountPhotos } from "./accounts";
 import { mockAnimaux, mockAnimalBadges, mockAnimalPhotos } from "./animaux";
+import { mockAnimalViews } from "./views";
 import { slugify } from "@/lib/slugify";
 
 /**
@@ -24,6 +31,9 @@ let accountPhotos: AccountPhoto[] = [...mockAccountPhotos];
 let animaux: Animal[] = [...mockAnimaux];
 let animalBadges: AnimalBadge[] = [...mockAnimalBadges];
 let animalPhotos: AnimalPhoto[] = [...mockAnimalPhotos];
+let animalViews: AnimalView[] = [...mockAnimalViews];
+let accountMessages: AccountMessage[] = [];
+let supportMessages: SupportMessage[] = [];
 
 export function listAccounts() {
   return accounts;
@@ -36,6 +46,12 @@ export function getAccountByIdMutable(id: string) {
 export function updateAccountLanguesActives(accountId: string, langues: Locale[]) {
   accounts = accounts.map((a) =>
     a.id === accountId ? { ...a, langues_actives: langues } : a
+  );
+}
+
+export function updateAccountLangueInterface(accountId: string, locale: Locale) {
+  accounts = accounts.map((a) =>
+    a.id === accountId ? { ...a, langue_interface: locale } : a
   );
 }
 
@@ -109,7 +125,11 @@ function uniqueAccountSlug(base: string) {
   return slug;
 }
 
-export function createAccount(input: { nom_affichage: string; email: string }): Account {
+export function createAccount(input: {
+  nom_affichage: string;
+  email: string;
+  langue_interface: Locale;
+}): Account {
   const account: Account = {
     id: `account-${Date.now()}-${Math.round(Math.random() * 1000)}`,
     email: input.email,
@@ -123,6 +143,7 @@ export function createAccount(input: { nom_affichage: string; email: string }): 
     numero_entreprise_visible: true,
     a_propos: {},
     langues_actives: ["fr"],
+    langue_interface: input.langue_interface,
     created_at: new Date().toISOString(),
   };
   accounts = [...accounts, account];
@@ -329,6 +350,226 @@ export function listBadgesForAnimalMutable(animalId: string) {
 
 export function listPhotosForAnimalMutable(animalId: string) {
   return animalPhotos.filter((p) => p.animal_id === animalId).sort((a, b) => a.ordre - b.ordre);
+}
+
+/**
+ * Compteur de vues basique : chaque affichage de la fiche animal publique compte comme une
+ * vue, sans dédoublonnage par visiteur/session (pas de cookie de tracking en phase mockée).
+ * Volontairement simple, conforme à `docs/TODO.md` ("compteur de vues basique") ; un vrai
+ * système anti-doublon/anti-bot est repoussé à une étape ultérieure si besoin.
+ */
+export function recordAnimalView(animalId: string) {
+  animalViews = [
+    ...animalViews,
+    {
+      id: `view-${animalId}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+      animal_id: animalId,
+      viewed_at: new Date().toISOString(),
+    },
+  ];
+}
+
+export function countViewsForAnimal(animalId: string) {
+  return animalViews.filter((v) => v.animal_id === animalId).length;
+}
+
+/** Renvoie les vues horodatées (pas juste le total) pour un ensemble de fiches, utilisé par
+ * l'onglet Statistiques pour construire le graphe d'évolution dans le temps. */
+export function listViewsForAnimalIds(animalIds: string[]) {
+  return animalViews.filter((v) => animalIds.includes(v.animal_id));
+}
+
+// --- Messages (onglet "Messages" de l'espace membre + admin Zoodomo) ---
+// Pas de vrai email envoyé nulle part (aucun service configuré en phase mockée) : ces
+// messages ne vivent que dans l'app, la bulle de notification non lus est le seul signal.
+
+export function listAccountMessages(accountId: string) {
+  return accountMessages
+    .filter((m) => m.account_id === accountId && m.status === "active")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function listArchivedAccountMessages(accountId: string) {
+  return accountMessages
+    .filter((m) => m.account_id === accountId && m.status === "archived")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function listTrashedAccountMessages(accountId: string) {
+  return accountMessages
+    .filter((m) => m.account_id === accountId && m.status === "trash")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+/** Un message archivé ou dans la corbeille ne compte plus dans la bulle non lus : les deux
+ * valent "traité". */
+export function countUnreadAccountMessages(accountId: string) {
+  return accountMessages.filter(
+    (m) => m.account_id === accountId && !m.read && m.status === "active"
+  ).length;
+}
+
+/** Évite les doublons pour les messages automatiques (bienvenue, rappel de fiche) : un même
+ * évènement (compte, type, éventuellement fiche) n'est jamais envoyé deux fois. */
+export function hasAccountMessage(accountId: string, kind: AccountMessageKind, animalId: string | null = null) {
+  return accountMessages.some(
+    (m) => m.account_id === accountId && m.kind === kind && m.animal_id === animalId
+  );
+}
+
+export function sendAccountMessage(input: {
+  account_id: string;
+  kind: AccountMessageKind;
+  subject: string;
+  body: string;
+  animal_id?: string | null;
+}) {
+  accountMessages = [
+    ...accountMessages,
+    {
+      id: `msg-${input.account_id}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+      account_id: input.account_id,
+      kind: input.kind,
+      subject: input.subject,
+      body: input.body,
+      created_at: new Date().toISOString(),
+      read: false,
+      status: "active",
+      animal_id: input.animal_id ?? null,
+    },
+  ];
+}
+
+/** Bascule manuelle lu/non lu (pas d'auto-lecture à l'ouverture de l'onglet, retiré après un
+ * bug : marquer tout comme lu pendant le rendu de la page faisait disparaître le fond orange
+ * des messages avant même que le compte ait pu les voir, voir docs/DECISIONS.md). */
+export function setAccountMessageRead(id: string, read: boolean) {
+  accountMessages = accountMessages.map((m) => (m.id === id ? { ...m, read } : m));
+}
+
+function setAccountMessageStatus(id: string, status: MessageStatus) {
+  accountMessages = accountMessages.map((m) => (m.id === id ? { ...m, status } : m));
+}
+
+export function archiveAccountMessage(id: string) {
+  setAccountMessageStatus(id, "archived");
+}
+
+export function unarchiveAccountMessage(id: string) {
+  setAccountMessageStatus(id, "active");
+}
+
+/** Suppression douce : passe en corbeille plutôt que de retirer le message tout de suite. */
+export function trashAccountMessage(id: string) {
+  setAccountMessageStatus(id, "trash");
+}
+
+export function restoreAccountMessageFromTrash(id: string) {
+  setAccountMessageStatus(id, "active");
+}
+
+/** Suppression réelle, uniquement depuis la corbeille. */
+export function deleteAccountMessage(id: string) {
+  accountMessages = accountMessages.filter((m) => m.id !== id);
+}
+
+/** Utilisé pour retrouver le message d'origine d'un "Répondre" (le rappeler dans le
+ * formulaire de diffusion admin), peu importe son statut actuel. */
+export function getSupportMessageById(id: string) {
+  return supportMessages.find((m) => m.id === id);
+}
+
+export function listSupportMessages() {
+  return supportMessages
+    .filter((m) => m.status === "active")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function listArchivedSupportMessages() {
+  return supportMessages
+    .filter((m) => m.status === "archived")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function listTrashedSupportMessages() {
+  return supportMessages
+    .filter((m) => m.status === "trash")
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+/** Recherche tous les messages "contacter le webmaster", peu importe leur statut (boîte de
+ * réception, archives ou corbeille) : sur objet, corps, ou nom du compte expéditeur. Utilisée
+ * uniquement quand l'admin tape une recherche (`src/app/admin/(protected)/page.tsx`), ignore
+ * alors le filtrage habituel par onglet, voir docs/DECISIONS.md. */
+export function searchSupportMessages(query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return supportMessages
+    .filter((m) => {
+      const account = accounts.find((a) => a.id === m.account_id);
+      return (
+        m.subject.toLowerCase().includes(q) ||
+        m.body.toLowerCase().includes(q) ||
+        (account?.nom_affichage.toLowerCase().includes(q) ?? false)
+      );
+    })
+    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+}
+
+export function countUnreadSupportMessages() {
+  return supportMessages.filter((m) => !m.read && m.status === "active").length;
+}
+
+function setSupportMessageStatus(id: string, status: MessageStatus) {
+  supportMessages = supportMessages.map((m) => (m.id === id ? { ...m, status } : m));
+}
+
+export function archiveSupportMessage(id: string) {
+  setSupportMessageStatus(id, "archived");
+}
+
+export function unarchiveSupportMessage(id: string) {
+  setSupportMessageStatus(id, "active");
+}
+
+export function trashSupportMessage(id: string) {
+  setSupportMessageStatus(id, "trash");
+}
+
+export function restoreSupportMessageFromTrash(id: string) {
+  setSupportMessageStatus(id, "active");
+}
+
+export function deleteSupportMessage(id: string) {
+  supportMessages = supportMessages.filter((m) => m.id !== id);
+}
+
+export function sendSupportMessage(input: {
+  account_id: string;
+  reason: SupportReason;
+  subject: string;
+  body: string;
+  photo_url?: string | null;
+}) {
+  supportMessages = [
+    ...supportMessages,
+    {
+      id: `support-${Date.now()}-${Math.round(Math.random() * 1000)}`,
+      account_id: input.account_id,
+      reason: input.reason,
+      subject: input.subject,
+      body: input.body,
+      photo_url: input.photo_url ?? null,
+      created_at: new Date().toISOString(),
+      read: false,
+      status: "active",
+    },
+  ];
+}
+
+/** Même principe que `setAccountMessageRead` : bascule manuelle, pas d'auto-lecture. */
+export function setSupportMessageRead(id: string, read: boolean) {
+  supportMessages = supportMessages.map((m) => (m.id === id ? { ...m, read } : m));
 }
 
 function replaceBadges(animalId: string, badges: { type: TypeBadge; label: string }[]) {

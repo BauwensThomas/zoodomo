@@ -43,7 +43,7 @@ export default async function CompteLayout({
         } as React.CSSProperties
       }
     >
-      <header className="sticky top-0 z-10 border-b border-border bg-(--account-secondary)/90 backdrop-blur">
+      <header className="sticky top-0 z-10 border-b border-border bg-(--account-secondary)/90 backdrop-blur print:static">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-6 py-4">
           <Link
             href={`/${account.slug}`}
@@ -68,7 +68,7 @@ export default async function CompteLayout({
             </span>
           </Link>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="print:hidden flex shrink-0 items-center gap-2">
             {theme?.lien_retour_site && (
               <a
                 href={theme.lien_retour_site}
@@ -80,12 +80,24 @@ export default async function CompteLayout({
             )}
             <LocaleSwitcher current={locale} />
           </div>
+
+          {/* Coordonnées du compte : masquées à l'écran (déjà affichées ailleurs, sur
+              `/[compte]`), affichées uniquement à l'impression, dans l'en-tête existant
+              plutôt que dans un bloc à part qui redirait le nom du compte une seconde fois. */}
+          <div className="hidden shrink-0 flex-col items-end gap-0.5 text-xs text-foreground print:flex">
+            {account.contact_email_public && <span>{account.contact_email_public}</span>}
+            {account.contact_telephone_public && <span>{account.contact_telephone_public}</span>}
+            {account.adresse && account.adresse_visible && <span>{account.adresse}</span>}
+            {account.numero_entreprise && account.numero_entreprise_visible && (
+              <span>{account.numero_entreprise}</span>
+            )}
+          </div>
         </div>
       </header>
 
       <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-border bg-(--account-secondary) px-6 py-8 text-center">
+      <footer className="print:hidden border-t border-border bg-(--account-secondary) px-6 py-8 text-center">
         <p className="text-sm text-foreground">{t("createdWith", { year: yearLabel })}</p>
       </footer>
     </div>

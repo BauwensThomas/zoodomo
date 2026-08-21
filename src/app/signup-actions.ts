@@ -2,9 +2,10 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { listAccounts, createAccount } from "@/lib/mock";
 import { SESSION_COOKIE_NAME } from "@/lib/mock/auth";
+import type { Locale } from "@/types";
 
 export interface SignupState {
   error?: string;
@@ -31,7 +32,12 @@ export async function signupAction(
     return { error: t("error") };
   }
 
-  const account = createAccount({ nom_affichage: nom, email });
+  // La langue déjà active sur cette page (choisie via le sélecteur, ou détectée depuis le
+  // navigateur si le visiteur ne l'a pas changée) devient la langue d'interface initiale du
+  // compte, plutôt que de repartir de zéro ("Automatique") : elle a été concrètement
+  // observée à l'instant de l'inscription, voir docs/DECISIONS.md.
+  const locale = (await getLocale()) as Locale;
+  const account = createAccount({ nom_affichage: nom, email, langue_interface: locale });
 
   const store = await cookies();
   store.set(SESSION_COOKIE_NAME, account.id, {

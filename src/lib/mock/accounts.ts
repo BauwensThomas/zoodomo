@@ -18,6 +18,7 @@ export const mockAccounts: Account[] = [
       en: "Since 2005, Refuge des Quatre Pattes has been taking in, caring for, and rehoming abandoned or mistreated animals from across the region.\n\nOur shelter began with a handful of passionate volunteers, and today our whole team remains entirely volunteer-run: more than 30 people take turns each week to feed, walk, and care for our residents.\n\nWe're open to the public Tuesday to Saturday, 10am to 5pm (closed on public holidays), and we regularly organize open days to introduce our adoptable animals.\n\nEvery adoption includes a personalized follow-up and a prior visit, to ensure the well-being of both the animal and its new family.",
     },
     langues_actives: ["fr", "nl", "en"],
+    langue_interface: null,
     created_at: "2025-02-10T09:00:00.000Z",
   },
   {
@@ -33,6 +34,7 @@ export const mockAccounts: Account[] = [
     numero_entreprise_visible: true,
     a_propos: {},
     langues_actives: ["fr"],
+    langue_interface: null,
     created_at: "2025-05-03T09:00:00.000Z",
   },
 ];

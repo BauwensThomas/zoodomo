@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Building2, CheckCircle2, Globe, Info, Save, User } from "lucide-react";
+import { AlertCircle, Building2, CheckCircle2, Globe, Info, Save, User } from "lucide-react";
 import { SectionCard } from "@/components/SectionCard";
 import { FieldLabel } from "@/components/FieldLabel";
 import { AutoDismiss } from "@/components/AutoDismiss";
@@ -33,6 +33,19 @@ export function ComptePageForm({
   const tForm = useTranslations("admin.form");
   const optionalLabel = tForm("optional");
   const [state, formAction] = useActionState(updateAccountAction, initialState);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const contactEmailRef = useRef<HTMLInputElement>(null);
+
+  // Cette page évite volontairement toute navigation/scroll-jump vers le haut au clic sur
+  // "Enregistrer" (formulaire long, voir DECISIONS.md), mais en cas d'erreur le champ
+  // fautif peut ne pas être visible sur mobile/petits écrans : on scrolle spécifiquement
+  // jusqu'à l'encart d'erreur et on remet le focus sur le premier champ concerné.
+  useEffect(() => {
+    if (state.error) {
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      contactEmailRef.current?.focus();
+    }
+  }, [state.error]);
 
   return (
     <form action={formAction} className="mt-6 space-y-6">
@@ -72,6 +85,7 @@ export function ComptePageForm({
               optionalLabel={optionalLabel}
             />
             <input
+              ref={contactEmailRef}
               id="contact_email_public"
               name="contact_email_public"
               type="email"
@@ -92,6 +106,16 @@ export function ComptePageForm({
               className={inputClass()}
             />
           </div>
+          <p className="text-xs text-foreground sm:col-span-2">{t("contactRequiredHint")}</p>
+          {state.error && (
+            <div
+              ref={errorRef}
+              className="flex items-start gap-2.5 rounded-2xl border border-red-100 bg-red-50 p-3.5 text-sm text-red-900 sm:col-span-2"
+            >
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+              <p>{state.error}</p>
+            </div>
+          )}
         </div>
       </SectionCard>
 

@@ -132,7 +132,15 @@ export function GalleryPreviewContent({
                 >
                   <div className="relative aspect-4/3 bg-muted @min-[640px]:w-64 @min-[640px]:shrink-0">
                     {photo && (
-                      <Image src={photo.url} alt={animal.nom} fill unoptimized sizes="256px" className="object-cover" />
+                      <Image
+                        src={photo.url}
+                        alt={animal.nom}
+                        fill
+                        unoptimized
+                        sizes="256px"
+                        loading={index === 0 ? "eager" : "lazy"}
+                        className="object-cover"
+                      />
                     )}
                     {badges.length > 0 && (
                       <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">
@@ -162,7 +170,7 @@ export function GalleryPreviewContent({
           </div>
         ) : (
           <div className="mt-8 grid gap-6 @min-[640px]:grid-cols-2">
-            {sampleAnimaux.map((animal) => {
+            {sampleAnimaux.map((animal, index) => {
               const photo = photosByAnimal[animal.id]?.[0];
               const badges = badgesByAnimal[animal.id] ?? [];
               return (
@@ -172,7 +180,15 @@ export function GalleryPreviewContent({
                 >
                   <div className="relative aspect-4/3 bg-muted">
                     {photo && (
-                      <Image src={photo.url} alt={animal.nom} fill unoptimized sizes="256px" className="object-cover" />
+                      <Image
+                        src={photo.url}
+                        alt={animal.nom}
+                        fill
+                        unoptimized
+                        sizes="256px"
+                        loading={index === 0 ? "eager" : "lazy"}
+                        className="object-cover"
+                      />
                     )}
                     {badges.length > 0 && (
                       <div className="absolute left-2.5 top-2.5 flex flex-wrap gap-1.5">

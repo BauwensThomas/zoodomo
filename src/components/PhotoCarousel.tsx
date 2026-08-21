@@ -55,7 +55,7 @@ export function PhotoCarousel({
         fill
         sizes="(min-width: 768px) 50vw, 100vw"
         className="object-cover"
-        priority
+        loading="eager"
         unoptimized={photos[index].url.startsWith("data:")}
       />
 
@@ -88,7 +88,7 @@ export function PhotoCarousel({
             type="button"
             onClick={() => goTo(index - 1)}
             aria-label={previousLabel}
-            className="absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-foreground shadow-md transition-colors hover:bg-white"
+            className="print:hidden absolute left-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-foreground shadow-md transition-colors hover:bg-white"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
@@ -96,11 +96,11 @@ export function PhotoCarousel({
             type="button"
             onClick={() => goTo(index + 1)}
             aria-label={nextLabel}
-            className="absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-foreground shadow-md transition-colors hover:bg-white"
+            className="print:hidden absolute right-3 top-1/2 flex h-9 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/90 text-foreground shadow-md transition-colors hover:bg-white"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
+          <div className="print:hidden absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5">
             {photos.map((photo, i) => (
               <button
                 key={photo.id}

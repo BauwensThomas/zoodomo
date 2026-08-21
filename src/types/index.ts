@@ -74,6 +74,20 @@ export interface Account {
    * langues sur les pages publiques (petit sélecteur à côté du lien de retour).
    */
   langues_actives: Locale[];
+  /**
+   * Langue d'interface préférée du pro connecté à ce compte (menus, boutons, etc.), à ne
+   * pas confondre avec `langues_actives` (langues dans lesquelles il rédige son contenu).
+   * `null` seulement pour un compte qui ne s'est encore jamais connecté : dès l'inscription,
+   * initialisée à la langue résolue au moment de l'inscription (celle du sélecteur de langue
+   * déjà présent sur cette page, ou détectée depuis le navigateur si le visiteur ne l'a pas
+   * changée), voir `signupAction`/`loginAction` (`src/app/signup-actions.ts`/`login-actions.ts`).
+   * À la première connexion d'un compte plus ancien qui n'a jamais eu l'occasion de la
+   * définir, initialisée de la même façon. Une fois posée (inscription, connexion, ou
+   * sélecteur dans le tableau de bord), elle reste prioritaire sur le cookie/navigateur pour
+   * toutes les visites suivantes, y compris depuis un autre appareil, voir
+   * `src/i18n/request.ts`, `DECISIONS.md`.
+   */
+  langue_interface: Locale | null;
   created_at: string;
 }
 
@@ -201,4 +215,54 @@ export interface AnimalView {
   id: string;
   animal_id: string;
   viewed_at: string;
+}
+
+export type AccountMessageKind = "bienvenue" | "rappel_fiche" | "admin";
+
+/** Trois états mutuellement exclusifs plutôt que des booléens indépendants (`archived`
+ * + un futur `deleted`) : évite les combinaisons ambiguës (un message archivé ET supprimé
+ * n'a pas de sens), une seule vue possible à la fois. */
+export type MessageStatus = "active" | "archived" | "trash";
+
+/** Message reçu par un compte dans l'onglet "Messages" de l'espace membre : message de
+ * bienvenue automatique, rappel de fiche non mise à jour, ou message envoyé par l'admin
+ * Zoodomo. Pas de vrai email, uniquement affiché dans l'app (voir docs/DECISIONS.md).
+ * `subject`/`body` dans une seule langue (celle du destinataire, `Account.langue_interface`,
+ * français par défaut) : chaque `AccountMessage` appartient déjà à un seul `account_id`, donc
+ * pas d'ambiguïté à résoudre côté affichage, contrairement à `animaux.description` qui est
+ * partagée par tous les visiteurs. Un envoi "Tous les comptes" écrit un message distinct par
+ * compte, chacun dans sa propre langue, voir docs/DECISIONS.md. */
+export interface AccountMessage {
+  id: string;
+  account_id: string;
+  kind: AccountMessageKind;
+  subject: string;
+  body: string;
+  created_at: string;
+  read: boolean;
+  status: MessageStatus;
+  animal_id: string | null;
+}
+
+export type SupportReason = "bug" | "compte" | "suggestion" | "autre";
+
+/** Message envoyé par un compte vers l'admin Zoodomo ("contacter le webmaster"), avec une
+ * raison présélectionnée (questionnaire) plutôt qu'un objet libre, et un objet écrit
+ * librement (repris avec un préfixe "RE : " si l'admin répond depuis `/admin`). Pas
+ * multilingue : rédigé et lu dans une seule langue (celle du pro qui écrit, celle de
+ * l'admin qui lit), pas besoin de résolution par langue comme pour `AccountMessage`. */
+export interface SupportMessage {
+  id: string;
+  account_id: string;
+  reason: SupportReason;
+  subject: string;
+  body: string;
+  /** Capture d'écran optionnelle jointe par le pro (ex. pour illustrer un bug). Une seule
+   * photo, compressée côté client puis stockée en `data:` URL comme le reste des photos en
+   * phase mockée (voir `PhotoUploadField`, `docs/DECISIONS.md`), pas de bucket Supabase
+   * Storage pour l'instant. */
+  photo_url: string | null;
+  created_at: string;
+  read: boolean;
+  status: MessageStatus;
 }

@@ -14,7 +14,7 @@ export function ZoodomoLogo({ width = 140 }: { width?: number }) {
       width={width}
       height={height}
       unoptimized
-      priority
+      loading="eager"
     />
   );
 }

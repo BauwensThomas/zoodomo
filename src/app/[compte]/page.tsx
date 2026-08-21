@@ -201,7 +201,7 @@ export default async function CompteIndexPage({
                   alt={account.nom_affichage}
                   fill
                   sizes="(min-width: 640px) 33vw, 50vw"
-                  priority={index < 3}
+                  loading={index < 3 ? "eager" : "lazy"}
                   unoptimized={photo.url.startsWith("data:")}
                   className="object-cover"
                 />

@@ -55,7 +55,7 @@ function AnimalPhotoBox({ animal, photo, badges, statutLabel, priority, sizes }:
           alt={animal.nom}
           fill
           sizes={sizes}
-          priority={priority}
+          loading={priority ? "eager" : "lazy"}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
           unoptimized={photo.url.startsWith("data:")}
         />

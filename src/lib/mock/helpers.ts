@@ -1,6 +1,5 @@
 import type { Account, Animal, Locale } from "@/types";
 import { mockEspeces } from "./especes";
-import { mockAnimalViews } from "./views";
 import {
   listAccounts,
   listAnimauxByAccountAll,
@@ -8,10 +7,23 @@ import {
   listPhotosForAnimalMutable,
   listAccountPhotosMutable,
   getAccountThemeMutable,
+  countViewsForAnimal,
 } from "./store";
 
 export function getViewCount(animalId: string) {
-  return mockAnimalViews.filter((v) => v.animal_id === animalId).length;
+  return countViewsForAnimal(animalId);
+}
+
+/** Nombre de jours sans modification à partir duquel une fiche "disponible" est considérée
+ * comme potentiellement obsolète (rappel automatique dans l'onglet Messages). */
+export const STALE_FICHE_DAYS = 30;
+
+export function getStaleFichesDisponibles(accountId: string, thresholdDays: number = STALE_FICHE_DAYS) {
+  return listAnimauxByAccountAll(accountId).filter((a) => {
+    if (a.statut !== "disponible") return false;
+    const elapsedDays = (Date.now() - new Date(a.updated_at).getTime()) / 86_400_000;
+    return elapsedDays >= thresholdDays;
+  });
 }
 
 /**

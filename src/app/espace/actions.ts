@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { getTranslations } from "next-intl/server";
 import {
   createAnimal,
   updateAnimal,
@@ -13,10 +14,24 @@ import {
   updateAccountTheme,
   replaceAccountPhotos,
   getAnimalById,
+  archiveAccountMessage,
+  unarchiveAccountMessage,
+  trashAccountMessage,
+  restoreAccountMessageFromTrash,
+  deleteAccountMessage,
+  setAccountMessageRead,
+  sendSupportMessage,
   type AnimalFormInput,
 } from "@/lib/mock";
 import { getSessionAccount, SESSION_COOKIE_NAME } from "@/lib/mock/auth";
-import { LOCALES, type AccountTheme, type Animal, type Locale, type StatutAnimal } from "@/types";
+import {
+  LOCALES,
+  type AccountTheme,
+  type Animal,
+  type Locale,
+  type StatutAnimal,
+  type SupportReason,
+} from "@/types";
 
 export async function logoutAction() {
   const store = await cookies();
@@ -124,7 +139,7 @@ export async function changeStatutAction(animalId: string, statut: StatutAnimal)
   revalidatePath(`/${account.slug}`, "layout");
 }
 
-export type SavedState = { saved: boolean; savedAt?: number };
+export type SavedState = { saved: boolean; savedAt?: number; error?: string };
 
 /**
  * Une seule action pour toute la page Compte (Informations, Informations légales, Site
@@ -155,6 +170,16 @@ export async function updateAccountAction(
   // langue décochée ne doit pas garder son texte, même si son champ était encore présent
   // dans le formulaire soumis (défense en profondeur, en plus de la réactivité côté
   // client dans LanguesPresentationSection.tsx).
+  const contactEmailPublic = get("contact_email_public");
+  const contactTelephonePublic = get("contact_telephone_public");
+  // Sans formulaire de contact de secours (décision utilisateur, voir docs/DECISIONS.md),
+  // le lien tel:/mailto: direct est le seul moyen de contacter le compte depuis une fiche
+  // animal : au moins l'un des deux doit être renseigné, sinon aucune fiche n'est joignable.
+  if (!contactEmailPublic && !contactTelephonePublic) {
+    const t = await getTranslations("admin.compte");
+    return { saved: false, error: t("contactRequiredError") };
+  }
+
   const langues = LOCALES.filter((locale) => formData.get(`langue_${locale}`) === "on");
   const languesActives = langues.length > 0 ? langues : (["fr"] as Locale[]);
 
@@ -166,8 +191,8 @@ export async function updateAccountAction(
 
   updateAccountInfo(account.id, {
     nom_affichage: get("nom_affichage") || account.nom_affichage,
-    contact_email_public: get("contact_email_public"),
-    contact_telephone_public: get("contact_telephone_public"),
+    contact_email_public: contactEmailPublic,
+    contact_telephone_public: contactTelephonePublic,
     adresse: get("adresse"),
     adresse_visible: formData.get("adresse_visible") === "on",
     numero_entreprise: get("numero_entreprise"),
@@ -222,5 +247,91 @@ export async function updatePersonnalisationAction(
   revalidatePath("/espace/personnalisation");
   revalidatePath("/espace", "layout");
   revalidatePath(`/${account.slug}`, "layout");
+  return { saved: true, savedAt: Date.now() };
+}
+
+/** Suppression douce : passe en corbeille, pas de perte immédiate. */
+export async function trashMessageAction(messageId: string) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  trashAccountMessage(messageId);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+export async function restoreMessageAction(messageId: string) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  restoreAccountMessageFromTrash(messageId);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+/** Suppression réelle et définitive, uniquement possible depuis la corbeille. */
+export async function deleteMessageAction(messageId: string) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  deleteAccountMessage(messageId);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+export async function archiveMessageAction(messageId: string) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  archiveAccountMessage(messageId);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+export async function unarchiveMessageAction(messageId: string) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  unarchiveAccountMessage(messageId);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+export async function setMessageReadAction(messageId: string, read: boolean) {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  setAccountMessageRead(messageId, read);
+  revalidatePath("/espace/messages");
+  revalidatePath("/espace", "layout");
+}
+
+const SUPPORT_REASONS: SupportReason[] = ["bug", "compte", "suggestion", "autre"];
+
+/** "Contacter le webmaster" depuis l'onglet Messages : raison présélectionnée
+ * (questionnaire) plutôt qu'un objet libre, voir docs/DECISIONS.md. */
+export async function sendSupportMessageAction(
+  _prevState: SavedState,
+  formData: FormData
+): Promise<SavedState> {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  const reasonRaw = String(formData.get("reason") || "");
+  const subject = String(formData.get("subject") || "").trim();
+  const body = String(formData.get("body") || "").trim();
+  const photoUrl = String(formData.get("photo") || "").trim();
+  const reason = SUPPORT_REASONS.includes(reasonRaw as SupportReason)
+    ? (reasonRaw as SupportReason)
+    : "autre";
+
+  if (!subject || !body) {
+    const t = await getTranslations("admin.messages");
+    return { saved: false, error: t("contactRequiredError") };
+  }
+
+  sendSupportMessage({ account_id: account.id, reason, subject, body, photo_url: photoUrl || null });
+
+  revalidatePath("/espace/messages");
   return { saved: true, savedAt: Date.now() };
 }
