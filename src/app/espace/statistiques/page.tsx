@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { Eye, CalendarRange, Trophy } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import { listAnimauxByAccountAll, getEspeceById, listViewsForAnimalIds } from "@/lib/mock";
 import { STATUT_BADGE_CLASS } from "@/lib/statut-badge";
 import { StatsFilters } from "@/components/StatsFilters";
@@ -65,7 +66,8 @@ export default async function StatistiquesPage({
       ? Math.min(12, Math.max(1, Number(monthParam)))
       : now.getMonth() + 1;
 
-  const allAnimaux = listAnimauxByAccountAll(account.id);
+  const supabase = await createClient();
+  const allAnimaux = await listAnimauxByAccountAll(supabase, account.id);
 
   // Espèces proposées dans le filtre : seulement celles où le compte a vraiment une fiche,
   // pas la liste complète des 19 espèces du brief (la plupart n'auraient aucune fiche).
@@ -86,7 +88,7 @@ export default async function StatistiquesPage({
   const animaux = animalId === "tous" ? animauxDeLEspece : animauxDeLEspece.filter((a) => a.id === animalId);
 
   const animalIds = animaux.map((a) => a.id);
-  const views = listViewsForAnimalIds(animalIds);
+  const views = await listViewsForAnimalIds(supabase, animalIds);
 
   // Le sélecteur d'année propose toute année où quelque chose de réel s'est passé pour le
   // périmètre affiché (vue enregistrée, ou fiche créée/modifiée/réservée/adoptée), pas

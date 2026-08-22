@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import { getAccountTheme } from "@/lib/mock";
 import { isPoliceId } from "@/lib/fonts";
 import { PersonnalisationForm } from "./PersonnalisationForm";
@@ -11,7 +12,8 @@ export default async function PersonnalisationPage() {
   if (!account) redirect("/");
 
   const t = await getTranslations("admin.personnalisation");
-  const theme = getAccountTheme(account.id);
+  const supabase = await createClient();
+  const theme = await getAccountTheme(supabase, account.id);
   const currentPolice = theme?.police && isPoliceId(theme.police) ? theme.police : "default";
 
   return (

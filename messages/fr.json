@@ -1,7 +1,8 @@
 {
   "common": {
     "backToSite": "Retour sur notre site",
-    "createdWith": "Créé avec Zoodomo, {year}"
+    "createdWith": "Créé avec Zoodomo, {year}",
+    "accountUnavailable": "Cette page n'est pas disponible pour le moment. Revenez bientôt !"
   },
   "account": {
     "discoverAnimals": "Découvrez les animaux disponibles, par espèce.",
@@ -91,8 +92,11 @@
       "password": "Mot de passe",
       "submitting": "Connexion...",
       "submit": "Se connecter",
-      "demoTitle": "Comptes de démo (n'importe quel mot de passe) :",
       "error": "Email ou mot de passe incorrect.",
+      "captchaFailed": "Vérification de sécurité échouée. Réessayez.",
+      "forgotPassword": "Mot de passe oublié ?",
+      "emailConfirmed": "Email confirmé ! Connectez-vous pour accéder à votre tableau de bord.",
+      "linkInvalid": "Ce lien n'est plus valide ou a déjà été utilisé.",
       "heroTitle": "Votre vitrine en ligne pour présenter vos animaux, sans écrire une ligne de code.",
       "heroSubtitle": "Zoodomo s'adresse aux refuges et vendeurs professionnels : présentez vos animaux à l'adoption ou à la vente sur une page à vos couleurs, à relier depuis votre site ou à partager directement si vous n'en avez pas.",
       "showPassword": "Afficher le mot de passe",
@@ -108,7 +112,8 @@
       "featurePersonalize": "Aucune compétence technique requise : remplissez vos fiches, le rendu est toujours propre et responsive.",
       "featureLanguages": "Gardez votre identité : vos couleurs, votre logo, une page à partager où vous le souhaitez, avec ou sans site.",
       "featureShare": "Multilingue : votre contenu et vos visiteurs en français, néerlandais et anglais.",
-      "featureReminders": "Vos fiches toujours à jour, avec un rappel automatique si une fiche n'a pas été modifiée depuis longtemps."
+      "featureReminders": "Vos fiches toujours à jour, avec un rappel automatique si une fiche n'a pas été modifiée depuis longtemps.",
+      "featureTrial": "15 jours d'essai gratuit, puis {monthlyPrice} €/mois ou {annualPrice} €/an."
     },
     "signup": {
       "title": "Créer votre compte Zoodomo",
@@ -116,11 +121,42 @@
       "name": "Nom de l'activité",
       "email": "Email",
       "password": "Mot de passe",
+      "confirmPassword": "Confirmer le mot de passe",
+      "passwordMismatchError": "Les deux mots de passe ne correspondent pas.",
+      "passwordMinLength": "Au moins 8 caractères",
+      "passwordNeedsDigit": "Au moins un chiffre",
+      "passwordNeedsSpecialChar": "Au moins un caractère spécial",
+      "passwordTooWeak": "Le mot de passe ne respecte pas encore toutes les règles requises.",
+      "captchaFailed": "Vérification de sécurité échouée. Réessayez.",
       "submit": "Créer mon compte",
       "submitting": "Création en cours...",
       "error": "Un compte existe déjà avec cet email.",
+      "rateLimited": "Trop de tentatives d'inscription récemment. Réessayez dans quelques minutes.",
       "haveAccount": "Déjà un compte ?",
-      "login": "Se connecter"
+      "login": "Se connecter",
+      "closedTitle": "Inscriptions temporairement fermées",
+      "closedBody": "Nous n'acceptons pas de nouvelles inscriptions pour le moment. Revenez bientôt, ou contactez-nous si c'est urgent."
+    },
+    "verifyEmail": {
+      "title": "Vérifiez votre adresse email",
+      "body": "Un lien de vérification a été envoyé à {email}. Cliquez dessus pour activer votre compte et accéder à votre tableau de bord.",
+      "demoNotice": "Vous ne recevez pas l'email ? Vérifiez vos spams, ou demandez-en un nouveau ci-dessous.",
+      "linkInvalid": "Ce lien n'est plus valide ou a déjà été utilisé. Redemandez-en un nouveau ci-dessous.",
+      "resend": "Renvoyer l'email",
+      "resendConfirmation": "Email renvoyé.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "trialPopup": {
+      "title": "Votre essai gratuit est terminé",
+      "body": "Choisissez un abonnement pour continuer à utiliser Zoodomo et garder votre page publique en ligne.",
+      "monthlyLabel": "Mensuel",
+      "monthlyPrice": "{price} €/mois",
+      "annualLabel": "Annuel",
+      "annualPrice": "{price} €/an",
+      "annualHint": "2 mois offerts",
+      "autoRenewNotice": "Renouvellement automatique, résiliable à tout moment.",
+      "choose": "Choisir",
+      "close": "Fermer"
     },
     "legalPage": {
       "termsTitle": "Conditions d'utilisation",
@@ -167,7 +203,9 @@
       "visibleDaysValue": "{days} j",
       "visibleLastDayValue": "Dernier jour",
       "visibleExpiredValue": "Retiré des pages publiques",
-      "notApplicable": "-"
+      "notApplicable": "-",
+      "trialBanner": "Il vous reste {days, plural, =0 {votre dernier jour} one {# jour} other {# jours}} d'essai gratuit.",
+      "trialUpgradeLink": "Passer à un abonnement"
     },
     "fiches": {
       "title": "Mes fiches",
@@ -328,6 +366,12 @@
       "welcomeBody": "Ravi de vous compter parmi nous. Pour bien démarrer : complétez vos informations et coordonnées dans l'onglet Compte, ajoutez votre première fiche animal depuis Mes fiches, puis personnalisez l'apparence de vos pages publiques dans l'onglet Personnalisation. Vous pourrez ensuite partager le lien de vos pages où vous le souhaitez.",
       "staleSubject": "Pensez à vérifier la fiche de {name}",
       "staleBody": "La fiche de {name} n'a pas été modifiée depuis plus de {days} jours. Vérifiez qu'elle est toujours à jour (disponibilité, informations) depuis l'onglet Mes fiches.",
+      "trialSubject": "Votre essai gratuit de {days} jours a commencé",
+      "trialBody": "Vous bénéficiez de {days} jours d'essai gratuit à partir d'aujourd'hui. À la fin de cette période, un abonnement mensuel ou annuel vous sera proposé pour continuer (vous pouvez aussi y passer dès maintenant depuis le Dashboard). Passé un délai de {hours}h après la fin de l'essai, votre page publique ne sera plus visible par les visiteurs tant qu'aucun abonnement n'est choisi.",
+      "trialReminder4Subject": "Il vous reste 4 jours d'essai gratuit",
+      "trialReminder4Body": "Votre essai gratuit se termine dans 4 jours. Choisissez un abonnement dès maintenant depuis le Dashboard pour ne pas interrompre l'accès à votre page publique.",
+      "trialReminder1Subject": "Dernier jour d'essai gratuit",
+      "trialReminder1Body": "Votre essai gratuit se termine demain. Choisissez un abonnement dès maintenant depuis le Dashboard : passé un délai de {hours}h après la fin de l'essai, votre page publique ne sera plus visible par les visiteurs tant qu'aucun abonnement n'est choisi.",
       "contactTitle": "Contacter le webmaster",
       "contactReasonLabel": "Raison",
       "contactReasonBug": "Problème technique / bug",
@@ -417,6 +461,43 @@
       },
       "savedConfirmation": "Modifications enregistrées !",
       "save": "Enregistrer"
+    },
+    "forgotPassword": {
+      "title": "Mot de passe oublié",
+      "subtitle": "Entrez votre email, on vous envoie un lien pour en choisir un nouveau.",
+      "email": "Email",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi en cours...",
+      "submittedTitle": "Vérifiez votre boîte mail",
+      "submittedBody": "Si un compte existe avec cette adresse, un email avec un lien de réinitialisation vient d'être envoyé.",
+      "linkInvalid": "Ce lien n'est plus valide ou a déjà été utilisé. Redemandez-en un nouveau ci-dessous.",
+      "captchaFailed": "Vérification de sécurité échouée. Réessayez.",
+      "backToLogin": "Retour à la connexion"
+    },
+    "resetPassword": {
+      "title": "Choisir un nouveau mot de passe",
+      "subtitle": "Votre nouveau mot de passe doit être différent de l'ancien.",
+      "newPassword": "Nouveau mot de passe",
+      "confirmNewPassword": "Confirmer le nouveau mot de passe",
+      "passwordMinLength": "Au moins 8 caractères",
+      "passwordNeedsDigit": "Au moins un chiffre",
+      "passwordNeedsSpecialChar": "Au moins un caractère spécial",
+      "passwordTooWeak": "Le mot de passe ne respecte pas encore toutes les règles requises.",
+      "samePassword": "Ce mot de passe est le même que l'ancien. Choisissez-en un différent.",
+      "weakPassword": "Ce mot de passe est trop simple à deviner (déjà repéré dans des fuites de données connues). Choisissez-en un autre.",
+      "passwordMismatchError": "Les deux mots de passe ne correspondent pas.",
+      "submit": "Enregistrer le mot de passe",
+      "submitting": "Enregistrement...",
+      "error": "Une erreur est survenue. Redemandez un lien de réinitialisation."
+    }
+  },
+  "email": {
+    "verify": {
+      "subject": "Vérifiez votre adresse email Zoodomo",
+      "title": "Bienvenue sur Zoodomo !",
+      "body": "Cliquez sur le bouton ci-dessous pour vérifier votre adresse email et activer votre compte.",
+      "cta": "Vérifier mon compte",
+      "ignore": "Si vous n'êtes pas à l'origine de cette inscription, vous pouvez ignorer cet email."
     }
   }
 }

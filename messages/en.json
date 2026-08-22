@@ -1,7 +1,8 @@
 {
   "common": {
     "backToSite": "Back to our website",
-    "createdWith": "Created with Zoodomo, {year}"
+    "createdWith": "Created with Zoodomo, {year}",
+    "accountUnavailable": "This page is not available at the moment. Check back soon!"
   },
   "account": {
     "discoverAnimals": "Discover the available animals, by species.",
@@ -91,8 +92,11 @@
       "password": "Password",
       "submitting": "Signing in...",
       "submit": "Log in",
-      "demoTitle": "Demo accounts (any password works):",
       "error": "Incorrect email or password.",
+      "captchaFailed": "Security check failed. Please try again.",
+      "forgotPassword": "Forgot your password?",
+      "emailConfirmed": "Email confirmed! Log in to access your dashboard.",
+      "linkInvalid": "This link is no longer valid or has already been used.",
       "heroTitle": "Your online showcase to present your animals, without writing a line of code.",
       "heroSubtitle": "Zoodomo is built for shelters and professional sellers: showcase your animals for adoption or sale on a page in your own colors, linked from your website or shared directly if you don't have one yet.",
       "showPassword": "Show password",
@@ -108,7 +112,8 @@
       "featurePersonalize": "No technical skills needed: fill in your animal profiles, the result is always clean and responsive.",
       "featureLanguages": "Keep your identity: your colors, your logo, a page to share anywhere, with or without a website.",
       "featureShare": "Multilingual: your content and your visitors in French, Dutch and English.",
-      "featureReminders": "Your animal profiles always up to date, with an automatic reminder if a profile hasn't been edited in a while."
+      "featureReminders": "Your animal profiles always up to date, with an automatic reminder if a profile hasn't been edited in a while.",
+      "featureTrial": "15-day free trial, then {monthlyPrice} €/month or {annualPrice} €/year."
     },
     "signup": {
       "title": "Create your Zoodomo account",
@@ -116,11 +121,42 @@
       "name": "Business name",
       "email": "Email",
       "password": "Password",
+      "confirmPassword": "Confirm password",
+      "passwordMismatchError": "The two passwords do not match.",
+      "passwordMinLength": "At least 8 characters",
+      "passwordNeedsDigit": "At least one digit",
+      "passwordNeedsSpecialChar": "At least one special character",
+      "passwordTooWeak": "The password doesn't meet all the required rules yet.",
+      "captchaFailed": "Security check failed. Please try again.",
       "submit": "Create my account",
       "submitting": "Creating...",
       "error": "An account already exists with this email.",
+      "rateLimited": "Too many sign-up attempts recently. Please try again in a few minutes.",
       "haveAccount": "Already have an account?",
-      "login": "Log in"
+      "login": "Log in",
+      "closedTitle": "Sign-ups temporarily closed",
+      "closedBody": "We're not accepting new sign-ups right now. Please check back soon, or contact us if it's urgent."
+    },
+    "verifyEmail": {
+      "title": "Verify your email address",
+      "body": "A verification link has been sent to {email}. Click it to activate your account and access your dashboard.",
+      "demoNotice": "Didn't get the email? Check your spam folder, or request a new one below.",
+      "linkInvalid": "This link is no longer valid or has already been used. Request a new one below.",
+      "resend": "Resend email",
+      "resendConfirmation": "Email resent.",
+      "backToLogin": "Back to login"
+    },
+    "trialPopup": {
+      "title": "Your free trial has ended",
+      "body": "Choose a plan to keep using Zoodomo and keep your public page online.",
+      "monthlyLabel": "Monthly",
+      "monthlyPrice": "{price} €/month",
+      "annualLabel": "Annual",
+      "annualPrice": "{price} €/year",
+      "annualHint": "2 months free",
+      "autoRenewNotice": "Automatic renewal, cancel anytime.",
+      "choose": "Choose",
+      "close": "Close"
     },
     "legalPage": {
       "termsTitle": "Terms of Service",
@@ -167,7 +203,9 @@
       "visibleDaysValue": "{days}d",
       "visibleLastDayValue": "Last day",
       "visibleExpiredValue": "Removed from public pages",
-      "notApplicable": "-"
+      "notApplicable": "-",
+      "trialBanner": "You have {days, plural, =0 {your last day} one {# day} other {# days}} left of your free trial.",
+      "trialUpgradeLink": "Switch to a paid plan"
     },
     "fiches": {
       "title": "My animals",
@@ -328,6 +366,12 @@
       "welcomeBody": "Glad to have you on board. To get started: fill in your information and contact details under the Account tab, add your first animal listing from My animals, then customize the look of your public pages under the Customization tab. You can then share the link to your pages wherever you like.",
       "staleSubject": "Check {name}'s listing",
       "staleBody": "{name}'s listing hasn't been updated in over {days} days. Check that it's still up to date (availability, information) from My animals.",
+      "trialSubject": "Your {days}-day free trial has started",
+      "trialBody": "You get {days} days of free trial starting today. At the end of this period, you'll be offered a monthly or annual plan to continue (you can also switch to one right away from the Dashboard). {hours}h after the trial ends, your public page will no longer be visible to visitors until a plan is chosen.",
+      "trialReminder4Subject": "4 days left of your free trial",
+      "trialReminder4Body": "Your free trial ends in 4 days. Choose a plan now from the Dashboard so your public page doesn't lose access.",
+      "trialReminder1Subject": "Last day of your free trial",
+      "trialReminder1Body": "Your free trial ends tomorrow. Choose a plan now from the Dashboard: {hours}h after the trial ends, your public page will no longer be visible to visitors until a plan is chosen.",
       "contactTitle": "Contact the webmaster",
       "contactReasonLabel": "Reason",
       "contactReasonBug": "Technical issue / bug",
@@ -417,6 +461,43 @@
       },
       "savedConfirmation": "Changes saved!",
       "save": "Save"
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email, we'll send you a link to choose a new one.",
+      "email": "Email",
+      "submit": "Send link",
+      "submitting": "Sending...",
+      "submittedTitle": "Check your inbox",
+      "submittedBody": "If an account exists with this email, a password reset link was just sent.",
+      "linkInvalid": "This link is no longer valid or has already been used. Request a new one below.",
+      "captchaFailed": "Security check failed. Please try again.",
+      "backToLogin": "Back to login"
+    },
+    "resetPassword": {
+      "title": "Choose a new password",
+      "subtitle": "Your new password must be different from the old one.",
+      "newPassword": "New password",
+      "confirmNewPassword": "Confirm new password",
+      "passwordMinLength": "At least 8 characters",
+      "passwordNeedsDigit": "At least one digit",
+      "passwordNeedsSpecialChar": "At least one special character",
+      "passwordTooWeak": "The password doesn't meet all the required rules yet.",
+      "samePassword": "This password is the same as the old one. Please choose a different one.",
+      "weakPassword": "This password is too easy to guess (already seen in known data breaches). Please choose a different one.",
+      "passwordMismatchError": "The two passwords do not match.",
+      "submit": "Save password",
+      "submitting": "Saving...",
+      "error": "Something went wrong. Please request a new reset link."
+    }
+  },
+  "email": {
+    "verify": {
+      "subject": "Verify your Zoodomo email address",
+      "title": "Welcome to Zoodomo!",
+      "body": "Click the button below to verify your email address and activate your account.",
+      "cta": "Verify my account",
+      "ignore": "If you didn't sign up for this, you can safely ignore this email."
     }
   }
 }

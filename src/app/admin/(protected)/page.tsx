@@ -9,6 +9,7 @@ import {
   MailOpen,
   Reply,
   Search,
+  Send,
   X,
 } from "lucide-react";
 import {
@@ -17,10 +18,14 @@ import {
   listAccounts,
   listAnimauxByAccountAll,
   listArchivedSupportMessages,
+  listSentAdminMessages,
   listSupportMessages,
   listTrashedSupportMessages,
   searchSupportMessages,
 } from "@/lib/mock";
+import { trialDaysRemaining, isTrialExpired } from "@/lib/mock/helpers";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Account } from "@/types";
 import { AdminBroadcastForm } from "./AdminBroadcastForm";
 import { OpenPhotoLink } from "./OpenPhotoLink";
 import { TabLink } from "@/components/TabLink";
@@ -41,7 +46,27 @@ const REASON_LABEL: Record<SupportReason, string> = {
   autre: "Autre",
 };
 
-type View = "inbox" | "archives" | "corbeille";
+const PLAN_LABEL: Record<Account["plan"], string> = {
+  essai: "Essai",
+  mensuel: "Mensuel",
+  annuel: "Annuel",
+};
+
+function planDisplay(account: Account): { label: string; className: string } {
+  if (account.plan === "essai") {
+    if (isTrialExpired(account)) {
+      return { label: "Essai expiré", className: "bg-rose-100 text-rose-700" };
+    }
+    const remaining = trialDaysRemaining(account) ?? 0;
+    return {
+      label: `Essai (${remaining}j restant${remaining > 1 ? "s" : ""})`,
+      className: "bg-amber-100 text-amber-700",
+    };
+  }
+  return { label: PLAN_LABEL[account.plan], className: "bg-emerald-100 text-emerald-700" };
+}
+
+type View = "inbox" | "archives" | "corbeille" | "envoyes";
 
 const STATUS_LABEL: Record<MessageStatus, string> = {
   active: "Boîte de réception",
@@ -68,72 +93,90 @@ export default async function AdminHomePage({
 }) {
   const { view: viewParam, reply, subject, replyMessageId, q } = await searchParams;
   const view: View =
-    viewParam === "archives" ? "archives" : viewParam === "corbeille" ? "corbeille" : "inbox";
-  const isSearching = Boolean(q && q.trim());
+    viewParam === "archives"
+      ? "archives"
+      : viewParam === "corbeille"
+        ? "corbeille"
+        : viewParam === "envoyes"
+          ? "envoyes"
+          : "inbox";
+  const isSearching = view !== "envoyes" && Boolean(q && q.trim());
 
-  const accounts = listAccounts();
-  const unreadSupport = countUnreadSupportMessages();
+  const admin = createAdminClient();
+  const accounts = await listAccounts(admin);
+  const unreadSupport = await countUnreadSupportMessages(admin);
   const supportMessages = isSearching
-    ? searchSupportMessages(q!)
+    ? await searchSupportMessages(admin, q!)
     : view === "archives"
-      ? listArchivedSupportMessages()
+      ? await listArchivedSupportMessages(admin)
       : view === "corbeille"
-        ? listTrashedSupportMessages()
-        : listSupportMessages();
+        ? await listTrashedSupportMessages(admin)
+        : view === "envoyes"
+          ? []
+          : await listSupportMessages(admin);
+  const sentMessages = view === "envoyes" ? await listSentAdminMessages(admin) : [];
   const accountsById = new Map(accounts.map((a) => [a.id, a]));
-  const originalMessage = replyMessageId ? getSupportMessageById(replyMessageId) : undefined;
+  const originalMessage = replyMessageId ? await getSupportMessageById(admin, replyMessageId) : undefined;
+  const animalCountByAccountId = new Map(
+    await Promise.all(
+      accounts.map(async (a) => [a.id, (await listAnimauxByAccountAll(admin, a.id)).length] as const)
+    )
+  );
 
   const tabs: { key: View; href: string; label: string }[] = [
     { key: "inbox", href: "/admin", label: "Boîte de réception" },
     { key: "archives", href: "/admin?view=archives", label: "Archives" },
     { key: "corbeille", href: "/admin?view=corbeille", label: "Corbeille" },
+    { key: "envoyes", href: "/admin?view=envoyes", label: "Envoyés" },
   ];
 
   return (
     <div className="space-y-8">
       <section>
         <h1 className="flex items-center gap-2 font-heading text-xl font-medium text-foreground">
-          <Inbox className="h-5 w-5" />
-          Messages reçus (contact webmaster)
-          {unreadSupport > 0 && (
+          {view === "envoyes" ? <Send className="h-5 w-5" /> : <Inbox className="h-5 w-5" />}
+          {view === "envoyes" ? "Messages envoyés" : "Messages reçus (contact webmaster)"}
+          {view !== "envoyes" && unreadSupport > 0 && (
             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-semibold text-white">
               {unreadSupport}
             </span>
           )}
         </h1>
 
-        <form
-          action="/admin"
-          method="get"
-          className="mt-4 flex flex-wrap items-center gap-2"
-        >
-          <div className="relative min-w-55 max-w-sm flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
-            <input
-              type="search"
-              name="q"
-              defaultValue={q ?? ""}
-              placeholder="Rechercher un message (objet, texte, compte)..."
-              className="w-full rounded-full border border-border py-2 pl-9 pr-3.5 text-sm text-foreground outline-none focus:border-foreground"
-            />
-          </div>
-          <button
-            type="submit"
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+        {view !== "envoyes" && (
+          <form
+            action="/admin"
+            method="get"
+            className="mt-4 flex flex-wrap items-center gap-2"
           >
-            <Search className="h-4 w-4" />
-            Rechercher
-          </button>
-          {isSearching && (
-            <Link
-              href="/admin"
-              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+            <div className="relative min-w-55 max-w-sm flex-1">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
+              <input
+                type="search"
+                name="q"
+                defaultValue={q ?? ""}
+                placeholder="Rechercher un message (objet, texte, compte)..."
+                className="w-full rounded-full border border-border py-2 pl-9 pr-3.5 text-sm text-foreground outline-none focus:border-foreground"
+              />
+            </div>
+            <button
+              type="submit"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
             >
-              <X className="h-4 w-4" />
-              Effacer
-            </Link>
-          )}
-        </form>
+              <Search className="h-4 w-4" />
+              Rechercher
+            </button>
+            {isSearching && (
+              <Link
+                href="/admin"
+                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+              >
+                <X className="h-4 w-4" />
+                Effacer
+              </Link>
+            )}
+          </form>
+        )}
 
         {!isSearching && (
           <div className="sticky top-0 z-10 mt-4 flex gap-1 border-b border-border bg-background">
@@ -145,6 +188,36 @@ export default async function AdminHomePage({
           </div>
         )}
 
+        {view === "envoyes" && (
+          <div className="mt-4 space-y-3">
+            {sentMessages.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-sm text-foreground">
+                Aucun message envoyé pour le moment.
+              </p>
+            ) : (
+              sentMessages.map((message) => (
+                <div key={message.id} className="rounded-2xl border border-border bg-white p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        À {message.accountName}
+                      </p>
+                      <p className="mt-0.5 font-medium text-foreground">{message.subject}</p>
+                    </div>
+                    <p className="shrink-0 text-xs text-foreground">
+                      {new Date(message.created_at).toLocaleString("fr", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                  <p className="mt-2 whitespace-pre-line text-sm text-foreground">{message.body}</p>
+                </div>
+              ))
+            )}
+          </div>
+        )}
+
         {isSearching && (
           <p className="mt-4 text-sm text-foreground">
             {supportMessages.length === 0
@@ -153,7 +226,7 @@ export default async function AdminHomePage({
           </p>
         )}
 
-        {supportMessages.length === 0 && !isSearching ? (
+        {view !== "envoyes" && (supportMessages.length === 0 && !isSearching ? (
           <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-sm text-foreground">
             {view === "archives"
               ? "Aucun message archivé."
@@ -295,7 +368,7 @@ export default async function AdminHomePage({
               );
             })}
           </div>
-        )}
+        ))}
       </section>
 
       <div id="envoyer-un-message">
@@ -333,6 +406,7 @@ export default async function AdminHomePage({
                 <th className="whitespace-nowrap px-3 py-2 font-medium">Nom</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">Email</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">Langue</th>
+                <th className="whitespace-nowrap px-3 py-2 font-medium">Abonnement</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">Animaux</th>
                 <th className="whitespace-nowrap px-3 py-2 font-medium">Créé le</th>
               </tr>
@@ -357,7 +431,19 @@ export default async function AdminHomePage({
                       {account.langue_interface ? account.langue_interface.toUpperCase() : "Automatique"}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap px-3 py-2">{listAnimauxByAccountAll(account.id).length}</td>
+                  <td className="whitespace-nowrap px-3 py-2">
+                    {(() => {
+                      const plan = planDisplay(account);
+                      return (
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${plan.className}`}
+                        >
+                          {plan.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+                  <td className="whitespace-nowrap px-3 py-2">{animalCountByAccountId.get(account.id) ?? 0}</td>
                   <td className="whitespace-nowrap px-3 py-2">
                     {new Date(account.created_at).toLocaleDateString("fr")}
                   </td>

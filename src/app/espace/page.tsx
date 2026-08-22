@@ -4,9 +4,18 @@ import { headers } from "next/headers";
 import { getLocale, getTranslations } from "next-intl/server";
 import { AlertCircle, CircleCheck, Clock, Eye, HeartHandshake, Rows3 } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
-import { listAnimauxByAccountAll, getEspeceById, getViewCount, visibiliteState } from "@/lib/mock";
+import { createClient } from "@/lib/supabase/server";
+import {
+  listAnimauxByAccountAll,
+  getEspeceById,
+  getViewCount,
+  visibiliteState,
+  trialDaysRemaining,
+} from "@/lib/mock";
 import { STATUT_BADGE_CLASS } from "@/lib/statut-badge";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
+import { MONTHLY_PRICE_EUR, ANNUAL_PRICE_EUR } from "@/lib/pricing";
+import { TrialBanner } from "./TrialBanner";
 import type { Locale } from "@/types";
 
 export default async function DashboardPage() {
@@ -14,6 +23,7 @@ export default async function DashboardPage() {
   if (!account) redirect("/");
 
   const t = await getTranslations("admin.dashboard");
+  const tTrial = await getTranslations("admin.trialPopup");
   const tStatus = await getTranslations("status");
   const tSpecies = await getTranslations("species");
   const tForm = await getTranslations("admin.form");
@@ -41,10 +51,16 @@ export default async function DashboardPage() {
     sterilise === true ? tForm("yes") : sterilise === false ? tForm("no") : t("notApplicable");
   const formatPrix = (prix: number | null) => (prix !== null ? `${prix} €` : t("notApplicable"));
 
-  const animaux = listAnimauxByAccountAll(account.id);
+  const remainingTrialDays = trialDaysRemaining(account);
+
+  const supabase = await createClient();
+  const animaux = await listAnimauxByAccountAll(supabase, account.id);
   const disponibles = animaux.filter((a) => a.statut === "disponible").length;
   const reserves = animaux.filter((a) => a.statut === "reserve").length;
-  const vuesTotales = animaux.reduce((sum, a) => sum + getViewCount(a.id), 0);
+  const vuesParAnimal = new Map(
+    await Promise.all(animaux.map(async (a) => [a.id, await getViewCount(supabase, a.id)] as const))
+  );
+  const vuesTotales = [...vuesParAnimal.values()].reduce((sum, v) => sum + v, 0);
 
   const now = new Date();
   const adoptedThisMonth = animaux.filter((a) => {
@@ -72,6 +88,25 @@ export default async function DashboardPage() {
       <p className="mt-1 text-sm text-foreground">
         {t("greeting", { name: account.nom_affichage })}
       </p>
+
+      {remainingTrialDays !== null && remainingTrialDays >= 0 && (
+        <TrialBanner
+          daysText={t("trialBanner", { days: remainingTrialDays })}
+          upgradeLink={t("trialUpgradeLink")}
+          popup={{
+            title: tTrial("title"),
+            body: tTrial("body"),
+            monthlyLabel: tTrial("monthlyLabel"),
+            monthlyPrice: tTrial("monthlyPrice", { price: MONTHLY_PRICE_EUR }),
+            annualLabel: tTrial("annualLabel"),
+            annualPrice: tTrial("annualPrice", { price: ANNUAL_PRICE_EUR }),
+            annualHint: tTrial("annualHint"),
+            autoRenewNotice: tTrial("autoRenewNotice"),
+            choose: tTrial("choose"),
+            close: tTrial("close"),
+          }}
+        />
+      )}
 
       {!account.adresse && (
         <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-sm text-amber-900">
@@ -232,7 +267,7 @@ export default async function DashboardPage() {
                         {tStatus(animal.statut)}
                       </span>
                     </td>
-                    <td className="whitespace-nowrap px-3 py-2 text-foreground">{getViewCount(animal.id)}</td>
+                    <td className="whitespace-nowrap px-3 py-2 text-foreground">{vuesParAnimal.get(animal.id) ?? 0}</td>
                     <td className="whitespace-nowrap px-3 py-2 text-foreground">
                       {formatDate(animal.created_at)}
                     </td>

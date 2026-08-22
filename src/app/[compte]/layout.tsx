@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { ExternalLink, PawPrint } from "lucide-react";
 import { getAccountBySlug, getAccountTheme } from "@/lib/mock";
+import { isPublicPageBlocked } from "@/lib/mock/helpers";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { POLICE_FONT_VARS, isPoliceId } from "@/lib/fonts";
 import type { Locale } from "@/types";
@@ -16,10 +18,11 @@ export default async function CompteLayout({
   params: Promise<{ compte: string }>;
 }) {
   const { compte } = await params;
-  const account = getAccountBySlug(compte);
+  const supabase = createAdminClient();
+  const account = await getAccountBySlug(supabase, compte);
   if (!account) notFound();
 
-  const theme = getAccountTheme(account.id);
+  const theme = await getAccountTheme(supabase, account.id);
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("common");
 
@@ -95,7 +98,20 @@ export default async function CompteLayout({
         </div>
       </header>
 
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        {/* Essai gratuit + délai de grâce épuisés sans passer à un abonnement (voir
+            `isPublicPageBlocked`, docs/DECISIONS.md) : message d'indisponibilité plutôt que
+            le contenu normal, mais en-tête/pied de page du compte conservés (confirme au
+            visiteur qu'il est au bon endroit, juste temporairement indisponible), et surtout
+            pas un 404 muet pour un lien déjà partagé. */}
+        {isPublicPageBlocked(account) ? (
+          <p className="mx-auto max-w-2xl px-6 py-16 text-center text-foreground">
+            {t("accountUnavailable")}
+          </p>
+        ) : (
+          children
+        )}
+      </main>
 
       <footer className="print:hidden border-t border-border bg-(--account-secondary) px-6 py-8 text-center">
         <p className="text-sm text-foreground">{t("createdWith", { year: yearLabel })}</p>

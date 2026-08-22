@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import { getAccountTheme, getAccountPhotos } from "@/lib/mock";
 import { ComptePageForm } from "./ComptePageForm";
 
@@ -9,8 +10,11 @@ export default async function ComptePage() {
   if (!account) redirect("/");
 
   const t = await getTranslations("admin.compte");
-  const theme = getAccountTheme(account.id);
-  const photos = getAccountPhotos(account.id);
+  const supabase = await createClient();
+  const [theme, photos] = await Promise.all([
+    getAccountTheme(supabase, account.id),
+    getAccountPhotos(supabase, account.id),
+  ]);
 
   return (
     <div>

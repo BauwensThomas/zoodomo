@@ -1,6 +1,5 @@
 "use server";
 
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
@@ -21,9 +20,11 @@ import {
   deleteAccountMessage,
   setAccountMessageRead,
   sendSupportMessage,
+  setAccountPlan,
   type AnimalFormInput,
 } from "@/lib/mock";
-import { getSessionAccount, SESSION_COOKIE_NAME } from "@/lib/mock/auth";
+import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import {
   LOCALES,
   type AccountTheme,
@@ -34,9 +35,20 @@ import {
 } from "@/types";
 
 export async function logoutAction() {
-  const store = await cookies();
-  store.delete(SESSION_COOKIE_NAME);
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   redirect("/");
+}
+
+/** Choix fait dans `PlanPopup.tsx`, affiché une fois l'essai gratuit terminé. Aucun vrai
+ * paiement déclenché ici (Paddle pas encore branché, voir docs/DECISIONS.md) : enregistre
+ * uniquement le choix, prêt à être relié à un vrai abonnement plus tard. */
+export async function choisirPlanAction(plan: "mensuel" | "annuel") {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+  const supabase = await createClient();
+  await setAccountPlan(supabase, account.id, plan);
+  revalidatePath("/espace", "layout");
 }
 
 function parseAnimalForm(formData: FormData, languesActives: Locale[]): AnimalFormInput {
@@ -95,8 +107,9 @@ export async function createAnimalAction(formData: FormData) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
+  const supabase = await createClient();
   const input = parseAnimalForm(formData, account.langues_actives);
-  createAnimal(account.id, input);
+  await createAnimal(supabase, account.id, input);
   revalidatePath("/espace/fiches");
   revalidatePath(`/${account.slug}`);
   redirect("/espace/fiches?saved=created");
@@ -106,15 +119,16 @@ export async function updateAnimalAction(animalId: string, formData: FormData) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
+  const supabase = await createClient();
   // Garde-fou côté serveur en plus du contrôle sur la page d'édition : une fiche
   // réservée ou adoptée ne peut pas être modifiée par ce chemin non plus.
-  const existing = getAnimalById(animalId);
+  const existing = await getAnimalById(supabase, animalId);
   if (!existing || existing.account_id !== account.id || existing.statut !== "disponible") {
     redirect("/espace/fiches");
   }
 
   const input = parseAnimalForm(formData, account.langues_actives);
-  updateAnimal(animalId, input);
+  await updateAnimal(supabase, animalId, input);
   revalidatePath("/espace/fiches");
   revalidatePath(`/${account.slug}`);
   redirect("/espace/fiches?saved=updated");
@@ -124,7 +138,8 @@ export async function deleteAnimalAction(animalId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  deleteAnimal(animalId);
+  const supabase = await createClient();
+  await deleteAnimal(supabase, animalId);
   revalidatePath("/espace/fiches");
   revalidatePath(`/${account.slug}`);
 }
@@ -133,7 +148,8 @@ export async function changeStatutAction(animalId: string, statut: StatutAnimal)
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  changeAnimalStatut(animalId, statut);
+  const supabase = await createClient();
+  await changeAnimalStatut(supabase, animalId, statut);
   revalidatePath("/espace");
   revalidatePath("/espace/fiches");
   revalidatePath(`/${account.slug}`, "layout");
@@ -189,7 +205,8 @@ export async function updateAccountAction(
     if (value) a_propos[locale] = value;
   }
 
-  updateAccountInfo(account.id, {
+  const supabase = await createClient();
+  await updateAccountInfo(supabase, account.id, {
     nom_affichage: get("nom_affichage") || account.nom_affichage,
     contact_email_public: contactEmailPublic,
     contact_telephone_public: contactTelephonePublic,
@@ -199,16 +216,16 @@ export async function updateAccountAction(
     numero_entreprise_visible: formData.get("numero_entreprise_visible") === "on",
     a_propos,
   });
-  updateAccountTheme(account.id, {
+  await updateAccountTheme(supabase, account.id, {
     lien_retour_site: get("lien_retour_site"),
   });
-  updateAccountLanguesActives(account.id, languesActives);
+  await updateAccountLanguesActives(supabase, account.id, languesActives);
 
   const accountPhotoUrls = (get("account_photos") || "")
     .split("\n")
     .map((u) => u.trim())
     .filter(Boolean);
-  replaceAccountPhotos(account.id, accountPhotoUrls);
+  await replaceAccountPhotos(supabase, account.id, accountPhotoUrls);
 
   revalidatePath("/espace/compte");
   revalidatePath("/espace", "layout");
@@ -233,7 +250,8 @@ export async function updatePersonnalisationAction(
 
   const logoPhotos = (get("logo") || "").split("\n").map((u) => u.trim()).filter(Boolean);
 
-  updateAccountTheme(account.id, {
+  const supabase = await createClient();
+  await updateAccountTheme(supabase, account.id, {
     police: get("police") || "default",
     couleur_primaire: get("couleur_primaire") || "#221c16",
     couleur_secondaire: get("couleur_secondaire") || "#efe9e0",
@@ -255,7 +273,8 @@ export async function trashMessageAction(messageId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  trashAccountMessage(messageId);
+  const supabase = await createClient();
+  await trashAccountMessage(supabase, messageId);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -264,7 +283,8 @@ export async function restoreMessageAction(messageId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  restoreAccountMessageFromTrash(messageId);
+  const supabase = await createClient();
+  await restoreAccountMessageFromTrash(supabase, messageId);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -274,7 +294,8 @@ export async function deleteMessageAction(messageId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  deleteAccountMessage(messageId);
+  const supabase = await createClient();
+  await deleteAccountMessage(supabase, messageId);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -283,7 +304,8 @@ export async function archiveMessageAction(messageId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  archiveAccountMessage(messageId);
+  const supabase = await createClient();
+  await archiveAccountMessage(supabase, messageId);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -292,7 +314,8 @@ export async function unarchiveMessageAction(messageId: string) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  unarchiveAccountMessage(messageId);
+  const supabase = await createClient();
+  await unarchiveAccountMessage(supabase, messageId);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -301,7 +324,8 @@ export async function setMessageReadAction(messageId: string, read: boolean) {
   const account = await getSessionAccount();
   if (!account) redirect("/");
 
-  setAccountMessageRead(messageId, read);
+  const supabase = await createClient();
+  await setAccountMessageRead(supabase, messageId, read);
   revalidatePath("/espace/messages");
   revalidatePath("/espace", "layout");
 }
@@ -330,7 +354,14 @@ export async function sendSupportMessageAction(
     return { saved: false, error: t("contactRequiredError") };
   }
 
-  sendSupportMessage({ account_id: account.id, reason, subject, body, photo_url: photoUrl || null });
+  const supabase = await createClient();
+  await sendSupportMessage(supabase, {
+    account_id: account.id,
+    reason,
+    subject,
+    body,
+    photo_url: photoUrl || null,
+  });
 
   revalidatePath("/espace/messages");
   return { saved: true, savedAt: Date.now() };

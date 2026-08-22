@@ -1,3 +1,4 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   Account,
   AccountMessage,
@@ -15,44 +16,44 @@ import type {
   SupportReason,
   TypeBadge,
 } from "@/types";
-import { mockAccounts, mockAccountThemes, mockAccountPhotos } from "./accounts";
-import { mockAnimaux, mockAnimalBadges, mockAnimalPhotos } from "./animaux";
-import { mockAnimalViews } from "./views";
 import { slugify } from "@/lib/slugify";
 
 /**
- * Store en mémoire, mutable, pour simuler un backend le temps de rester en phase mockée
- * (voir méthode de travail, docs/DECISIONS.md). Remis à zéro à chaque redémarrage du
- * serveur de dev, remplacé par de vraies requêtes Supabase plus tard.
+ * Requêtes Supabase pour tout ce qui touche un compte (thème, photos, animaux, messages).
+ * Chaque fonction prend le client Supabase en premier paramètre : `createClient()`
+ * (`src/lib/supabase/server.ts`, respecte RLS, contexte du compte connecté) depuis l'espace
+ * membre, `createAdminClient()` (`src/lib/supabase/admin.ts`, service_role) depuis les pages
+ * publiques et le panneau admin. Remplace l'ancien store en mémoire, voir docs/DECISIONS.md
+ * (migration complète du 2026-08-22) et `supabase/migrations/0005_full_data_rls.sql`.
  */
-let accounts: Account[] = [...mockAccounts];
-let accountThemes: AccountTheme[] = [...mockAccountThemes];
-let accountPhotos: AccountPhoto[] = [...mockAccountPhotos];
-let animaux: Animal[] = [...mockAnimaux];
-let animalBadges: AnimalBadge[] = [...mockAnimalBadges];
-let animalPhotos: AnimalPhoto[] = [...mockAnimalPhotos];
-let animalViews: AnimalView[] = [...mockAnimalViews];
-let accountMessages: AccountMessage[] = [];
-let supportMessages: SupportMessage[] = [];
 
-export function listAccounts() {
-  return accounts;
+export async function listAccounts(supabase: SupabaseClient): Promise<Account[]> {
+  const { data } = await supabase.from("accounts").select("*");
+  return (data as Account[]) ?? [];
 }
 
-export function getAccountByIdMutable(id: string) {
-  return accounts.find((a) => a.id === id);
+export async function updateAccountLanguesActives(
+  supabase: SupabaseClient,
+  accountId: string,
+  langues: Locale[]
+): Promise<void> {
+  await supabase.from("accounts").update({ langues_actives: langues }).eq("id", accountId);
 }
 
-export function updateAccountLanguesActives(accountId: string, langues: Locale[]) {
-  accounts = accounts.map((a) =>
-    a.id === accountId ? { ...a, langues_actives: langues } : a
-  );
+export async function updateAccountLangueInterface(
+  supabase: SupabaseClient,
+  accountId: string,
+  locale: Locale
+): Promise<void> {
+  await supabase.from("accounts").update({ langue_interface: locale }).eq("id", accountId);
 }
 
-export function updateAccountLangueInterface(accountId: string, locale: Locale) {
-  accounts = accounts.map((a) =>
-    a.id === accountId ? { ...a, langue_interface: locale } : a
-  );
+export async function setAccountPlan(
+  supabase: SupabaseClient,
+  accountId: string,
+  plan: "mensuel" | "annuel"
+): Promise<void> {
+  await supabase.from("accounts").update({ plan }).eq("id", accountId);
 }
 
 export interface AccountInfoInput {
@@ -66,35 +67,53 @@ export interface AccountInfoInput {
   a_propos: Partial<Record<Locale, string>>;
 }
 
-export function updateAccountInfo(accountId: string, input: AccountInfoInput) {
-  accounts = accounts.map((a) => (a.id === accountId ? { ...a, ...input } : a));
+export async function updateAccountInfo(
+  supabase: SupabaseClient,
+  accountId: string,
+  input: AccountInfoInput
+): Promise<void> {
+  await supabase.from("accounts").update(input).eq("id", accountId);
 }
 
-export function listAccountPhotosMutable(accountId: string) {
-  return accountPhotos.filter((p) => p.account_id === accountId).sort((a, b) => a.ordre - b.ordre);
+export async function listAccountPhotosMutable(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<AccountPhoto[]> {
+  const { data } = await supabase
+    .from("account_photos")
+    .select("*")
+    .eq("account_id", accountId)
+    .order("ordre", { ascending: true });
+  return (data as AccountPhoto[]) ?? [];
 }
 
-export function replaceAccountPhotos(accountId: string, urls: string[]) {
-  accountPhotos = accountPhotos.filter((p) => p.account_id !== accountId);
-  urls
+export async function replaceAccountPhotos(
+  supabase: SupabaseClient,
+  accountId: string,
+  urls: string[]
+): Promise<void> {
+  await supabase.from("account_photos").delete().eq("account_id", accountId);
+  const rows = urls
     .map((u) => u.trim())
     .filter(Boolean)
-    .forEach((url, index) => {
-      accountPhotos.push({
-        id: `account-photo-${accountId}-${index}`,
-        account_id: accountId,
-        url,
-        ordre: index + 1,
-        created_at: new Date().toISOString(),
-      });
-    });
+    .map((url, index) => ({ account_id: accountId, url, ordre: index + 1 }));
+  if (rows.length > 0) await supabase.from("account_photos").insert(rows);
 }
 
-export function getAccountThemeMutable(accountId: string) {
-  return accountThemes.find((t) => t.account_id === accountId);
+export async function getAccountThemeMutable(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<AccountTheme | undefined> {
+  const { data } = await supabase
+    .from("account_theme")
+    .select("*")
+    .eq("account_id", accountId)
+    .maybeSingle();
+  return (data as AccountTheme) ?? undefined;
 }
 
-export function updateAccountTheme(
+export async function updateAccountTheme(
+  supabase: SupabaseClient,
   accountId: string,
   input: Partial<
     Pick<
@@ -109,77 +128,36 @@ export function updateAccountTheme(
       | "logo_url"
     >
   >
-) {
-  accountThemes = accountThemes.map((t) =>
-    t.account_id === accountId ? { ...t, ...input, updated_at: new Date().toISOString() } : t
-  );
+): Promise<void> {
+  await supabase
+    .from("account_theme")
+    .update({ ...input, updated_at: new Date().toISOString() })
+    .eq("account_id", accountId);
 }
 
-function uniqueAccountSlug(base: string) {
-  const root = slugify(base) || "compte";
-  let slug = root;
-  let i = 2;
-  while (accounts.some((a) => a.slug === slug)) {
-    slug = `${root}-${i++}`;
-  }
-  return slug;
+export async function listAnimauxByAccountAll(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<Animal[]> {
+  const { data } = await supabase
+    .from("animaux")
+    .select("*")
+    .eq("account_id", accountId)
+    .order("created_at", { ascending: false });
+  return (data as Animal[]) ?? [];
 }
 
-export function createAccount(input: {
-  nom_affichage: string;
-  email: string;
-  langue_interface: Locale;
-}): Account {
-  const account: Account = {
-    id: `account-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-    email: input.email,
-    nom_affichage: input.nom_affichage,
-    slug: uniqueAccountSlug(input.nom_affichage),
-    contact_email_public: input.email,
-    contact_telephone_public: null,
-    adresse: null,
-    adresse_visible: true,
-    numero_entreprise: null,
-    numero_entreprise_visible: true,
-    a_propos: {},
-    langues_actives: ["fr"],
-    langue_interface: input.langue_interface,
-    created_at: new Date().toISOString(),
-  };
-  accounts = [...accounts, account];
-  accountThemes = [
-    ...accountThemes,
-    {
-      account_id: account.id,
-      police: "default",
-      couleur_primaire: "#2f6b4f",
-      couleur_secondaire: "#f4f1ea",
-      disposition_photos: "grille",
-      disposition_especes: "liste",
-      disposition_presentation: "photo_texte",
-      logo_url: null,
-      lien_retour_site: null,
-      updated_at: account.created_at,
-    },
-  ];
-  return account;
-}
-
-export function listAnimauxByAccountAll(accountId: string) {
-  return animaux
-    .filter((a) => a.account_id === accountId)
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
-}
-
-export function getAnimalById(id: string) {
-  return animaux.find((a) => a.id === id);
+export async function getAnimalById(supabase: SupabaseClient, id: string): Promise<Animal | undefined> {
+  const { data } = await supabase.from("animaux").select("*").eq("id", id).maybeSingle();
+  return (data as Animal) ?? undefined;
 }
 
 /**
  * Date d'entrée dans un statut donné ("réservé" ou "adopté"), gérée automatiquement au
  * changement de statut, jamais saisie à la main : fixée au moment où le statut cible est
  * atteint, effacée si l'animal en repart. Factorisé car `date_reservation` suit exactement
- * la même règle que `date_adoption`, juste pour un statut différent.
+ * la même règle que `date_adoption`, juste pour un statut différent. Fonction pure, ne
+ * touche pas la base.
  */
 function dateForStatutTarget(
   existingDate: string | null,
@@ -191,18 +169,30 @@ function dateForStatutTarget(
   return oldStatut === target ? existingDate : new Date().toISOString();
 }
 
-function uniqueSlug(accountId: string, base: string, excludeId?: string) {
+/** Même principe que `uniqueAccountSlug` (`src/app/signup-actions.ts`), mais scopé à un
+ * compte : deux comptes différents peuvent avoir chacun un animal au même nom sans conflit
+ * (contrainte unique composite `(account_id, slug)`, voir
+ * `supabase/migrations/0006_animaux_slug_unique_per_account.sql`). */
+async function uniqueSlug(
+  supabase: SupabaseClient,
+  accountId: string,
+  base: string,
+  excludeId?: string
+): Promise<string> {
   const root = slugify(base) || "animal";
   let slug = root;
   let i = 2;
-  while (
-    animaux.some(
-      (a) => a.account_id === accountId && a.slug === slug && a.id !== excludeId
-    )
-  ) {
+  for (;;) {
+    let query = supabase
+      .from("animaux")
+      .select("id")
+      .eq("account_id", accountId)
+      .eq("slug", slug);
+    if (excludeId) query = query.neq("id", excludeId);
+    const { data } = await query.maybeSingle();
+    if (!data) return slug;
     slug = `${root}-${i++}`;
   }
-  return slug;
 }
 
 export interface AnimalFormInput {
@@ -226,42 +216,53 @@ export interface AnimalFormInput {
   photoUrls: string[];
 }
 
-export function createAnimal(accountId: string, input: AnimalFormInput): Animal {
-  const now = new Date().toISOString();
-  const animal: Animal = {
-    id: `animal-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-    account_id: accountId,
-    nom: input.nom,
-    espece_id: input.espece_id,
-    race: input.race,
-    sexe: input.sexe,
-    sterilise: input.sterilise,
-    annee_naissance: input.annee_naissance,
-    date_naissance: input.date_naissance,
-    numero_identification: input.numero_identification,
-    date_arrivee: input.date_arrivee,
-    origine: input.origine,
-    description: input.description,
-    foyer_ideal: input.foyer_ideal,
-    prix: input.prix,
-    statut: input.statut,
-    // Créée directement au statut "adopté"/"réservé" (cas rare) : la date compte depuis maintenant.
-    date_adoption: dateForStatutTarget(null, "adopte", input.statut, null),
-    date_reservation: dateForStatutTarget(null, "reserve", input.statut, null),
-    slug: uniqueSlug(accountId, input.nom),
-    contact_email: input.contact_email,
-    contact_telephone: input.contact_telephone,
-    created_at: now,
-    updated_at: now,
-  };
-  animaux = [...animaux, animal];
-  replaceBadges(animal.id, input.badges);
-  replacePhotos(animal.id, input.photoUrls);
+export async function createAnimal(
+  supabase: SupabaseClient,
+  accountId: string,
+  input: AnimalFormInput
+): Promise<Animal> {
+  const slug = await uniqueSlug(supabase, accountId, input.nom);
+  const { data, error } = await supabase
+    .from("animaux")
+    .insert({
+      account_id: accountId,
+      nom: input.nom,
+      espece_id: input.espece_id,
+      race: input.race,
+      sexe: input.sexe,
+      sterilise: input.sterilise,
+      annee_naissance: input.annee_naissance,
+      date_naissance: input.date_naissance,
+      numero_identification: input.numero_identification,
+      date_arrivee: input.date_arrivee,
+      origine: input.origine,
+      description: input.description,
+      foyer_ideal: input.foyer_ideal,
+      prix: input.prix,
+      statut: input.statut,
+      // Créée directement au statut "adopté"/"réservé" (cas rare) : la date compte depuis maintenant.
+      date_adoption: dateForStatutTarget(null, "adopte", input.statut, null),
+      date_reservation: dateForStatutTarget(null, "reserve", input.statut, null),
+      slug,
+      contact_email: input.contact_email,
+      contact_telephone: input.contact_telephone,
+    })
+    .select()
+    .single();
+  if (error || !data) throw error ?? new Error("createAnimal: échec de l'insertion");
+
+  const animal = data as Animal;
+  await replaceBadges(supabase, animal.id, input.badges);
+  await replacePhotos(supabase, animal.id, input.photoUrls);
   return animal;
 }
 
-export function updateAnimal(id: string, input: AnimalFormInput): Animal | undefined {
-  const existing = getAnimalById(id);
+export async function updateAnimal(
+  supabase: SupabaseClient,
+  id: string,
+  input: AnimalFormInput
+): Promise<Animal | undefined> {
+  const existing = await getAnimalById(supabase, id);
   if (!existing) return undefined;
 
   const date_adoption = dateForStatutTarget(
@@ -276,37 +277,43 @@ export function updateAnimal(id: string, input: AnimalFormInput): Animal | undef
     input.statut,
     existing.statut
   );
+  const slug =
+    input.nom === existing.nom
+      ? existing.slug
+      : await uniqueSlug(supabase, existing.account_id, input.nom, id);
 
-  const updated: Animal = {
-    ...existing,
-    nom: input.nom,
-    espece_id: input.espece_id,
-    race: input.race,
-    sexe: input.sexe,
-    sterilise: input.sterilise,
-    annee_naissance: input.annee_naissance,
-    date_naissance: input.date_naissance,
-    numero_identification: input.numero_identification,
-    date_arrivee: input.date_arrivee,
-    origine: input.origine,
-    description: input.description,
-    foyer_ideal: input.foyer_ideal,
-    prix: input.prix,
-    statut: input.statut,
-    date_adoption,
-    date_reservation,
-    slug:
-      input.nom === existing.nom
-        ? existing.slug
-        : uniqueSlug(existing.account_id, input.nom, id),
-    contact_email: input.contact_email,
-    contact_telephone: input.contact_telephone,
-    updated_at: new Date().toISOString(),
-  };
-  animaux = animaux.map((a) => (a.id === id ? updated : a));
-  replaceBadges(id, input.badges);
-  replacePhotos(id, input.photoUrls);
-  return updated;
+  const { data, error } = await supabase
+    .from("animaux")
+    .update({
+      nom: input.nom,
+      espece_id: input.espece_id,
+      race: input.race,
+      sexe: input.sexe,
+      sterilise: input.sterilise,
+      annee_naissance: input.annee_naissance,
+      date_naissance: input.date_naissance,
+      numero_identification: input.numero_identification,
+      date_arrivee: input.date_arrivee,
+      origine: input.origine,
+      description: input.description,
+      foyer_ideal: input.foyer_ideal,
+      prix: input.prix,
+      statut: input.statut,
+      date_adoption,
+      date_reservation,
+      slug,
+      contact_email: input.contact_email,
+      contact_telephone: input.contact_telephone,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .select()
+    .single();
+  if (error || !data) return undefined;
+
+  await replaceBadges(supabase, id, input.badges);
+  await replacePhotos(supabase, id, input.photoUrls);
+  return data as Animal;
 }
 
 /**
@@ -315,8 +322,12 @@ export function updateAnimal(id: string, input: AnimalFormInput): Animal | undef
  * (ex. annuler un clic "adopté" fait par erreur). La visibilité publique découle uniquement
  * du statut (voir `isAnimalVisiblePublicly`), rien d'autre à mettre à jour ici.
  */
-export function changeAnimalStatut(id: string, statut: Animal["statut"]): Animal | undefined {
-  const existing = getAnimalById(id);
+export async function changeAnimalStatut(
+  supabase: SupabaseClient,
+  id: string,
+  statut: Animal["statut"]
+): Promise<Animal | undefined> {
+  const existing = await getAnimalById(supabase, id);
   if (!existing) return undefined;
 
   const date_adoption = dateForStatutTarget(existing.date_adoption, "adopte", statut, existing.statut);
@@ -327,275 +338,404 @@ export function changeAnimalStatut(id: string, statut: Animal["statut"]): Animal
     existing.statut
   );
 
-  const updated: Animal = {
-    ...existing,
-    statut,
-    date_adoption,
-    date_reservation,
-    updated_at: new Date().toISOString(),
-  };
-  animaux = animaux.map((a) => (a.id === id ? updated : a));
-  return updated;
+  const { data } = await supabase
+    .from("animaux")
+    .update({ statut, date_adoption, date_reservation, updated_at: new Date().toISOString() })
+    .eq("id", id)
+    .select()
+    .single();
+  return (data as Animal) ?? undefined;
 }
 
-export function deleteAnimal(id: string) {
-  animaux = animaux.filter((a) => a.id !== id);
-  animalBadges = animalBadges.filter((b) => b.animal_id !== id);
-  animalPhotos = animalPhotos.filter((p) => p.animal_id !== id);
+export async function deleteAnimal(supabase: SupabaseClient, id: string): Promise<void> {
+  // `animal_badges`/`animal_photos`/`animal_views` sont en `on delete cascade` (voir
+  // supabase/migrations/0001_init.sql) : pas besoin de les supprimer explicitement ici.
+  await supabase.from("animaux").delete().eq("id", id);
 }
 
-export function listBadgesForAnimalMutable(animalId: string) {
-  return animalBadges.filter((b) => b.animal_id === animalId).sort((a, b) => a.ordre - b.ordre);
+export async function listBadgesForAnimalMutable(
+  supabase: SupabaseClient,
+  animalId: string
+): Promise<AnimalBadge[]> {
+  const { data } = await supabase
+    .from("animal_badges")
+    .select("*")
+    .eq("animal_id", animalId)
+    .order("ordre", { ascending: true });
+  return (data as AnimalBadge[]) ?? [];
 }
 
-export function listPhotosForAnimalMutable(animalId: string) {
-  return animalPhotos.filter((p) => p.animal_id === animalId).sort((a, b) => a.ordre - b.ordre);
+export async function listPhotosForAnimalMutable(
+  supabase: SupabaseClient,
+  animalId: string
+): Promise<AnimalPhoto[]> {
+  const { data } = await supabase
+    .from("animal_photos")
+    .select("*")
+    .eq("animal_id", animalId)
+    .order("ordre", { ascending: true });
+  return (data as AnimalPhoto[]) ?? [];
 }
 
 /**
  * Compteur de vues basique : chaque affichage de la fiche animal publique compte comme une
- * vue, sans dédoublonnage par visiteur/session (pas de cookie de tracking en phase mockée).
- * Volontairement simple, conforme à `docs/TODO.md` ("compteur de vues basique") ; un vrai
- * système anti-doublon/anti-bot est repoussé à une étape ultérieure si besoin.
+ * vue, sans dédoublonnage par visiteur/session. Volontairement simple, conforme à
+ * `docs/TODO.md` ("compteur de vues basique") ; un vrai système anti-doublon/anti-bot est
+ * repoussé à une étape ultérieure si besoin. Appelée depuis une page publique avec le client
+ * service_role (visiteur anonyme, pas de policy d'insert pour `authenticated`).
  */
-export function recordAnimalView(animalId: string) {
-  animalViews = [
-    ...animalViews,
-    {
-      id: `view-${animalId}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      animal_id: animalId,
-      viewed_at: new Date().toISOString(),
-    },
-  ];
+export async function recordAnimalView(supabase: SupabaseClient, animalId: string): Promise<void> {
+  await supabase.from("animal_views").insert({ animal_id: animalId });
 }
 
-export function countViewsForAnimal(animalId: string) {
-  return animalViews.filter((v) => v.animal_id === animalId).length;
+export async function countViewsForAnimal(supabase: SupabaseClient, animalId: string): Promise<number> {
+  const { count } = await supabase
+    .from("animal_views")
+    .select("*", { count: "exact", head: true })
+    .eq("animal_id", animalId);
+  return count ?? 0;
 }
 
 /** Renvoie les vues horodatées (pas juste le total) pour un ensemble de fiches, utilisé par
  * l'onglet Statistiques pour construire le graphe d'évolution dans le temps. */
-export function listViewsForAnimalIds(animalIds: string[]) {
-  return animalViews.filter((v) => animalIds.includes(v.animal_id));
+export async function listViewsForAnimalIds(
+  supabase: SupabaseClient,
+  animalIds: string[]
+): Promise<AnimalView[]> {
+  if (animalIds.length === 0) return [];
+  const { data } = await supabase.from("animal_views").select("*").in("animal_id", animalIds);
+  return (data as AnimalView[]) ?? [];
 }
 
 // --- Messages (onglet "Messages" de l'espace membre + admin Zoodomo) ---
 // Pas de vrai email envoyé nulle part (aucun service configuré en phase mockée) : ces
 // messages ne vivent que dans l'app, la bulle de notification non lus est le seul signal.
 
-export function listAccountMessages(accountId: string) {
-  return accountMessages
-    .filter((m) => m.account_id === accountId && m.status === "active")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listAccountMessages(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<AccountMessage[]> {
+  const { data } = await supabase
+    .from("account_messages")
+    .select("*")
+    .eq("account_id", accountId)
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  return (data as AccountMessage[]) ?? [];
 }
 
-export function listArchivedAccountMessages(accountId: string) {
-  return accountMessages
-    .filter((m) => m.account_id === accountId && m.status === "archived")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listArchivedAccountMessages(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<AccountMessage[]> {
+  const { data } = await supabase
+    .from("account_messages")
+    .select("*")
+    .eq("account_id", accountId)
+    .eq("status", "archived")
+    .order("created_at", { ascending: false });
+  return (data as AccountMessage[]) ?? [];
 }
 
-export function listTrashedAccountMessages(accountId: string) {
-  return accountMessages
-    .filter((m) => m.account_id === accountId && m.status === "trash")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listTrashedAccountMessages(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<AccountMessage[]> {
+  const { data } = await supabase
+    .from("account_messages")
+    .select("*")
+    .eq("account_id", accountId)
+    .eq("status", "trash")
+    .order("created_at", { ascending: false });
+  return (data as AccountMessage[]) ?? [];
 }
 
 /** Un message archivé ou dans la corbeille ne compte plus dans la bulle non lus : les deux
  * valent "traité". */
-export function countUnreadAccountMessages(accountId: string) {
-  return accountMessages.filter(
-    (m) => m.account_id === accountId && !m.read && m.status === "active"
-  ).length;
+export async function countUnreadAccountMessages(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<number> {
+  const { count } = await supabase
+    .from("account_messages")
+    .select("*", { count: "exact", head: true })
+    .eq("account_id", accountId)
+    .eq("read", false)
+    .eq("status", "active");
+  return count ?? 0;
 }
 
 /** Évite les doublons pour les messages automatiques (bienvenue, rappel de fiche) : un même
- * évènement (compte, type, éventuellement fiche) n'est jamais envoyé deux fois. */
-export function hasAccountMessage(accountId: string, kind: AccountMessageKind, animalId: string | null = null) {
-  return accountMessages.some(
-    (m) => m.account_id === accountId && m.kind === kind && m.animal_id === animalId
-  );
+ * évènement (compte, type, éventuellement fiche) n'est jamais envoyé deux fois. Interroge le
+ * journal `account_message_log`, pas `account_messages` lui-même : ce dernier peut être vidé
+ * par le compte (suppression définitive depuis la corbeille), auquel cas le message
+ * redeviendrait "jamais envoyé" et serait régénéré en boucle si on se basait dessus (bug réel
+ * rencontré, voir `supabase/migrations/0008_account_message_log.sql` et docs/DECISIONS.md). */
+export async function hasAccountMessage(
+  supabase: SupabaseClient,
+  accountId: string,
+  kind: AccountMessageKind,
+  animalId: string | null = null
+): Promise<boolean> {
+  let query = supabase
+    .from("account_message_log")
+    .select("id", { count: "exact", head: true })
+    .eq("account_id", accountId)
+    .eq("kind", kind);
+  query = animalId === null ? query.is("animal_id", null) : query.eq("animal_id", animalId);
+  const { count } = await query;
+  return (count ?? 0) > 0;
 }
 
-export function sendAccountMessage(input: {
-  account_id: string;
-  kind: AccountMessageKind;
-  subject: string;
-  body: string;
-  animal_id?: string | null;
-}) {
-  accountMessages = [
-    ...accountMessages,
-    {
-      id: `msg-${input.account_id}-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      account_id: input.account_id,
-      kind: input.kind,
-      subject: input.subject,
-      body: input.body,
-      created_at: new Date().toISOString(),
-      read: false,
-      status: "active",
-      animal_id: input.animal_id ?? null,
-    },
-  ];
+/** À appeler juste après `sendAccountMessage` pour un message automatique (jamais pour un
+ * message admin, qui n'a pas de règle "une seule fois") : enregistre définitivement l'envoi
+ * dans le journal, indépendamment du sort de la ligne `account_messages` elle-même. */
+export async function logAutomaticMessageSent(
+  supabase: SupabaseClient,
+  accountId: string,
+  kind: AccountMessageKind,
+  animalId: string | null = null
+): Promise<void> {
+  await supabase
+    .from("account_message_log")
+    .insert({ account_id: accountId, kind, animal_id: animalId });
+}
+
+export async function sendAccountMessage(
+  supabase: SupabaseClient,
+  input: {
+    account_id: string;
+    kind: AccountMessageKind;
+    subject: string;
+    body: string;
+    animal_id?: string | null;
+    /** Date à laquelle ce message aurait réellement été envoyé, si différente de maintenant
+     * (ex. les échéances de l'essai gratuit, générées rétroactivement au premier accès après
+     * plusieurs jours d'absence : sans ce paramètre, "bienvenue" et "dernier jour d'essai"
+     * porteraient tous les deux la date du jour, alors qu'ils datent de moments différents),
+     * voir `ensureAutomaticMessages` (`src/app/espace/layout.tsx`) et docs/DECISIONS.md. */
+    created_at?: string;
+  }
+): Promise<void> {
+  await supabase.from("account_messages").insert({
+    account_id: input.account_id,
+    kind: input.kind,
+    subject: input.subject,
+    body: input.body,
+    created_at: input.created_at ?? new Date().toISOString(),
+    read: false,
+    status: "active",
+    animal_id: input.animal_id ?? null,
+  });
 }
 
 /** Bascule manuelle lu/non lu (pas d'auto-lecture à l'ouverture de l'onglet, retiré après un
  * bug : marquer tout comme lu pendant le rendu de la page faisait disparaître le fond orange
  * des messages avant même que le compte ait pu les voir, voir docs/DECISIONS.md). */
-export function setAccountMessageRead(id: string, read: boolean) {
-  accountMessages = accountMessages.map((m) => (m.id === id ? { ...m, read } : m));
+export async function setAccountMessageRead(
+  supabase: SupabaseClient,
+  id: string,
+  read: boolean
+): Promise<void> {
+  await supabase.from("account_messages").update({ read }).eq("id", id);
 }
 
-function setAccountMessageStatus(id: string, status: MessageStatus) {
-  accountMessages = accountMessages.map((m) => (m.id === id ? { ...m, status } : m));
+async function setAccountMessageStatus(
+  supabase: SupabaseClient,
+  id: string,
+  status: MessageStatus
+): Promise<void> {
+  await supabase.from("account_messages").update({ status }).eq("id", id);
 }
 
-export function archiveAccountMessage(id: string) {
-  setAccountMessageStatus(id, "archived");
+export async function archiveAccountMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setAccountMessageStatus(supabase, id, "archived");
 }
 
-export function unarchiveAccountMessage(id: string) {
-  setAccountMessageStatus(id, "active");
+export async function unarchiveAccountMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setAccountMessageStatus(supabase, id, "active");
 }
 
 /** Suppression douce : passe en corbeille plutôt que de retirer le message tout de suite. */
-export function trashAccountMessage(id: string) {
-  setAccountMessageStatus(id, "trash");
+export async function trashAccountMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setAccountMessageStatus(supabase, id, "trash");
 }
 
-export function restoreAccountMessageFromTrash(id: string) {
-  setAccountMessageStatus(id, "active");
+export async function restoreAccountMessageFromTrash(supabase: SupabaseClient, id: string): Promise<void> {
+  await setAccountMessageStatus(supabase, id, "active");
 }
 
 /** Suppression réelle, uniquement depuis la corbeille. */
-export function deleteAccountMessage(id: string) {
-  accountMessages = accountMessages.filter((m) => m.id !== id);
+export async function deleteAccountMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await supabase.from("account_messages").delete().eq("id", id);
+}
+
+/** Messages envoyés par l'admin (diffusions/réponses, `kind: "admin"`), tous comptes
+ * confondus, pour l'onglet "Envoyés" du panneau admin (`src/app/admin/(protected)/page.tsx`).
+ * Nom du compte destinataire résolu via une jointure plutôt qu'une recherche à part. */
+export async function listSentAdminMessages(
+  supabase: SupabaseClient
+): Promise<(AccountMessage & { accountName: string })[]> {
+  const { data } = await supabase
+    .from("account_messages")
+    .select("*, accounts(nom_affichage)")
+    .eq("kind", "admin")
+    .order("created_at", { ascending: false });
+  return ((data as (AccountMessage & { accounts: { nom_affichage: string } | null })[]) ?? []).map(
+    (m) => ({ ...m, accountName: m.accounts?.nom_affichage ?? "?" })
+  );
 }
 
 /** Utilisé pour retrouver le message d'origine d'un "Répondre" (le rappeler dans le
  * formulaire de diffusion admin), peu importe son statut actuel. */
-export function getSupportMessageById(id: string) {
-  return supportMessages.find((m) => m.id === id);
+export async function getSupportMessageById(
+  supabase: SupabaseClient,
+  id: string
+): Promise<SupportMessage | undefined> {
+  const { data } = await supabase.from("support_messages").select("*").eq("id", id).maybeSingle();
+  return (data as SupportMessage) ?? undefined;
 }
 
-export function listSupportMessages() {
-  return supportMessages
-    .filter((m) => m.status === "active")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listSupportMessages(supabase: SupabaseClient): Promise<SupportMessage[]> {
+  const { data } = await supabase
+    .from("support_messages")
+    .select("*")
+    .eq("status", "active")
+    .order("created_at", { ascending: false });
+  return (data as SupportMessage[]) ?? [];
 }
 
-export function listArchivedSupportMessages() {
-  return supportMessages
-    .filter((m) => m.status === "archived")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listArchivedSupportMessages(supabase: SupabaseClient): Promise<SupportMessage[]> {
+  const { data } = await supabase
+    .from("support_messages")
+    .select("*")
+    .eq("status", "archived")
+    .order("created_at", { ascending: false });
+  return (data as SupportMessage[]) ?? [];
 }
 
-export function listTrashedSupportMessages() {
-  return supportMessages
-    .filter((m) => m.status === "trash")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+export async function listTrashedSupportMessages(supabase: SupabaseClient): Promise<SupportMessage[]> {
+  const { data } = await supabase
+    .from("support_messages")
+    .select("*")
+    .eq("status", "trash")
+    .order("created_at", { ascending: false });
+  return (data as SupportMessage[]) ?? [];
 }
 
 /** Recherche tous les messages "contacter le webmaster", peu importe leur statut (boîte de
  * réception, archives ou corbeille) : sur objet, corps, ou nom du compte expéditeur. Utilisée
  * uniquement quand l'admin tape une recherche (`src/app/admin/(protected)/page.tsx`), ignore
  * alors le filtrage habituel par onglet, voir docs/DECISIONS.md. */
-export function searchSupportMessages(query: string) {
+export async function searchSupportMessages(
+  supabase: SupabaseClient,
+  query: string
+): Promise<SupportMessage[]> {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  return supportMessages
-    .filter((m) => {
-      const account = accounts.find((a) => a.id === m.account_id);
-      return (
-        m.subject.toLowerCase().includes(q) ||
-        m.body.toLowerCase().includes(q) ||
-        (account?.nom_affichage.toLowerCase().includes(q) ?? false)
-      );
-    })
-    .sort((a, b) => b.created_at.localeCompare(a.created_at));
+  const { data } = await supabase
+    .from("support_messages")
+    .select("*, accounts(nom_affichage)")
+    .order("created_at", { ascending: false });
+  return ((data as (SupportMessage & { accounts: { nom_affichage: string } | null })[]) ?? []).filter(
+    (m) =>
+      m.subject.toLowerCase().includes(q) ||
+      m.body.toLowerCase().includes(q) ||
+      (m.accounts?.nom_affichage.toLowerCase().includes(q) ?? false)
+  );
 }
 
-export function countUnreadSupportMessages() {
-  return supportMessages.filter((m) => !m.read && m.status === "active").length;
+export async function countUnreadSupportMessages(supabase: SupabaseClient): Promise<number> {
+  const { count } = await supabase
+    .from("support_messages")
+    .select("*", { count: "exact", head: true })
+    .eq("read", false)
+    .eq("status", "active");
+  return count ?? 0;
 }
 
-function setSupportMessageStatus(id: string, status: MessageStatus) {
-  supportMessages = supportMessages.map((m) => (m.id === id ? { ...m, status } : m));
+async function setSupportMessageStatus(
+  supabase: SupabaseClient,
+  id: string,
+  status: MessageStatus
+): Promise<void> {
+  await supabase.from("support_messages").update({ status }).eq("id", id);
 }
 
-export function archiveSupportMessage(id: string) {
-  setSupportMessageStatus(id, "archived");
+export async function archiveSupportMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setSupportMessageStatus(supabase, id, "archived");
 }
 
-export function unarchiveSupportMessage(id: string) {
-  setSupportMessageStatus(id, "active");
+export async function unarchiveSupportMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setSupportMessageStatus(supabase, id, "active");
 }
 
-export function trashSupportMessage(id: string) {
-  setSupportMessageStatus(id, "trash");
+export async function trashSupportMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await setSupportMessageStatus(supabase, id, "trash");
 }
 
-export function restoreSupportMessageFromTrash(id: string) {
-  setSupportMessageStatus(id, "active");
+export async function restoreSupportMessageFromTrash(supabase: SupabaseClient, id: string): Promise<void> {
+  await setSupportMessageStatus(supabase, id, "active");
 }
 
-export function deleteSupportMessage(id: string) {
-  supportMessages = supportMessages.filter((m) => m.id !== id);
+export async function deleteSupportMessage(supabase: SupabaseClient, id: string): Promise<void> {
+  await supabase.from("support_messages").delete().eq("id", id);
 }
 
-export function sendSupportMessage(input: {
-  account_id: string;
-  reason: SupportReason;
-  subject: string;
-  body: string;
-  photo_url?: string | null;
-}) {
-  supportMessages = [
-    ...supportMessages,
-    {
-      id: `support-${Date.now()}-${Math.round(Math.random() * 1000)}`,
-      account_id: input.account_id,
-      reason: input.reason,
-      subject: input.subject,
-      body: input.body,
-      photo_url: input.photo_url ?? null,
-      created_at: new Date().toISOString(),
-      read: false,
-      status: "active",
-    },
-  ];
-}
-
-/** Même principe que `setAccountMessageRead` : bascule manuelle, pas d'auto-lecture. */
-export function setSupportMessageRead(id: string, read: boolean) {
-  supportMessages = supportMessages.map((m) => (m.id === id ? { ...m, read } : m));
-}
-
-function replaceBadges(animalId: string, badges: { type: TypeBadge; label: string }[]) {
-  animalBadges = animalBadges.filter((b) => b.animal_id !== animalId);
-  badges.forEach((badge, index) => {
-    animalBadges.push({
-      id: `badge-${animalId}-${index}`,
-      animal_id: animalId,
-      type: badge.type,
-      label: badge.label,
-      ordre: index + 1,
-    });
+export async function sendSupportMessage(
+  supabase: SupabaseClient,
+  input: {
+    account_id: string;
+    reason: SupportReason;
+    subject: string;
+    body: string;
+    photo_url?: string | null;
+  }
+): Promise<void> {
+  await supabase.from("support_messages").insert({
+    account_id: input.account_id,
+    reason: input.reason,
+    subject: input.subject,
+    body: input.body,
+    photo_url: input.photo_url ?? null,
+    read: false,
+    status: "active",
   });
 }
 
-function replacePhotos(animalId: string, urls: string[]) {
-  animalPhotos = animalPhotos.filter((p) => p.animal_id !== animalId);
-  urls
+/** Même principe que `setAccountMessageRead` : bascule manuelle, pas d'auto-lecture. */
+export async function setSupportMessageRead(
+  supabase: SupabaseClient,
+  id: string,
+  read: boolean
+): Promise<void> {
+  await supabase.from("support_messages").update({ read }).eq("id", id);
+}
+
+async function replaceBadges(
+  supabase: SupabaseClient,
+  animalId: string,
+  badges: { type: TypeBadge; label: string }[]
+): Promise<void> {
+  await supabase.from("animal_badges").delete().eq("animal_id", animalId);
+  const rows = badges.map((badge, index) => ({
+    animal_id: animalId,
+    type: badge.type,
+    label: badge.label,
+    ordre: index + 1,
+  }));
+  if (rows.length > 0) await supabase.from("animal_badges").insert(rows);
+}
+
+async function replacePhotos(
+  supabase: SupabaseClient,
+  animalId: string,
+  urls: string[]
+): Promise<void> {
+  await supabase.from("animal_photos").delete().eq("animal_id", animalId);
+  const rows = urls
     .map((u) => u.trim())
     .filter(Boolean)
-    .forEach((url, index) => {
-      animalPhotos.push({
-        id: `photo-${animalId}-${index}`,
-        animal_id: animalId,
-        url,
-        ordre: index + 1,
-      });
-    });
+    .map((url, index) => ({ animal_id: animalId, url, ordre: index + 1 }));
+  if (rows.length > 0) await supabase.from("animal_photos").insert(rows);
 }

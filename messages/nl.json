@@ -1,7 +1,8 @@
 {
   "common": {
     "backToSite": "Terug naar onze website",
-    "createdWith": "Gemaakt met Zoodomo, {year}"
+    "createdWith": "Gemaakt met Zoodomo, {year}",
+    "accountUnavailable": "Deze pagina is momenteel niet beschikbaar. Kom snel terug!"
   },
   "account": {
     "discoverAnimals": "Ontdek de beschikbare dieren, per diersoort.",
@@ -91,8 +92,11 @@
       "password": "Wachtwoord",
       "submitting": "Bezig met inloggen...",
       "submit": "Inloggen",
-      "demoTitle": "Demo-accounts (elk wachtwoord werkt):",
       "error": "Onjuist e-mailadres of wachtwoord.",
+      "captchaFailed": "Beveiligingscontrole mislukt. Probeer het opnieuw.",
+      "forgotPassword": "Wachtwoord vergeten?",
+      "emailConfirmed": "E-mail bevestigd! Log in om toegang te krijgen tot uw dashboard.",
+      "linkInvalid": "Deze link is niet meer geldig of is al gebruikt.",
       "heroTitle": "Uw online etalage om uw dieren te presenteren, zonder een regel code te schrijven.",
       "heroSubtitle": "Zoodomo is gemaakt voor asielen en professionele verkopers: presenteer uw dieren voor adoptie of verkoop op een pagina in uw eigen kleuren, te koppelen vanaf uw website of rechtstreeks te delen als u er nog geen heeft.",
       "showPassword": "Wachtwoord tonen",
@@ -108,7 +112,8 @@
       "featurePersonalize": "Geen technische kennis nodig: vul uw fiches in, de weergave is altijd netjes en responsive.",
       "featureLanguages": "Behoud uw identiteit: uw kleuren, uw logo, een pagina die u overal kunt delen, met of zonder website.",
       "featureShare": "Meertalig: uw inhoud en uw bezoekers in het Frans, Nederlands en Engels.",
-      "featureReminders": "Uw dierenfiches altijd up-to-date, met een automatische herinnering als een fiche lang niet is aangepast."
+      "featureReminders": "Uw dierenfiches altijd up-to-date, met een automatische herinnering als een fiche lang niet is aangepast.",
+      "featureTrial": "15 dagen gratis proefperiode, daarna {monthlyPrice} €/maand of {annualPrice} €/jaar."
     },
     "signup": {
       "title": "Maak uw Zoodomo-account aan",
@@ -116,11 +121,42 @@
       "name": "Naam van de activiteit",
       "email": "E-mail",
       "password": "Wachtwoord",
+      "confirmPassword": "Wachtwoord bevestigen",
+      "passwordMismatchError": "De twee wachtwoorden komen niet overeen.",
+      "passwordMinLength": "Minstens 8 tekens",
+      "passwordNeedsDigit": "Minstens 1 cijfer",
+      "passwordNeedsSpecialChar": "Minstens 1 speciaal teken",
+      "passwordTooWeak": "Het wachtwoord voldoet nog niet aan alle vereiste regels.",
+      "captchaFailed": "Beveiligingscontrole mislukt. Probeer het opnieuw.",
       "submit": "Account aanmaken",
       "submitting": "Bezig met aanmaken...",
       "error": "Er bestaat al een account met dit e-mailadres.",
+      "rateLimited": "Te veel recente registratiepogingen. Probeer het over een paar minuten opnieuw.",
       "haveAccount": "Al een account?",
-      "login": "Inloggen"
+      "login": "Inloggen",
+      "closedTitle": "Inschrijvingen tijdelijk gesloten",
+      "closedBody": "We aanvaarden momenteel geen nieuwe inschrijvingen. Kom binnenkort terug, of neem contact met ons op als het dringend is."
+    },
+    "verifyEmail": {
+      "title": "Bevestig uw e-mailadres",
+      "body": "Er is een bevestigingslink verzonden naar {email}. Klik erop om uw account te activeren en toegang te krijgen tot uw dashboard.",
+      "demoNotice": "Geen e-mail ontvangen? Controleer uw spamfolder of vraag hieronder een nieuwe aan.",
+      "linkInvalid": "Deze link is niet meer geldig of is al gebruikt. Vraag hieronder een nieuwe aan.",
+      "resend": "E-mail opnieuw verzenden",
+      "resendConfirmation": "E-mail opnieuw verzonden.",
+      "backToLogin": "Terug naar inloggen"
+    },
+    "trialPopup": {
+      "title": "Uw gratis proefperiode is afgelopen",
+      "body": "Kies een abonnement om Zoodomo te blijven gebruiken en uw openbare pagina online te houden.",
+      "monthlyLabel": "Maandelijks",
+      "monthlyPrice": "{price} €/maand",
+      "annualLabel": "Jaarlijks",
+      "annualPrice": "{price} €/jaar",
+      "annualHint": "2 maanden gratis",
+      "autoRenewNotice": "Automatische verlenging, op elk moment opzegbaar.",
+      "choose": "Kiezen",
+      "close": "Sluiten"
     },
     "legalPage": {
       "termsTitle": "Gebruiksvoorwaarden",
@@ -167,7 +203,9 @@
       "visibleDaysValue": "{days} d",
       "visibleLastDayValue": "Laatste dag",
       "visibleExpiredValue": "Verwijderd van de openbare pagina's",
-      "notApplicable": "-"
+      "notApplicable": "-",
+      "trialBanner": "U heeft nog {days, plural, =0 {uw laatste dag} one {# dag} other {# dagen}} gratis proefperiode.",
+      "trialUpgradeLink": "Overstappen naar een abonnement"
     },
     "fiches": {
       "title": "Mijn dieren",
@@ -328,6 +366,12 @@
       "welcomeBody": "Fijn dat u erbij bent. Om te starten: vul uw gegevens en contactinfo aan in het tabblad Account, voeg uw eerste dierenfiche toe via Mijn dieren, en pas daarna de weergave van uw openbare pagina's aan in het tabblad Personalisatie. Daarna kunt u de link naar uw pagina's delen waar u wilt.",
       "staleSubject": "Controleer de fiche van {name}",
       "staleBody": "De fiche van {name} is al meer dan {days} dagen niet gewijzigd. Controleer via Mijn dieren of ze nog up-to-date is (beschikbaarheid, gegevens).",
+      "trialSubject": "Uw gratis proefperiode van {days} dagen is begonnen",
+      "trialBody": "U geniet vanaf vandaag van {days} dagen gratis proefperiode. Aan het einde van deze periode wordt u een maandelijks of jaarlijks abonnement voorgesteld om verder te gaan (u kunt hier ook nu al naar overstappen vanuit het Dashboard). Na een termijn van {hours}u na het einde van de proefperiode is uw openbare pagina niet meer zichtbaar voor bezoekers zolang er geen abonnement is gekozen.",
+      "trialReminder4Subject": "Nog 4 dagen gratis proefperiode",
+      "trialReminder4Body": "Uw gratis proefperiode eindigt over 4 dagen. Kies nu een abonnement vanuit het Dashboard om de toegang tot uw openbare pagina niet te onderbreken.",
+      "trialReminder1Subject": "Laatste dag gratis proefperiode",
+      "trialReminder1Body": "Uw gratis proefperiode eindigt morgen. Kies nu een abonnement vanuit het Dashboard: na een termijn van {hours}u na het einde van de proefperiode is uw openbare pagina niet meer zichtbaar voor bezoekers zolang er geen abonnement is gekozen.",
       "contactTitle": "Contacteer de webmaster",
       "contactReasonLabel": "Reden",
       "contactReasonBug": "Technisch probleem / bug",
@@ -417,6 +461,43 @@
       },
       "savedConfirmation": "Wijzigingen opgeslagen!",
       "save": "Opslaan"
+    },
+    "forgotPassword": {
+      "title": "Wachtwoord vergeten",
+      "subtitle": "Voer uw e-mailadres in, we sturen u een link om een nieuw wachtwoord te kiezen.",
+      "email": "E-mail",
+      "submit": "Link verzenden",
+      "submitting": "Verzenden...",
+      "submittedTitle": "Controleer uw mailbox",
+      "submittedBody": "Als er een account bestaat met dit e-mailadres, is er zojuist een e-mail met een resetlink verzonden.",
+      "linkInvalid": "Deze link is niet meer geldig of is al gebruikt. Vraag hieronder een nieuwe aan.",
+      "captchaFailed": "Beveiligingscontrole mislukt. Probeer het opnieuw.",
+      "backToLogin": "Terug naar inloggen"
+    },
+    "resetPassword": {
+      "title": "Kies een nieuw wachtwoord",
+      "subtitle": "Uw nieuwe wachtwoord moet verschillen van het oude.",
+      "newPassword": "Nieuw wachtwoord",
+      "confirmNewPassword": "Bevestig het nieuwe wachtwoord",
+      "passwordMinLength": "Minstens 8 tekens",
+      "passwordNeedsDigit": "Minstens 1 cijfer",
+      "passwordNeedsSpecialChar": "Minstens 1 speciaal teken",
+      "passwordTooWeak": "Het wachtwoord voldoet nog niet aan alle vereiste regels.",
+      "samePassword": "Dit wachtwoord is hetzelfde als het oude. Kies een ander wachtwoord.",
+      "weakPassword": "Dit wachtwoord is te makkelijk te raden (al gezien in bekende datalekken). Kies een ander wachtwoord.",
+      "passwordMismatchError": "De twee wachtwoorden komen niet overeen.",
+      "submit": "Wachtwoord opslaan",
+      "submitting": "Opslaan...",
+      "error": "Er is een fout opgetreden. Vraag een nieuwe resetlink aan."
+    }
+  },
+  "email": {
+    "verify": {
+      "subject": "Bevestig uw Zoodomo e-mailadres",
+      "title": "Welkom bij Zoodomo!",
+      "body": "Klik op de onderstaande knop om uw e-mailadres te bevestigen en uw account te activeren.",
+      "cta": "Account bevestigen",
+      "ignore": "Als u zich niet hebt aangemeld, kunt u deze e-mail negeren."
     }
   }
 }

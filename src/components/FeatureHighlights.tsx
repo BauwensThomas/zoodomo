@@ -1,5 +1,6 @@
 import { CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { MONTHLY_PRICE_EUR, ANNUAL_PRICE_EUR } from "@/lib/pricing";
 
 export function FeatureHighlights() {
   const t = useTranslations("admin.login");
@@ -9,6 +10,7 @@ export function FeatureHighlights() {
     t("featureLanguages"),
     t("featureShare"),
     t("featureReminders"),
+    t("featureTrial", { monthlyPrice: MONTHLY_PRICE_EUR, annualPrice: ANNUAL_PRICE_EUR }),
   ];
 
   return (

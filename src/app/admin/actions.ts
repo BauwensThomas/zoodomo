@@ -1,7 +1,7 @@
 "use server";
 
 import { timingSafeEqual } from "crypto";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
@@ -14,7 +14,17 @@ import {
   deleteSupportMessage,
   setSupportMessageRead,
 } from "@/lib/mock";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { ADMIN_SESSION_COOKIE_NAME, isAdminSession } from "@/lib/mock/admin-auth";
+import { isBlocked, recordFailedAttempt, resetAttempts } from "@/lib/mock/admin-login-attempts";
+
+/** IP du visiteur depuis les headers de la requête (`x-forwarded-for` posé par le proxy/CDN
+ * en production, ex. Vercel) ; repli sur une clé unique si absente (dev local direct). */
+async function getClientKey(): Promise<string> {
+  const hdrs = await headers();
+  const forwarded = hdrs.get("x-forwarded-for");
+  return forwarded?.split(",")[0].trim() || hdrs.get("x-real-ip") || "local";
+}
 
 export interface AdminLoginState {
   error?: string;
@@ -37,6 +47,13 @@ export async function adminLoginAction(
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
 
+  const clientKey = await getClientKey();
+  const blockedUntil = isBlocked(clientKey);
+  if (blockedUntil) {
+    const minutes = Math.max(1, Math.ceil((blockedUntil - Date.now()) / 60_000));
+    return { error: `Trop de tentatives échouées. Réessayez dans ${minutes} minute(s).` };
+  }
+
   const expectedEmail = (process.env.ZOODOMO_ADMIN_EMAIL || "").trim().toLowerCase();
   const expectedPassword = process.env.ZOODOMO_ADMIN_PASSWORD || "";
 
@@ -46,11 +63,13 @@ export async function adminLoginAction(
     email !== expectedEmail ||
     !safeCompare(password, expectedPassword)
   ) {
+    recordFailedAttempt(clientKey);
     // Page admin volontairement en français uniquement (équipe Zoodomo interne),
     // pas de next-intl ici contrairement au reste de l'app.
     return { error: "Email ou mot de passe incorrect." };
   }
 
+  resetAttempts(clientKey);
   const store = await cookies();
   store.set(ADMIN_SESSION_COOKIE_NAME, "true", {
     httpOnly: true,
@@ -89,7 +108,9 @@ export async function sendAdminBroadcastAction(
   const target = String(formData.get("target") || "tous");
   const get = (name: string) => String(formData.get(name) || "").trim();
 
-  const accounts = target === "tous" ? listAccounts() : listAccounts().filter((a) => a.id === target);
+  const admin = createAdminClient();
+  const allAccounts = await listAccounts(admin);
+  const accounts = target === "tous" ? allAccounts : allAccounts.filter((a) => a.id === target);
 
   let sentAny = false;
   for (const account of accounts) {
@@ -97,7 +118,7 @@ export async function sendAdminBroadcastAction(
     const subject = get(`subject_${locale}`);
     const body = get(`body_${locale}`);
     if (!subject || !body) continue;
-    sendAccountMessage({ account_id: account.id, kind: "admin", subject, body });
+    await sendAccountMessage(admin, { account_id: account.id, kind: "admin", subject, body });
     sentAny = true;
   }
   if (!sentAny) return initialSaved;
@@ -106,7 +127,7 @@ export async function sendAdminBroadcastAction(
   // une fois la réponse effectivement envoyée, ce message d'origine est considéré traité et
   // archivé automatiquement, voir docs/DECISIONS.md.
   const replyMessageId = get("replyMessageId");
-  if (replyMessageId) archiveSupportMessage(replyMessageId);
+  if (replyMessageId) await archiveSupportMessage(admin, replyMessageId);
 
   revalidatePath("/espace", "layout");
   revalidatePath("/admin");
@@ -116,41 +137,41 @@ export async function sendAdminBroadcastAction(
 export async function archiveSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  archiveSupportMessage(messageId);
+  await archiveSupportMessage(createAdminClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function unarchiveSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  unarchiveSupportMessage(messageId);
+  await unarchiveSupportMessage(createAdminClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function trashSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  trashSupportMessage(messageId);
+  await trashSupportMessage(createAdminClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function restoreSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  restoreSupportMessageFromTrash(messageId);
+  await restoreSupportMessageFromTrash(createAdminClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function deleteSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  deleteSupportMessage(messageId);
+  await deleteSupportMessage(createAdminClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function setSupportMessageReadAction(messageId: string, read: boolean) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  setSupportMessageRead(messageId, read);
+  await setSupportMessageRead(createAdminClient(), messageId, read);
   revalidatePath("/admin");
 }

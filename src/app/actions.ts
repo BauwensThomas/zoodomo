@@ -4,6 +4,7 @@ import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { LOCALES, type Locale } from "@/types";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import { updateAccountLangueInterface } from "@/lib/mock/store";
 
 export async function setLocaleAction(locale: Locale) {
@@ -16,7 +17,8 @@ export async function setLocaleAction(locale: Locale) {
     // voir DECISIONS.md.
     const account = await getSessionAccount();
     if (account) {
-      updateAccountLangueInterface(account.id, locale);
+      const supabase = await createClient();
+      await updateAccountLangueInterface(supabase, account.id, locale);
     }
 
     revalidatePath("/", "layout");

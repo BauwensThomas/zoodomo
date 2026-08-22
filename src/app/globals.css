@@ -31,3 +31,12 @@ body {
   background: var(--background);
   color: var(--foreground);
 }
+
+/* Edge (et l'ancien IE) affichent leur propre icône "œil" native dans les champs mot de
+   passe, superposée pile à l'endroit du bouton œil personnalisé (Lucide) : elle intercepte
+   le clic à la place du bouton, qui semble alors "ne rien faire". Désactivée partout où un
+   champ mot de passe existe (connexion, inscription, admin). */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}

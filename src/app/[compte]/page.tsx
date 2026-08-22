@@ -13,6 +13,7 @@ import {
   localesWithContent,
 } from "@/lib/mock";
 import { getEspeceIcon } from "@/lib/species-icons";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Locale } from "@/types";
 
 export default async function CompteIndexPage({
@@ -21,12 +22,20 @@ export default async function CompteIndexPage({
   params: Promise<{ compte: string }>;
 }) {
   const { compte } = await params;
-  const account = getAccountBySlug(compte);
+  const supabase = createAdminClient();
+  const account = await getAccountBySlug(supabase, compte);
   if (!account) notFound();
 
-  const especes = getEspecesAvecAnimauxVisibles(account.id);
-  const photos = getAccountPhotos(account.id);
-  const theme = getAccountTheme(account.id);
+  const especes = await getEspecesAvecAnimauxVisibles(supabase, account.id);
+  const [photos, theme] = await Promise.all([
+    getAccountPhotos(supabase, account.id),
+    getAccountTheme(supabase, account.id),
+  ]);
+  const especeAnimalCounts = new Map(
+    await Promise.all(
+      especes.map(async (e) => [e.id, (await getAnimauxVisibles(supabase, account.id, e.id)).length] as const)
+    )
+  );
   const dispositionEspeces = theme?.disposition_especes ?? "liste";
   const dispositionPresentation = theme?.disposition_presentation ?? "photo_texte";
   const t = await getTranslations("account");
@@ -88,7 +97,7 @@ export default async function CompteIndexPage({
             {especes.map((espece) => {
               const Icon = getEspeceIcon(espece.slug);
               const nom = tSpecies.has(espece.slug) ? tSpecies(espece.slug) : espece.nom;
-              const count = getAnimauxVisibles(account.id, espece.id).length;
+              const count = especeAnimalCounts.get(espece.id) ?? 0;
               return (
                 <li key={espece.id}>
                   <Link

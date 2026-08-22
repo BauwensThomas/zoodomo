@@ -1,7 +1,7 @@
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Account, Animal, Locale } from "@/types";
 import { mockEspeces } from "./especes";
 import {
-  listAccounts,
   listAnimauxByAccountAll,
   listBadgesForAnimalMutable,
   listPhotosForAnimalMutable,
@@ -10,16 +10,54 @@ import {
   countViewsForAnimal,
 } from "./store";
 
-export function getViewCount(animalId: string) {
-  return countViewsForAnimal(animalId);
+export async function getViewCount(supabase: SupabaseClient, animalId: string): Promise<number> {
+  return countViewsForAnimal(supabase, animalId);
+}
+
+/** Durée de l'essai gratuit en jours, à partir de l'inscription (`Account.created_at`). */
+export const TRIAL_DAYS = 15;
+
+/** Jours restants d'essai gratuit, calculés à la volée à partir de `created_at` (jamais
+ * stockés/décrémentés) pour ne jamais dériver, même si le serveur redémarre entre-temps.
+ * `0` le dernier jour encore gratuit, négatif une fois l'essai expiré. Sans objet (retourne
+ * `null`) pour un compte qui n'est plus en essai (`plan !== "essai"`). */
+export function trialDaysRemaining(account: Account): number | null {
+  if (account.plan !== "essai") return null;
+  const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
+  return Math.ceil(TRIAL_DAYS - elapsedDays);
+}
+
+export function isTrialExpired(account: Account): boolean {
+  const remaining = trialDaysRemaining(account);
+  return remaining !== null && remaining < 0;
+}
+
+/** Délai de grâce après la fin de l'essai gratuit pendant lequel la page publique reste
+ * visible malgré tout (laisse le temps de voir le popup obligatoire et de passer à un
+ * abonnement sans que la page ne disparaisse brutalement, ex. un week-end). */
+export const GRACE_HOURS = 48;
+
+/** `true` une fois l'essai ET le délai de grâce épuisés pour un compte resté en `"essai"` :
+ * ses pages publiques (`/[compte]/...`) doivent alors afficher un message d'indisponibilité
+ * plutôt que leur contenu normal, voir `src/app/[compte]/layout.tsx`. Un compte sur un vrai
+ * plan (`"mensuel"`/`"annuel"`) n'est jamais concerné. */
+export function isPublicPageBlocked(account: Account): boolean {
+  if (account.plan !== "essai") return false;
+  const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
+  return elapsedDays > TRIAL_DAYS + GRACE_HOURS / 24;
 }
 
 /** Nombre de jours sans modification à partir duquel une fiche "disponible" est considérée
  * comme potentiellement obsolète (rappel automatique dans l'onglet Messages). */
 export const STALE_FICHE_DAYS = 30;
 
-export function getStaleFichesDisponibles(accountId: string, thresholdDays: number = STALE_FICHE_DAYS) {
-  return listAnimauxByAccountAll(accountId).filter((a) => {
+export async function getStaleFichesDisponibles(
+  supabase: SupabaseClient,
+  accountId: string,
+  thresholdDays: number = STALE_FICHE_DAYS
+): Promise<Animal[]> {
+  const animaux = await listAnimauxByAccountAll(supabase, accountId);
+  return animaux.filter((a) => {
     if (a.statut !== "disponible") return false;
     const elapsedDays = (Date.now() - new Date(a.updated_at).getTime()) / 86_400_000;
     return elapsedDays >= thresholdDays;
@@ -79,16 +117,20 @@ export function visibiliteState(animal: Animal): VisibiliteResult {
   return { state: "expired" };
 }
 
-export function getAccountBySlug(slug: string) {
-  return listAccounts().find((a) => a.slug === slug);
+export async function getAccountBySlug(
+  supabase: SupabaseClient,
+  slug: string
+): Promise<Account | undefined> {
+  const { data } = await supabase.from("accounts").select("*").eq("slug", slug).maybeSingle();
+  return (data as Account) ?? undefined;
 }
 
-export function getAccountTheme(accountId: string) {
-  return getAccountThemeMutable(accountId);
+export async function getAccountTheme(supabase: SupabaseClient, accountId: string) {
+  return getAccountThemeMutable(supabase, accountId);
 }
 
-export function getAccountPhotos(accountId: string) {
-  return listAccountPhotosMutable(accountId);
+export async function getAccountPhotos(supabase: SupabaseClient, accountId: string) {
+  return listAccountPhotosMutable(supabase, accountId);
 }
 
 export function getEspeceBySlug(slug: string) {
@@ -100,39 +142,35 @@ export function getEspeceById(id: string) {
 }
 
 /** Espèces pour lesquelles ce compte a au moins un animal visible publiquement, triées comme le référentiel global. */
-export function getEspecesAvecAnimauxVisibles(accountId: string) {
-  const especeIds = new Set(
-    listAnimauxByAccountAll(accountId)
-      .filter(isAnimalVisiblePublicly)
-      .map((a) => a.espece_id)
-  );
-  return mockEspeces
-    .filter((e) => especeIds.has(e.id))
-    .sort((a, b) => a.ordre - b.ordre);
+export async function getEspecesAvecAnimauxVisibles(supabase: SupabaseClient, accountId: string) {
+  const animaux = await listAnimauxByAccountAll(supabase, accountId);
+  const especeIds = new Set(animaux.filter(isAnimalVisiblePublicly).map((a) => a.espece_id));
+  return mockEspeces.filter((e) => especeIds.has(e.id)).sort((a, b) => a.ordre - b.ordre);
 }
 
-export function getAnimauxVisibles(accountId: string, especeId: string) {
-  return listAnimauxByAccountAll(accountId).filter(
-    (a) => a.espece_id === especeId && isAnimalVisiblePublicly(a)
-  );
+export async function getAnimauxVisibles(supabase: SupabaseClient, accountId: string, especeId: string) {
+  const animaux = await listAnimauxByAccountAll(supabase, accountId);
+  return animaux.filter((a) => a.espece_id === especeId && isAnimalVisiblePublicly(a));
 }
 
-export function getAnimalVisibleBySlug(
+export async function getAnimalVisibleBySlug(
+  supabase: SupabaseClient,
   accountId: string,
   especeId: string,
   slug: string
-): Animal | undefined {
-  return listAnimauxByAccountAll(accountId).find(
+): Promise<Animal | undefined> {
+  const animaux = await listAnimauxByAccountAll(supabase, accountId);
+  return animaux.find(
     (a) => a.espece_id === especeId && a.slug === slug && isAnimalVisiblePublicly(a)
   );
 }
 
-export function getBadgesForAnimal(animalId: string) {
-  return listBadgesForAnimalMutable(animalId);
+export async function getBadgesForAnimal(supabase: SupabaseClient, animalId: string) {
+  return listBadgesForAnimalMutable(supabase, animalId);
 }
 
-export function getPhotosForAnimal(animalId: string) {
-  return listPhotosForAnimalMutable(animalId);
+export async function getPhotosForAnimal(supabase: SupabaseClient, animalId: string) {
+  return listPhotosForAnimalMutable(supabase, animalId);
 }
 
 /**
@@ -154,7 +192,10 @@ export type SexeLabelKey =
   | "femaleNeutered"
   | "femaleNotNeutered";
 
-/** Renvoie une clé de traduction (namespace "animal") plutôt qu'un texte, résolue à l'affichage. */
+/** Renvoie une clé de traduction (namespace "animal") plutôt qu'un texte, résolue à l'affichage.
+ * Fonction pure : appelée aussi depuis des composants `"use client"` (panneau de
+ * visualisation, voir `src/components/preview/`), reste volontairement synchrone et sans
+ * client Supabase. */
 export function getSexeLabelKey(animal: Animal): SexeLabelKey | null {
   if (!animal.sexe) return null;
   if (animal.sterilise === null) return animal.sexe === "male" ? "male" : "female";
@@ -164,7 +205,8 @@ export function getSexeLabelKey(animal: Animal): SexeLabelKey | null {
 
 /**
  * Résout un champ multilingue (description, foyer idéal) dans la langue demandée,
- * avec repli sur les autres langues actives du compte si la traduction manque.
+ * avec repli sur les autres langues actives du compte si la traduction manque. Fonction
+ * pure, mêmes raisons que `getSexeLabelKey` ci-dessus.
  */
 export function pickLocalized(
   value: Partial<Record<Locale, string>> | null | undefined,
@@ -182,7 +224,8 @@ export function pickLocalized(
 /**
  * Langues pour lesquelles un champ multilingue (description, foyer idéal) a du contenu.
  * Sert à avertir le visiteur quand `pickLocalized` retombe sur une autre langue que la
- * sienne (ex. compte qui n'écrit qu'en français, visiteur en néerlandais).
+ * sienne (ex. compte qui n'écrit qu'en français, visiteur en néerlandais). Fonction pure,
+ * mêmes raisons que `getSexeLabelKey` ci-dessus.
  */
 export function localesWithContent(
   value: Partial<Record<Locale, string>> | null | undefined

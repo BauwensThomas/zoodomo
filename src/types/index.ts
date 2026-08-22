@@ -88,6 +88,16 @@ export interface Account {
    * `src/i18n/request.ts`, `DECISIONS.md`.
    */
   langue_interface: Locale | null;
+  /**
+   * `"essai"` pendant les 15 jours gratuits suivant l'inscription (`TRIAL_DAYS`,
+   * `src/lib/mock/helpers.ts`, calculé à partir de `created_at`, jamais stocké tel quel pour
+   * éviter un décompte qui dérive). Passe à `"mensuel"` ou `"annuel"` une fois un plan choisi
+   * dans le popup affiché après expiration de l'essai (`src/app/espace/PlanPopup.tsx`). Pas de
+   * vrai paiement Paddle branché pour l'instant (V1.1, voir `docs/BRIEF-COMPLET-SAAS-ANIMAUX.md`
+   * section 8) : ce champ suit uniquement le choix du compte, prêt à être relié à un vrai
+   * abonnement plus tard sans changer sa forme.
+   */
+  plan: "essai" | "mensuel" | "annuel";
   created_at: string;
 }
 
@@ -217,7 +227,13 @@ export interface AnimalView {
   viewed_at: string;
 }
 
-export type AccountMessageKind = "bienvenue" | "rappel_fiche" | "admin";
+export type AccountMessageKind =
+  | "bienvenue"
+  | "rappel_fiche"
+  | "essai_gratuit"
+  | "essai_rappel_4j"
+  | "essai_rappel_1j"
+  | "admin";
 
 /** Trois états mutuellement exclusifs plutôt que des booléens indépendants (`archived`
  * + un futur `deleted`) : évite les combinaisons ambiguës (un message archivé ET supprimé

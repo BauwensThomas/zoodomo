@@ -14,6 +14,7 @@ import {
   pickLocalized,
   localesWithContent,
 } from "@/lib/mock";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Animal, AnimalBadge, AnimalPhoto, Locale, TypeBadge } from "@/types";
 
 const BADGE_ICONS: Record<TypeBadge, typeof Star> = {
@@ -217,15 +218,26 @@ export default async function EspeceGaleriePage({
   params: Promise<{ compte: string; espece: string }>;
 }) {
   const { compte, espece: especeSlug } = await params;
-  const account = getAccountBySlug(compte);
+  const supabase = createAdminClient();
+  const account = await getAccountBySlug(supabase, compte);
   if (!account) notFound();
 
   const espece = getEspeceBySlug(especeSlug);
   if (!espece) notFound();
 
-  const animaux = getAnimauxVisibles(account.id, espece.id);
-  const theme = getAccountTheme(account.id);
+  const animaux = await getAnimauxVisibles(supabase, account.id, espece.id);
+  const theme = await getAccountTheme(supabase, account.id);
   const disposition = theme?.disposition_photos ?? "grille";
+  const photosByAnimalId = new Map(
+    await Promise.all(
+      animaux.map(async (a) => [a.id, await getPhotosForAnimal(supabase, a.id)] as const)
+    )
+  );
+  const badgesByAnimalId = new Map(
+    await Promise.all(
+      animaux.map(async (a) => [a.id, await getBadgesForAnimal(supabase, a.id)] as const)
+    )
+  );
   const t = await getTranslations("gallery");
   const tStatus = await getTranslations("status");
   const tSpecies = await getTranslations("species");
@@ -256,8 +268,8 @@ export default async function EspeceGaleriePage({
       ) : disposition === "empilee" || disposition === "alternee" ? (
         <div className="mt-8 flex flex-col gap-5">
           {animaux.map((animal, index) => {
-            const photo = getPhotosForAnimal(animal.id)[0];
-            const badges = getBadgesForAnimal(animal.id);
+            const photo = photosByAnimalId.get(animal.id)?.[0];
+            const badges = badgesByAnimalId.get(animal.id) ?? [];
             return (
               <AnimalRow
                 key={animal.id}
@@ -280,8 +292,8 @@ export default async function EspeceGaleriePage({
       ) : (
         <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {animaux.map((animal, index) => {
-            const photo = getPhotosForAnimal(animal.id)[0];
-            const badges = getBadgesForAnimal(animal.id);
+            const photo = photosByAnimalId.get(animal.id)?.[0];
+            const badges = badgesByAnimalId.get(animal.id) ?? [];
             return (
               <AnimalCard
                 key={animal.id}

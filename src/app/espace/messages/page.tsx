@@ -5,6 +5,8 @@ import {
   Sparkles,
   Clock,
   Megaphone,
+  Gift,
+  Hourglass,
   Trash2,
   Archive,
   ArchiveRestore,
@@ -15,6 +17,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import { TabLink } from "@/components/TabLink";
 import {
   listAccountMessages,
@@ -22,7 +25,10 @@ import {
   listTrashedAccountMessages,
   getAnimalById,
   STALE_FICHE_DAYS,
+  TRIAL_DAYS,
+  GRACE_HOURS,
 } from "@/lib/mock";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import {
   archiveMessageAction,
   unarchiveMessageAction,
@@ -36,6 +42,9 @@ import type { AccountMessage, AccountMessageKind, Locale } from "@/types";
 const KIND_ICON: Record<AccountMessageKind, LucideIcon> = {
   bienvenue: Sparkles,
   rappel_fiche: Clock,
+  essai_gratuit: Gift,
+  essai_rappel_4j: Hourglass,
+  essai_rappel_1j: Hourglass,
   admin: Megaphone,
 };
 
@@ -47,20 +56,33 @@ const KIND_ICON: Record<AccountMessageKind, LucideIcon> = {
  * texte de l'app. `subject`/`body` stockés à la création restent une simple valeur de repli
  * si jamais l'animal concerné a été supprimé depuis, voir docs/DECISIONS.md.
  */
-function renderMessageText(
+async function renderMessageText(
+  supabase: SupabaseClient,
   message: AccountMessage,
   t: Awaited<ReturnType<typeof getTranslations<"admin.messages">>>
-): { subject: string; body: string } {
+): Promise<{ subject: string; body: string }> {
   if (message.kind === "bienvenue") {
     return { subject: t("welcomeSubject"), body: t("welcomeBody") };
   }
   if (message.kind === "rappel_fiche") {
-    const animal = message.animal_id ? getAnimalById(message.animal_id) : undefined;
+    const animal = message.animal_id ? await getAnimalById(supabase, message.animal_id) : undefined;
     if (!animal) return { subject: message.subject, body: message.body };
     return {
       subject: t("staleSubject", { name: animal.nom }),
       body: t("staleBody", { name: animal.nom, days: STALE_FICHE_DAYS }),
     };
+  }
+  if (message.kind === "essai_gratuit") {
+    return {
+      subject: t("trialSubject", { days: TRIAL_DAYS }),
+      body: t("trialBody", { days: TRIAL_DAYS, hours: GRACE_HOURS }),
+    };
+  }
+  if (message.kind === "essai_rappel_4j") {
+    return { subject: t("trialReminder4Subject"), body: t("trialReminder4Body") };
+  }
+  if (message.kind === "essai_rappel_1j") {
+    return { subject: t("trialReminder1Subject"), body: t("trialReminder1Body", { hours: GRACE_HOURS }) };
   }
   return { subject: message.subject, body: message.body };
 }
@@ -83,12 +105,19 @@ export default async function MessagesPage({
   const locale = (await getLocale()) as Locale;
   const dateLocale = locale === "en" ? "en-GB" : locale;
 
+  const supabase = await createClient();
   const messages =
     view === "archives"
-      ? listArchivedAccountMessages(account.id)
+      ? await listArchivedAccountMessages(supabase, account.id)
       : view === "corbeille"
-        ? listTrashedAccountMessages(account.id)
-        : listAccountMessages(account.id);
+        ? await listTrashedAccountMessages(supabase, account.id)
+        : await listAccountMessages(supabase, account.id);
+
+  const renderedByMessageId = new Map(
+    await Promise.all(
+      messages.map(async (m) => [m.id, await renderMessageText(supabase, m, t)] as const)
+    )
+  );
 
   const tabs: { key: View; href: string; label: string }[] = [
     { key: "inbox", href: "/espace/messages", label: t("inbox") },
@@ -129,7 +158,7 @@ export default async function MessagesPage({
         <div className="mt-6 space-y-3">
           {messages.map((message) => {
             const Icon = KIND_ICON[message.kind];
-            const { subject, body } = renderMessageText(message, t);
+            const { subject, body } = renderedByMessageId.get(message.id)!;
             return (
               <div
                 key={message.id}

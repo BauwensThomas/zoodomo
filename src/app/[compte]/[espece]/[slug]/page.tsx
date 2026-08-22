@@ -27,11 +27,12 @@ import {
   getSexeLabelKey,
   pickLocalized,
   localesWithContent,
-  recordAnimalView,
 } from "@/lib/mock";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { PrintButton } from "@/components/PrintButton";
 import { ShareButton } from "@/components/ShareButton";
+import { RecordAnimalView } from "@/components/RecordAnimalView";
 import type { Locale } from "@/types";
 
 export default async function AnimalPage({
@@ -40,21 +41,20 @@ export default async function AnimalPage({
   params: Promise<{ compte: string; espece: string; slug: string }>;
 }) {
   const { compte, espece: especeSlug, slug } = await params;
-  const account = getAccountBySlug(compte);
+  const supabase = createAdminClient();
+  const account = await getAccountBySlug(supabase, compte);
   if (!account) notFound();
 
   const espece = getEspeceBySlug(especeSlug);
   if (!espece) notFound();
 
-  const animal = getAnimalVisibleBySlug(account.id, espece.id, slug);
+  const animal = await getAnimalVisibleBySlug(supabase, account.id, espece.id, slug);
   if (!animal) notFound();
 
-  // Compteur de vues basique : chaque affichage de la fiche compte comme une vue (voir
-  // `recordAnimalView` dans src/lib/mock/store.ts pour le détail des limites assumées).
-  recordAnimalView(animal.id);
-
-  const photos = getPhotosForAnimal(animal.id);
-  const badges = getBadgesForAnimal(animal.id);
+  const [photos, badges] = await Promise.all([
+    getPhotosForAnimal(supabase, animal.id),
+    getBadgesForAnimal(supabase, animal.id),
+  ]);
   const contact = resolveContact(animal, account);
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("animal");
@@ -160,6 +160,7 @@ export default async function AnimalPage({
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-12 print:px-0 print:py-4">
+      <RecordAnimalView animalId={animal.id} />
       {/* Version écran : masquée à l'impression (`print:hidden`), remplacée par la version
           imprimable ci-dessous qui suit un ordre et une mise en page différents (coordonnées
           du compte en haut à côté de son nom, infos avant les photos, tout compacté pour

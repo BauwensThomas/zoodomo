@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { CheckCircle2, Plus } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
+import { createClient } from "@/lib/supabase/server";
 import {
   listAnimauxByAccountAll,
   getEspeceById,
@@ -31,7 +32,11 @@ export default async function MesFichesPage({
   const locale = (await getLocale()) as Locale;
   const dateLocale = locale === "en" ? "en-GB" : locale;
 
-  const animaux = listAnimauxByAccountAll(account.id);
+  const supabase = await createClient();
+  const animaux = await listAnimauxByAccountAll(supabase, account.id);
+  const vuesParAnimal = new Map(
+    await Promise.all(animaux.map(async (a) => [a.id, await getViewCount(supabase, a.id)] as const))
+  );
 
   const rows: FicheRow[] = animaux.map((animal) => {
     const espece = getEspeceById(animal.espece_id);
@@ -54,7 +59,7 @@ export default async function MesFichesPage({
       date_arrivee: animal.date_arrivee,
       origine: animal.origine,
       prix: animal.prix,
-      vues: getViewCount(animal.id),
+      vues: vuesParAnimal.get(animal.id) ?? 0,
       statut: animal.statut,
       created_at: animal.created_at,
       updated_at: animal.updated_at,
