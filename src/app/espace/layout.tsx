@@ -144,17 +144,17 @@ export default async function EspaceLayout({ children }: { children: React.React
             remonté par l'utilisateur). Avec `flex-wrap`, le nom du compte (`order-3 w-full`
             en mobile uniquement) passe automatiquement à la ligne sous le logo/les actions
             au lieu de les chevaucher, et repasse sur la même ligne dès que la largeur
-            disponible le permet (`sm:order-none sm:w-auto`, réordonné à l'identique du
+            disponible le permet (`sm:order-0 sm:w-auto`, réordonné à l'identique du
             layout desktop d'origine). Bouton Déconnexion réduit à son icône seule en
             dessous de `sm:` pour laisser plus de place, voir docs/DECISIONS.md. */}
         <div className="mx-auto flex max-w-[100rem] flex-wrap items-center justify-between gap-x-3 gap-y-1.5 px-4 py-3 sm:flex-nowrap sm:px-6">
           <Link href="/espace" className="shrink-0">
             <ZoodomoLogo width={110} />
           </Link>
-          <span className="order-3 w-full min-w-0 truncate text-center text-sm font-medium text-foreground sm:order-none sm:w-auto sm:flex-1">
+          <span className="order-3 w-full min-w-0 truncate text-center text-sm font-medium text-foreground sm:order-0 sm:w-auto sm:flex-1">
             {account.nom_affichage}
           </span>
-          <div className="order-2 flex shrink-0 items-center gap-2 sm:order-none sm:gap-3">
+          <div className="order-2 flex shrink-0 items-center gap-2 sm:order-0 sm:gap-3">
             <form action={logoutAction}>
               <button
                 type="submit"
