@@ -1,0 +1,25 @@
+name: Keep Supabase alive
+
+# Le projet Supabase est sur le plan gratuit, qui met la base en pause après 7 jours sans
+# requête SQL. Ce workflow fait une vraie requête (pas un simple ping HTTP) tous les 3 jours
+# pour éviter la pause. NE PAS DÉSACTIVER tant que le projet reste sur ce plan (voir
+# docs/TODO.md/DECISIONS.md), sous peine de devoir réactiver la base manuellement depuis le
+# dashboard Supabase après une pause.
+on:
+  schedule:
+    - cron: "0 6 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install @supabase/supabase-js
+      - run: node scripts/ping-supabase.mjs
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
