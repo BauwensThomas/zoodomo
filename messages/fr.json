@@ -251,7 +251,6 @@
       "cookieNextLocale": "Mémorise la langue choisie (français, néerlandais ou anglais). Durée : 1 an.",
       "cookieTheme": "Mémorise votre préférence d'affichage clair ou sombre. Durée : 1 an.",
       "cookieAuth": "Maintient votre session connectée si vous gérez un compte professionnel (posé par Supabase Auth, notre fournisseur d'authentification). Durée : liée à la session.",
-      "cookieAdminSession": "Maintient la session de l'équipe Zoodomo dans le panneau d'administration interne. Durée : 8 heures.",
       "cookieConsentAck": "Mémorise que vous avez pris connaissance du bandeau de cookies. Durée : 1 an."
     },
     "dashboard": {

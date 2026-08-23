@@ -251,7 +251,6 @@
       "cookieNextLocale": "Remembers your chosen language (French, Dutch, or English). Duration: 1 year.",
       "cookieTheme": "Remembers your light/dark display preference. Duration: 1 year.",
       "cookieAuth": "Keeps you logged in if you manage a professional account (set by Supabase Auth, our authentication provider). Duration: tied to the session.",
-      "cookieAdminSession": "Keeps the Zoodomo team's session active in the internal admin panel. Duration: 8 hours.",
       "cookieConsentAck": "Remembers that you've seen the cookie banner. Duration: 1 year."
     },
     "dashboard": {

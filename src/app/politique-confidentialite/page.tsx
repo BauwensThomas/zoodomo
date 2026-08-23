@@ -51,9 +51,6 @@ export default async function PolitiqueConfidentialitePage() {
             <span className="font-mono font-semibold">sb-*-auth-token</span> : {t("cookieAuth")}
           </li>
           <li className="text-sm text-foreground">
-            <span className="font-mono font-semibold">zoodomo_admin_session</span> : {t("cookieAdminSession")}
-          </li>
-          <li className="text-sm text-foreground">
             <span className="font-mono font-semibold">COOKIE_CONSENT_ACK</span> : {t("cookieConsentAck")}
           </li>
         </ul>

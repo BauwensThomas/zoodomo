@@ -251,7 +251,6 @@
       "cookieNextLocale": "Onthoudt de gekozen taal (Frans, Nederlands of Engels). Duur: 1 jaar.",
       "cookieTheme": "Onthoudt uw voorkeur voor lichte of donkere weergave. Duur: 1 jaar.",
       "cookieAuth": "Houdt uw sessie ingelogd als u een professioneel account beheert (geplaatst door Supabase Auth, onze authenticatieleverancier). Duur: gekoppeld aan de sessie.",
-      "cookieAdminSession": "Houdt de sessie van het Zoodomo-team actief in het interne beheerpaneel. Duur: 8 uur.",
       "cookieConsentAck": "Onthoudt dat u de cookiebanner hebt gezien. Duur: 1 jaar."
     },
     "dashboard": {
