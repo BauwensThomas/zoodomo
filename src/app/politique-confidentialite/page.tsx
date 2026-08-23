@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { ZoodomoLogo } from "@/components/ZoodomoLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { LegalSections } from "@/components/LegalSections";
 import type { Locale } from "@/types";
 
 export default async function PolitiqueConfidentialitePage() {
@@ -18,7 +19,7 @@ export default async function PolitiqueConfidentialitePage() {
       className="app-theme-scope min-h-screen bg-background"
       data-theme={theme === "light" ? "light" : theme === "dark" ? "dark" : undefined}
     >
-      <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mx-auto max-w-4xl px-6 py-10">
         <div className="flex items-center justify-between">
           <Link href="/">
             <ZoodomoLogo width={120} />
@@ -31,7 +32,9 @@ export default async function PolitiqueConfidentialitePage() {
         <h1 className="mt-8 font-heading text-3xl font-medium tracking-tight text-foreground">
           {t("privacyTitle")}
         </h1>
-        <p className="mt-4 text-foreground">{t("placeholder")}</p>
+        <p className="mt-4 text-sm text-foreground">{t("lastUpdated")}</p>
+
+        <LegalSections sections={t.raw("privacySections")} />
 
         <h2 className="mt-8 font-heading text-xl font-medium tracking-tight text-foreground">
           {t("cookiesSectionTitle")}

@@ -168,8 +168,84 @@
     "legalPage": {
       "termsTitle": "Terms of Service",
       "privacyTitle": "Privacy Policy",
-      "placeholder": "This page will be completed before Zoodomo's public launch.",
+      "lastUpdated": "Last updated: August 23, 2026",
       "back": "Back",
+      "termsSections": [
+        {
+          "title": "1. Purpose",
+          "body": "These Terms of Service (\"Terms\") govern access to and use of the Zoodomo service, available at zoodomo.com and its related pages. Zoodomo is an online service that lets animal shelters and professional sellers create and manage listings for their available animals (for adoption or sale), and get public pages ready to share or embed on their own website.\n\nBy creating an account or using the service, you accept these Terms without reservation. If you do not accept these Terms, you must not use the service."
+        },
+        {
+          "title": "2. Account and access to the service",
+          "body": "Using the Zoodomo member area requires creating an account, reserved for animal shelters and professional animal sellers. You must provide accurate information when signing up and keep it up to date. You are responsible for keeping your password confidential and for any activity carried out from your account.\n\nZoodomo reserves the right to refuse, suspend, or close an account in case of non-compliance with these Terms, in particular in case of clearly inaccurate, misleading, or unlawful content."
+        },
+        {
+          "title": "3. Free trial and subscription",
+          "body": "Creating an account grants access to a 15-day free trial, with no commitment. After this trial, continued use of the service requires a paid subscription, monthly or annual, priced as shown on the site at the time of subscription. The subscription renews automatically at each due date unless you cancel it from your member area.\n\nPayment is processed by a third-party payment provider acting as a merchant of record. Zoodomo never has access to your full banking details."
+        },
+        {
+          "title": "4. Content published by the account",
+          "body": "You remain solely responsible for the content you publish on Zoodomo (photos, descriptions, information about the animals, contact details). You guarantee that you hold the necessary rights to the photos you publish, and you commit to only publishing accurate information about the animals presented.\n\nZoodomo acts as the technical host of content published by accounts and does not exercise prior editorial control over this content. Zoodomo nonetheless reserves the right to remove any content that is clearly unlawful or in breach of these Terms once brought to its attention."
+        },
+        {
+          "title": "5. Prohibited use",
+          "body": "It is prohibited to use Zoodomo to publish unlawful or misleading content, content infringing on a third party's rights, or content unrelated to presenting animals for adoption or sale. It is also prohibited to attempt to bypass the service's security measures or to disrupt its operation."
+        },
+        {
+          "title": "6. Service availability",
+          "body": "Zoodomo makes reasonable efforts to ensure the availability of the service, without guaranteeing uninterrupted availability. Temporary interruptions may occur for maintenance, updates, or for reasons beyond Zoodomo's control (failure of a third-party technical provider, force majeure)."
+        },
+        {
+          "title": "7. Termination and account deletion",
+          "body": "You may cancel your subscription and delete your account at any time from your member area. Deleting your account results in the permanent deletion of the associated data (animal listings, photos, messages), subject to any applicable legal retention obligations."
+        },
+        {
+          "title": "8. Liability",
+          "body": "Zoodomo cannot be held liable for damages resulting from improper use of the service, from content published by an account, or from temporary unavailability of the service. Zoodomo does not intervene in the relationship between an account and visitors to its public pages (adoption, sale, contact)."
+        },
+        {
+          "title": "9. Changes to the Terms",
+          "body": "Zoodomo may change these Terms at any time. Accounts will be notified of any substantial change. Continued use of the service after a change constitutes acceptance of the new Terms."
+        },
+        {
+          "title": "10. Governing law and disputes",
+          "body": "These Terms are governed by Belgian law. Any dispute relating to their interpretation or performance falls under the exclusive jurisdiction of the courts of Belgium."
+        },
+        {
+          "title": "11. Contact",
+          "body": "For any question about these Terms, you can contact Zoodomo at info@zoodomo.com."
+        }
+      ],
+      "privacySections": [
+        {
+          "title": "1. Data controller",
+          "body": "Zoodomo is the data controller for the personal data described in this policy. For any question or request regarding your data, you can contact us at info@zoodomo.com."
+        },
+        {
+          "title": "2. Data collected",
+          "body": "Depending on your use of the service, Zoodomo collects:\n\n- Your account information: name, email address, password (never stored in plain text), preferred language, and optionally phone number, postal address, and business registration number if you choose to provide them.\n- The content you publish: animal listings, photos, descriptions, contact details you choose to make public.\n- Limited technical data: language and display preference (see Cookies below), view counts on your animal listings, without identifying visitors.\n\nZoodomo does not collect any advertising tracking or visitor behavioral analytics data."
+        },
+        {
+          "title": "3. Purposes and legal basis",
+          "body": "Your data is processed to enable the service to work (creating and managing your account and animal listings), to manage your subscription, and to contact you about your account. This processing is necessary for the performance of the contract between you and Zoodomo (Terms of Service), or is based on Zoodomo's legitimate interest in ensuring the proper functioning of the service."
+        },
+        {
+          "title": "4. Data recipients",
+          "body": "Your data is hosted and processed by the following processors, strictly within the scope of providing the service:\n\n- Supabase (database, authentication, photo storage), hosted within the European Union (Paris region).\n- Resend (sending transactional emails: account confirmation, notifications).\n- LWS (hosting of the zoodomo.com domain name).\n- Cloudflare (anti-bot protection on the signup and login forms).\n\nSome of these providers may be located, or process data, outside the European Union; in that case, such transfers are covered by appropriate safeguards (European Commission standard contractual clauses).\n\nYour data is never sold or passed on to third parties for advertising purposes."
+        },
+        {
+          "title": "5. Retention period",
+          "body": "Your data is kept for as long as your account exists. If you delete your account, your data is permanently deleted, subject to any retention periods required by law (in particular for accounting and tax purposes, once online payment is live)."
+        },
+        {
+          "title": "6. Your rights",
+          "body": "Under the General Data Protection Regulation (GDPR), you have the right to access, rectify, erase, restrict, object to, and port your data. You can exercise these rights by contacting us at info@zoodomo.com. You also have the right to lodge a complaint with the Belgian Data Protection Authority (dataprotectionauthority.be)."
+        },
+        {
+          "title": "7. Security",
+          "body": "Zoodomo implements appropriate technical measures to protect your data: password encryption, strict data isolation between accounts (row level security), access restricted to only the data needed for each feature."
+        }
+      ],
       "cookiesSectionTitle": "Cookies used",
       "cookiesIntro": "Zoodomo only uses cookies strictly necessary for the site to work, listed below. No tracking or advertising cookies are used at this time; if that were to change, this page and the cookie banner would be updated accordingly.",
       "cookieNextLocale": "Remembers your chosen language (French, Dutch, or English). Duration: 1 year.",

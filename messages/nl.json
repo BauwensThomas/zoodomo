@@ -168,8 +168,84 @@
     "legalPage": {
       "termsTitle": "Gebruiksvoorwaarden",
       "privacyTitle": "Privacybeleid",
-      "placeholder": "Deze pagina wordt aangevuld vóór de publieke lancering van Zoodomo.",
+      "lastUpdated": "Laatst bijgewerkt: 23 augustus 2026",
       "back": "Terug",
+      "termsSections": [
+        {
+          "title": "1. Doel",
+          "body": "Deze gebruiksvoorwaarden (\"Voorwaarden\") regelen de toegang tot en het gebruik van de Zoodomo-dienst, bereikbaar via zoodomo.com en de bijbehorende pagina's. Zoodomo is een online dienst waarmee dierenasielen en professionele verkopers fiches kunnen aanmaken en beheren voor hun beschikbare dieren (adoptie of verkoop), en publieke pagina's krijgen die klaar zijn om te delen of te integreren op hun eigen website.\n\nDoor een account aan te maken of de dienst te gebruiken, aanvaardt u deze Voorwaarden zonder voorbehoud. Als u deze voorwaarden niet aanvaardt, mag u de dienst niet gebruiken."
+        },
+        {
+          "title": "2. Account en toegang tot de dienst",
+          "body": "Het gebruik van het ledengedeelte van Zoodomo vereist het aanmaken van een account, voorbehouden aan dierenasielen en professionele verkopers van dieren. U moet correcte gegevens verstrekken bij de registratie en deze up-to-date houden. U bent verantwoordelijk voor de vertrouwelijkheid van uw wachtwoord en voor elke activiteit vanaf uw account.\n\nZoodomo behoudt zich het recht voor om een account te weigeren, op te schorten of te sluiten bij niet-naleving van deze Voorwaarden, met name bij duidelijk onjuiste, misleidende of onwettige inhoud."
+        },
+        {
+          "title": "3. Gratis proefperiode en abonnement",
+          "body": "Het aanmaken van een account geeft toegang tot een gratis proefperiode van 15 dagen, zonder verplichting. Na deze proefperiode is voor verder gebruik van de dienst een betaald abonnement vereist, maandelijks of jaarlijks, waarvan de prijs op de site wordt weergegeven op het moment van inschrijving. Het abonnement wordt automatisch verlengd bij elke vervaldatum, tenzij u het opzegt vanuit uw ledengedeelte.\n\nDe betaling wordt verwerkt door een externe betalingsprovider die optreedt als verkoopintermediair. Zoodomo heeft nooit toegang tot uw volledige bankgegevens."
+        },
+        {
+          "title": "4. Inhoud gepubliceerd door het account",
+          "body": "U blijft als enige verantwoordelijk voor de inhoud die u op Zoodomo publiceert (foto's, beschrijvingen, informatie over de dieren, contactgegevens). U garandeert dat u over de nodige rechten op de gepubliceerde foto's beschikt en verbindt zich ertoe enkel correcte informatie over de getoonde dieren te publiceren.\n\nZoodomo treedt op als technische hostingpartij van de door accounts gepubliceerde inhoud en oefent geen voorafgaande redactionele controle uit op deze inhoud. Zoodomo behoudt zich echter het recht voor om elke duidelijk onwettige inhoud of inhoud die in strijd is met deze Voorwaarden te verwijderen zodra dit onder haar aandacht wordt gebracht."
+        },
+        {
+          "title": "5. Verboden gebruik",
+          "body": "Het is verboden Zoodomo te gebruiken om onwettige of misleidende inhoud te publiceren, inhoud die de rechten van derden schendt, of inhoud die geen verband houdt met het voorstellen van dieren voor adoptie of verkoop. Het is eveneens verboden te proberen de beveiligingsmaatregelen van de dienst te omzeilen of de werking ervan te verstoren."
+        },
+        {
+          "title": "6. Beschikbaarheid van de dienst",
+          "body": "Zoodomo spant zich redelijkerwijs in om de beschikbaarheid van de dienst te verzekeren, zonder een ononderbroken beschikbaarheid te garanderen. Tijdelijke onderbrekingen kunnen voorkomen wegens onderhoud, updates, of om redenen buiten de wil van Zoodomo (storing bij een externe technische leverancier, overmacht)."
+        },
+        {
+          "title": "7. Opzegging en verwijdering van account",
+          "body": "U kunt uw abonnement opzeggen en uw account op elk moment verwijderen vanuit uw ledengedeelte. De verwijdering van het account leidt tot de definitieve verwijdering van de bijbehorende gegevens (dierenfiches, foto's, berichten), onder voorbehoud van eventuele wettelijke bewaarverplichtingen."
+        },
+        {
+          "title": "8. Aansprakelijkheid",
+          "body": "Zoodomo kan niet aansprakelijk worden gesteld voor schade die voortvloeit uit een onjuist gebruik van de dienst, uit inhoud gepubliceerd door een account, of uit de tijdelijke onbeschikbaarheid van de dienst. Zoodomo komt niet tussen in de relatie tussen een account en de bezoekers van diens publieke pagina's (adoptie, verkoop, contact)."
+        },
+        {
+          "title": "9. Wijziging van de Voorwaarden",
+          "body": "Zoodomo kan deze Voorwaarden op elk moment wijzigen. Accounts worden op de hoogte gebracht van elke wezenlijke wijziging. Het voortgezette gebruik van de dienst na een wijziging geldt als aanvaarding van de nieuwe Voorwaarden."
+        },
+        {
+          "title": "10. Toepasselijk recht en geschillen",
+          "body": "Deze Voorwaarden zijn onderworpen aan Belgisch recht. Elk geschil met betrekking tot de interpretatie of uitvoering ervan valt onder de exclusieve bevoegdheid van de Belgische rechtbanken."
+        },
+        {
+          "title": "11. Contact",
+          "body": "Voor vragen over deze Voorwaarden kunt u contact opnemen met Zoodomo via info@zoodomo.com."
+        }
+      ],
+      "privacySections": [
+        {
+          "title": "1. Verwerkingsverantwoordelijke",
+          "body": "Zoodomo is verantwoordelijk voor de verwerking van de persoonsgegevens beschreven in dit beleid. Voor vragen of verzoeken over uw gegevens kunt u ons contacteren via info@zoodomo.com."
+        },
+        {
+          "title": "2. Verzamelde gegevens",
+          "body": "Afhankelijk van uw gebruik van de dienst verzamelt Zoodomo:\n\n- Uw accountgegevens: naam, e-mailadres, wachtwoord (nooit onversleuteld opgeslagen), voorkeurstaal, en eventueel telefoonnummer, postadres en ondernemingsnummer als u ervoor kiest deze in te vullen.\n- De inhoud die u publiceert: dierenfiches, foto's, beschrijvingen, contactgegevens die u ervoor kiest openbaar te maken.\n- Beperkte technische gegevens: taal- en weergavevoorkeur (zie Cookies hieronder), aantal weergaven van uw dierenfiches, zonder identificatie van bezoekers.\n\nZoodomo verzamelt geen enkele gegevens voor reclamedoeleinden of gedragsanalyse van bezoekers."
+        },
+        {
+          "title": "3. Doeleinden en rechtsgrond",
+          "body": "Uw gegevens worden verwerkt om de werking van de dienst mogelijk te maken (aanmaak en beheer van uw account en dierenfiches), voor het beheer van uw abonnement, en om u te contacteren over uw account. Deze verwerking is noodzakelijk voor de uitvoering van de overeenkomst die u met Zoodomo verbindt (gebruiksvoorwaarden), of berust op het gerechtvaardigd belang van Zoodomo om de goede werking van de dienst te verzekeren."
+        },
+        {
+          "title": "4. Ontvangers van de gegevens",
+          "body": "Uw gegevens worden gehost en verwerkt door de volgende verwerkers, strikt in het kader van het leveren van de dienst:\n\n- Supabase (database, authenticatie, opslag van foto's), gehost binnen de Europese Unie (regio Parijs).\n- Resend (verzending van transactionele e-mails: accountbevestiging, meldingen).\n- LWS (hosting van het domein zoodomo.com).\n- Cloudflare (bescherming tegen robots op het registratie- en inlogformulier).\n\nSommige van deze leveranciers kunnen zich buiten de Europese Unie bevinden of daar gegevens verwerken; in dat geval wordt deze overdracht omkaderd door passende waarborgen (modelcontractbepalingen van de Europese Commissie).\n\nUw gegevens worden nooit verkocht of doorgegeven aan derden voor reclamedoeleinden."
+        },
+        {
+          "title": "5. Bewaartermijn",
+          "body": "Uw gegevens worden bewaard gedurende de hele levensduur van uw account. Bij verwijdering van uw account worden uw gegevens definitief verwijderd, onder voorbehoud van wettelijk opgelegde bewaartermijnen (met name op boekhoudkundig en fiscaal vlak, zodra online betaling effectief is)."
+        },
+        {
+          "title": "6. Uw rechten",
+          "body": "Overeenkomstig de Algemene Verordening Gegevensbescherming (AVG/GDPR) heeft u recht op inzage, rectificatie, verwijdering, beperking, bezwaar en overdraagbaarheid van uw gegevens. U kunt deze rechten uitoefenen door ons te contacteren via info@zoodomo.com. U heeft ook het recht om een klacht in te dienen bij de Belgische Gegevensbeschermingsautoriteit (gegevensbeschermingsautoriteit.be)."
+        },
+        {
+          "title": "7. Beveiliging",
+          "body": "Zoodomo neemt passende technische maatregelen om uw gegevens te beschermen: versleuteling van wachtwoorden, strikte scheiding van gegevens tussen accounts (row level security), toegang beperkt tot enkel de gegevens die nodig zijn voor elke functionaliteit."
+        }
+      ],
       "cookiesSectionTitle": "Gebruikte cookies",
       "cookiesIntro": "Zoodomo gebruikt uitsluitend cookies die strikt noodzakelijk zijn voor de werking van de site, hieronder opgesomd. Er worden momenteel geen tracking- of advertentiecookies gebruikt; mocht dat veranderen, dan worden deze pagina en de cookiebanner dienovereenkomstig bijgewerkt.",
       "cookieNextLocale": "Onthoudt de gekozen taal (Frans, Nederlands of Engels). Duur: 1 jaar.",

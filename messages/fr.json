@@ -168,8 +168,84 @@
     "legalPage": {
       "termsTitle": "Conditions d'utilisation",
       "privacyTitle": "Politique de confidentialité",
-      "placeholder": "Cette page sera complétée avant le lancement public de Zoodomo.",
+      "lastUpdated": "Dernière mise à jour : 23 août 2026",
       "back": "Retour",
+      "termsSections": [
+        {
+          "title": "1. Objet",
+          "body": "Les présentes conditions d'utilisation (« CGU ») régissent l'accès et l'utilisation du service Zoodomo, accessible à l'adresse zoodomo.com et sur les pages qui en dépendent. Zoodomo est un service en ligne qui permet aux refuges pour animaux et aux vendeurs professionnels de créer et gérer des fiches présentant leurs animaux disponibles (adoption ou vente), et d'obtenir des pages publiques prêtes à être partagées ou intégrées à leur propre site internet.\n\nEn créant un compte ou en utilisant le service, vous acceptez sans réserve les présentes CGU. Si vous n'acceptez pas ces conditions, vous ne devez pas utiliser le service."
+        },
+        {
+          "title": "2. Compte et accès au service",
+          "body": "L'utilisation de l'espace membre de Zoodomo nécessite la création d'un compte, réservé aux refuges et aux vendeurs professionnels d'animaux. Vous devez fournir des informations exactes lors de l'inscription et les maintenir à jour. Vous êtes responsable de la confidentialité de votre mot de passe et de toute activité effectuée depuis votre compte.\n\nZoodomo se réserve le droit de refuser, suspendre ou clôturer un compte en cas de non-respect des présentes CGU, notamment en cas de contenu manifestement inexact, trompeur ou contraire à la loi."
+        },
+        {
+          "title": "3. Essai gratuit et abonnement",
+          "body": "La création d'un compte donne accès à un essai gratuit de 15 jours, sans engagement. À l'issue de cet essai, la poursuite de l'utilisation du service nécessite la souscription d'un abonnement payant, mensuel ou annuel, dont le tarif est affiché sur le site au moment de la souscription. L'abonnement se renouvelle automatiquement à chaque échéance sauf résiliation de votre part, effectuée depuis votre espace membre.\n\nLe paiement est traité par un prestataire de paiement tiers agissant comme intermédiaire de vente. Zoodomo n'a jamais accès à vos coordonnées bancaires complètes."
+        },
+        {
+          "title": "4. Contenu publié par le compte",
+          "body": "Vous restez seul responsable du contenu que vous publiez sur Zoodomo (photos, descriptions, informations sur les animaux, coordonnées). Vous garantissez disposer des droits nécessaires sur les photos publiées et vous vous engagez à ne publier que des informations exactes concernant les animaux présentés.\n\nZoodomo agit en tant qu'hébergeur technique du contenu publié par les comptes et n'exerce pas de contrôle éditorial préalable sur ce contenu. Zoodomo se réserve toutefois le droit de retirer tout contenu manifestement illicite ou contraire aux présentes CGU porté à sa connaissance."
+        },
+        {
+          "title": "5. Utilisation interdite",
+          "body": "Il est interdit d'utiliser Zoodomo pour publier du contenu illicite, trompeur, portant atteinte aux droits d'un tiers, ou sans rapport avec la présentation d'animaux à l'adoption ou à la vente. Il est également interdit de tenter de contourner les mesures de sécurité du service ou d'en perturber le fonctionnement."
+        },
+        {
+          "title": "6. Disponibilité du service",
+          "body": "Zoodomo met en œuvre des moyens raisonnables pour assurer la disponibilité du service, sans garantir une disponibilité ininterrompue. Des interruptions temporaires peuvent survenir pour maintenance, mise à jour, ou pour des causes indépendantes de la volonté de Zoodomo (panne d'un prestataire technique tiers, cas de force majeure)."
+        },
+        {
+          "title": "7. Résiliation et suppression de compte",
+          "body": "Vous pouvez résilier votre abonnement et supprimer votre compte à tout moment depuis votre espace membre. La suppression du compte entraîne la suppression définitive des données associées (fiches animaux, photos, messages), sous réserve des obligations légales de conservation le cas échéant."
+        },
+        {
+          "title": "8. Responsabilité",
+          "body": "Zoodomo ne saurait être tenu responsable des dommages résultant d'une utilisation non conforme du service, d'un contenu publié par un compte, ou de l'indisponibilité temporaire du service. Zoodomo n'intervient pas dans la relation entre un compte et les visiteurs de ses pages publiques (adoption, vente, contact)."
+        },
+        {
+          "title": "9. Modification des CGU",
+          "body": "Zoodomo peut modifier les présentes CGU à tout moment. Les comptes seront informés de toute modification substantielle. La poursuite de l'utilisation du service après modification vaut acceptation des nouvelles CGU."
+        },
+        {
+          "title": "10. Droit applicable et litiges",
+          "body": "Les présentes CGU sont soumises au droit belge. Tout litige relatif à leur interprétation ou leur exécution relève de la compétence exclusive des tribunaux de Belgique."
+        },
+        {
+          "title": "11. Contact",
+          "body": "Pour toute question relative aux présentes CGU, vous pouvez contacter Zoodomo à l'adresse info@zoodomo.com."
+        }
+      ],
+      "privacySections": [
+        {
+          "title": "1. Responsable du traitement",
+          "body": "Zoodomo est responsable du traitement des données à caractère personnel décrites dans la présente politique. Pour toute question ou demande relative à vos données, vous pouvez nous contacter à l'adresse info@zoodomo.com."
+        },
+        {
+          "title": "2. Données collectées",
+          "body": "Selon votre utilisation du service, Zoodomo collecte :\n\n- Les informations de votre compte : nom, adresse email, mot de passe (jamais stocké en clair), langue préférée, et éventuellement numéro de téléphone, adresse postale et numéro d'entreprise si vous choisissez de les renseigner.\n- Le contenu que vous publiez : fiches animaux, photos, descriptions, coordonnées de contact que vous choisissez de rendre publiques.\n- Des données techniques limitées : préférence de langue et d'affichage (voir Cookies ci-dessous), nombre de vues sur vos fiches animaux, sans identification des visiteurs.\n\nZoodomo ne collecte aucune donnée de suivi publicitaire ni d'analyse comportementale des visiteurs."
+        },
+        {
+          "title": "3. Finalités et base légale",
+          "body": "Vos données sont traitées pour permettre le fonctionnement du service (création et gestion de votre compte et de vos fiches animaux), pour la gestion de votre abonnement, et pour vous contacter au sujet de votre compte. Ce traitement est nécessaire à l'exécution du contrat qui vous lie à Zoodomo (conditions d'utilisation) ou repose sur l'intérêt légitime de Zoodomo à assurer le bon fonctionnement du service."
+        },
+        {
+          "title": "4. Destinataires des données",
+          "body": "Vos données sont hébergées et traitées par les sous-traitants suivants, dans le cadre strict de la fourniture du service :\n\n- Supabase (base de données, authentification, stockage des photos), hébergé dans l'Union européenne (région Paris).\n- Resend (envoi des emails transactionnels : confirmation de compte, notifications).\n- LWS (hébergement du nom de domaine zoodomo.com).\n- Cloudflare (protection anti-robot du formulaire d'inscription et de connexion).\n\nCertains de ces prestataires peuvent être situés ou traiter des données en dehors de l'Union européenne ; dans ce cas, ce transfert est encadré par des garanties appropriées (clauses contractuelles types de la Commission européenne).\n\nVos données ne sont jamais vendues ni transmises à des tiers à des fins publicitaires."
+        },
+        {
+          "title": "5. Durée de conservation",
+          "body": "Vos données sont conservées pendant toute la durée de vie de votre compte. En cas de suppression de votre compte, vos données sont supprimées définitivement, sous réserve des durées de conservation imposées par la loi (notamment en matière comptable et fiscale, une fois le paiement en ligne effectif)."
+        },
+        {
+          "title": "6. Vos droits",
+          "body": "Conformément au Règlement général sur la protection des données (RGPD), vous disposez d'un droit d'accès, de rectification, d'effacement, de limitation, d'opposition et de portabilité de vos données. Vous pouvez exercer ces droits en nous contactant à info@zoodomo.com. Vous disposez également du droit d'introduire une réclamation auprès de l'Autorité de protection des données belge (autoriteprotectiondonnees.be)."
+        },
+        {
+          "title": "7. Sécurité",
+          "body": "Zoodomo met en œuvre des mesures techniques appropriées pour protéger vos données : chiffrement des mots de passe, cloisonnement strict des données entre comptes (row level security), accès restreint aux seules données nécessaires à chaque fonctionnalité."
+        }
+      ],
       "cookiesSectionTitle": "Cookies utilisés",
       "cookiesIntro": "Zoodomo utilise uniquement des cookies strictement nécessaires au fonctionnement du site, listés ci-dessous. Aucun cookie de suivi publicitaire ou d'analyse n'est utilisé pour le moment ; si cela devait changer, cette page et le bandeau de consentement seraient mis à jour en conséquence.",
       "cookieNextLocale": "Mémorise la langue choisie (français, néerlandais ou anglais). Durée : 1 an.",
