@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import {
   Varela_Round,
   Nunito_Sans,
@@ -9,8 +10,9 @@ import {
   Fredoka,
   Quicksand,
 } from "next/font/google";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
 
 // Chaque paire (titre + texte) est préchargée une fois ici avec sa propre variable CSS ;
@@ -48,11 +50,25 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: LayoutProps<"/">) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const cookieStore = await cookies();
+  const cookieConsentAck = cookieStore.get("COOKIE_CONSENT_ACK")?.value === "1";
+  const themePreference = cookieStore.get("THEME_PREFERENCE")?.value;
+  const theme = themePreference === "light" || themePreference === "dark" ? themePreference : undefined;
+  const t = await getTranslations("common.cookieBanner");
 
   return (
     <html lang={locale} className={`${FONT_VARIABLES} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-background text-foreground font-body">
-        <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
+        <NextIntlClientProvider messages={messages}>
+          {children}
+          <CookieConsentBanner
+            initiallyAcknowledged={cookieConsentAck}
+            theme={theme}
+            message={t("message")}
+            privacyLinkLabel={t("privacyLink")}
+            button={t("button")}
+          />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

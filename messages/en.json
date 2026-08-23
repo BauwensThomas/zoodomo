@@ -3,7 +3,12 @@
     "backToSite": "Back to our website",
     "previewLabel": "Preview",
     "createdWith": "Created with Zoodomo, {year}",
-    "accountUnavailable": "This page is not available at the moment. Check back soon!"
+    "accountUnavailable": "This page is not available at the moment. Check back soon!",
+    "cookieBanner": {
+      "message": "This site only uses cookies strictly necessary for it to work (login, language, display preference). No tracking or advertising cookies are used.",
+      "privacyLink": "Learn more",
+      "button": "Got it"
+    }
   },
   "account": {
     "discoverAnimals": "Discover the available animals, by species.",
@@ -164,7 +169,14 @@
       "termsTitle": "Terms of Service",
       "privacyTitle": "Privacy Policy",
       "placeholder": "This page will be completed before Zoodomo's public launch.",
-      "back": "Back"
+      "back": "Back",
+      "cookiesSectionTitle": "Cookies used",
+      "cookiesIntro": "Zoodomo only uses cookies strictly necessary for the site to work, listed below. No tracking or advertising cookies are used at this time; if that were to change, this page and the cookie banner would be updated accordingly.",
+      "cookieNextLocale": "Remembers your chosen language (French, Dutch, or English). Duration: 1 year.",
+      "cookieTheme": "Remembers your light/dark display preference. Duration: 1 year.",
+      "cookieAuth": "Keeps you logged in if you manage a professional account (set by Supabase Auth, our authentication provider). Duration: tied to the session.",
+      "cookieAdminSession": "Keeps the Zoodomo team's session active in the internal admin panel. Duration: 8 hours.",
+      "cookieConsentAck": "Remembers that you've seen the cookie banner. Duration: 1 year."
     },
     "dashboard": {
       "title": "Dashboard",

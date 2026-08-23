@@ -24,6 +24,17 @@ export async function setThemeAction(theme: "light" | "dark") {
   revalidatePath("/", "layout");
 }
 
+/** Mémorise que le bandeau de cookies a été vu (bouton "J'ai compris"), pour ne plus le
+ * réafficher. Cookie strictement nécessaire lui-même (sert uniquement à retenir ce choix),
+ * pas de granularité par catégorie pour l'instant : tous les cookies actuels du site sont
+ * strictement nécessaires (session, langue, thème), voir la liste sur
+ * `/politique-confidentialite`. À revoir si des cookies non essentiels sont ajoutés plus
+ * tard (analytics, marketing), voir docs/DECISIONS.md. */
+export async function acknowledgeCookieConsentAction() {
+  const store = await cookies();
+  store.set("COOKIE_CONSENT_ACK", "1", { path: "/", maxAge: 60 * 60 * 24 * 365 });
+}
+
 export async function setLocaleAction(locale: Locale) {
   if (LOCALES.includes(locale)) {
     const store = await cookies();

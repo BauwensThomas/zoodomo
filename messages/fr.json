@@ -3,7 +3,12 @@
     "backToSite": "Retour sur notre site",
     "previewLabel": "Présentation",
     "createdWith": "Créé avec Zoodomo, {year}",
-    "accountUnavailable": "Cette page n'est pas disponible pour le moment. Revenez bientôt !"
+    "accountUnavailable": "Cette page n'est pas disponible pour le moment. Revenez bientôt !",
+    "cookieBanner": {
+      "message": "Ce site utilise des cookies strictement nécessaires à son fonctionnement (connexion, langue, préférence d'affichage). Aucun cookie de suivi ou publicitaire n'est utilisé.",
+      "privacyLink": "En savoir plus",
+      "button": "J'ai compris"
+    }
   },
   "account": {
     "discoverAnimals": "Découvrez les animaux disponibles, par espèce.",
@@ -164,7 +169,14 @@
       "termsTitle": "Conditions d'utilisation",
       "privacyTitle": "Politique de confidentialité",
       "placeholder": "Cette page sera complétée avant le lancement public de Zoodomo.",
-      "back": "Retour"
+      "back": "Retour",
+      "cookiesSectionTitle": "Cookies utilisés",
+      "cookiesIntro": "Zoodomo utilise uniquement des cookies strictement nécessaires au fonctionnement du site, listés ci-dessous. Aucun cookie de suivi publicitaire ou d'analyse n'est utilisé pour le moment ; si cela devait changer, cette page et le bandeau de consentement seraient mis à jour en conséquence.",
+      "cookieNextLocale": "Mémorise la langue choisie (français, néerlandais ou anglais). Durée : 1 an.",
+      "cookieTheme": "Mémorise votre préférence d'affichage clair ou sombre. Durée : 1 an.",
+      "cookieAuth": "Maintient votre session connectée si vous gérez un compte professionnel (posé par Supabase Auth, notre fournisseur d'authentification). Durée : liée à la session.",
+      "cookieAdminSession": "Maintient la session de l'équipe Zoodomo dans le panneau d'administration interne. Durée : 8 heures.",
+      "cookieConsentAck": "Mémorise que vous avez pris connaissance du bandeau de cookies. Durée : 1 an."
     },
     "dashboard": {
       "title": "Dashboard",

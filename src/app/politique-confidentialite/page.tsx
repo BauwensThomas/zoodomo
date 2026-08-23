@@ -33,6 +33,28 @@ export default async function PolitiqueConfidentialitePage() {
         </h1>
         <p className="mt-4 text-foreground">{t("placeholder")}</p>
 
+        <h2 className="mt-8 font-heading text-xl font-medium tracking-tight text-foreground">
+          {t("cookiesSectionTitle")}
+        </h2>
+        <p className="mt-3 text-foreground">{t("cookiesIntro")}</p>
+        <ul className="mt-4 space-y-3">
+          <li className="text-sm text-foreground">
+            <span className="font-mono font-semibold">NEXT_LOCALE</span> : {t("cookieNextLocale")}
+          </li>
+          <li className="text-sm text-foreground">
+            <span className="font-mono font-semibold">THEME_PREFERENCE</span> : {t("cookieTheme")}
+          </li>
+          <li className="text-sm text-foreground">
+            <span className="font-mono font-semibold">sb-*-auth-token</span> : {t("cookieAuth")}
+          </li>
+          <li className="text-sm text-foreground">
+            <span className="font-mono font-semibold">zoodomo_admin_session</span> : {t("cookieAdminSession")}
+          </li>
+          <li className="text-sm text-foreground">
+            <span className="font-mono font-semibold">COOKIE_CONSENT_ACK</span> : {t("cookieConsentAck")}
+          </li>
+        </ul>
+
         <Link
           href="/"
           className="mt-10 inline-flex items-center gap-1.5 text-sm font-medium text-foreground"

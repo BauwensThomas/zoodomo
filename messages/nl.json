@@ -3,7 +3,12 @@
     "backToSite": "Terug naar onze website",
     "previewLabel": "Voorbeeld",
     "createdWith": "Gemaakt met Zoodomo, {year}",
-    "accountUnavailable": "Deze pagina is momenteel niet beschikbaar. Kom snel terug!"
+    "accountUnavailable": "Deze pagina is momenteel niet beschikbaar. Kom snel terug!",
+    "cookieBanner": {
+      "message": "Deze site gebruikt uitsluitend cookies die strikt noodzakelijk zijn voor de werking ervan (inloggen, taal, weergavevoorkeur). Geen trackingcookies of advertentiecookies.",
+      "privacyLink": "Meer weten",
+      "button": "Begrepen"
+    }
   },
   "account": {
     "discoverAnimals": "Ontdek de beschikbare dieren, per diersoort.",
@@ -164,7 +169,14 @@
       "termsTitle": "Gebruiksvoorwaarden",
       "privacyTitle": "Privacybeleid",
       "placeholder": "Deze pagina wordt aangevuld vóór de publieke lancering van Zoodomo.",
-      "back": "Terug"
+      "back": "Terug",
+      "cookiesSectionTitle": "Gebruikte cookies",
+      "cookiesIntro": "Zoodomo gebruikt uitsluitend cookies die strikt noodzakelijk zijn voor de werking van de site, hieronder opgesomd. Er worden momenteel geen tracking- of advertentiecookies gebruikt; mocht dat veranderen, dan worden deze pagina en de cookiebanner dienovereenkomstig bijgewerkt.",
+      "cookieNextLocale": "Onthoudt de gekozen taal (Frans, Nederlands of Engels). Duur: 1 jaar.",
+      "cookieTheme": "Onthoudt uw voorkeur voor lichte of donkere weergave. Duur: 1 jaar.",
+      "cookieAuth": "Houdt uw sessie ingelogd als u een professioneel account beheert (geplaatst door Supabase Auth, onze authenticatieleverancier). Duur: gekoppeld aan de sessie.",
+      "cookieAdminSession": "Houdt de sessie van het Zoodomo-team actief in het interne beheerpaneel. Duur: 8 uur.",
+      "cookieConsentAck": "Onthoudt dat u de cookiebanner hebt gezien. Duur: 1 jaar."
     },
     "dashboard": {
       "title": "Dashboard",
