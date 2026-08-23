@@ -231,7 +231,7 @@
         },
         {
           "title": "4. Data recipients",
-          "body": "Your data is hosted and processed by the following processors, strictly within the scope of providing the service:\n\n- Supabase (database, authentication, photo storage), hosted within the European Union (Paris region).\n- Resend (sending transactional emails: account confirmation, notifications).\n- LWS (hosting of the zoodomo.com domain name).\n- Cloudflare (anti-bot protection on the signup and login forms).\n\nSome of these providers may be located, or process data, outside the European Union; in that case, such transfers are covered by appropriate safeguards (European Commission standard contractual clauses).\n\nYour data is never sold or passed on to third parties for advertising purposes."
+          "body": "Your data is hosted and processed by the following processors, strictly within the scope of providing the service:\n\n- Supabase (database, authentication, photo storage), hosted within the European Union (Paris region).\n- Resend (sending transactional emails: account confirmation, notifications).\n- LWS (hosting of the zoodomo.com domain name).\n- Cloudflare (anti-bot protection on the signup and login forms).\n- Sentry (detecting and diagnosing technical errors in the service, to fix bugs faster), hosted within the European Union (Germany). Sentry does not record video of sessions.\n\nSome of these providers may be located, or process data, outside the European Union; in that case, such transfers are covered by appropriate safeguards (European Commission standard contractual clauses).\n\nYour data is never sold or passed on to third parties for advertising purposes."
         },
         {
           "title": "5. Retention period",

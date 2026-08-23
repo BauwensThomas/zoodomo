@@ -51,3 +51,6 @@ next-env.d.ts
 # mais jamais commités
 AGENTS.md
 CLAUDE.md
+
+# Sentry Config File
+.env.sentry-build-plugin

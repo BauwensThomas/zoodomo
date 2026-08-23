@@ -9,7 +9,9 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Exclut les assets statiques/images/favicon : pas besoin d'y rafraîchir une session.
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Exclut les assets statiques/images/favicon (pas besoin d'y rafraîchir une session) et
+    // /monitoring (route tunnel de Sentry, voir next.config.ts `tunnelRoute` : évite qu'un
+    // rapport d'erreur déclenche inutilement un rafraîchissement de session Supabase).
+    "/((?!_next/static|_next/image|favicon.ico|monitoring|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
