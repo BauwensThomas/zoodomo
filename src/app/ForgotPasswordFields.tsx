@@ -63,7 +63,7 @@ export function ForgotPasswordFields({
             required
             autoComplete="email"
             defaultValue={initialEmail}
-            className="mt-1.5 w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground"
+            className="mt-1.5 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground"
           />
         </div>
 

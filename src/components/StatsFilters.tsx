@@ -47,7 +47,7 @@ export function StatsFilters({
   }
 
   const selectClass =
-    "rounded-xl border border-border bg-white px-3 py-2 text-sm text-foreground outline-none focus:border-foreground";
+    "rounded-xl border border-foreground bg-card px-3 py-2 text-sm text-foreground outline-none focus:border-foreground";
 
   return (
     <div className="mt-4 flex flex-wrap items-center gap-3">

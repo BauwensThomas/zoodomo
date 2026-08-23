@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import { LogOut } from "lucide-react";
@@ -20,8 +21,11 @@ import {
 } from "@/lib/mock/helpers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ZoodomoLogo } from "@/components/ZoodomoLogo";
 import { MONTHLY_PRICE_EUR, ANNUAL_PRICE_EUR } from "@/lib/pricing";
+import { sendEmail } from "@/lib/email/resend";
+import { renderEmailHtml } from "@/lib/email/template";
 import { EspaceNav } from "./EspaceNav";
 import { PlanPopup } from "./PlanPopup";
 import { logoutAction } from "./actions";
@@ -37,6 +41,10 @@ import type { Account, Locale } from "@/types";
 async function ensureAutomaticMessages(supabase: SupabaseClient, account: Account) {
   const accountId = account.id;
   const t = await getTranslations("admin.messages");
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+  const espaceUrl = `${protocol}://${host}/espace`;
   // Généré dans la langue résolue au moment de la création (compte connecté = priorité à
   // `Account.langue_interface`, voir `src/i18n/request.ts`) : chaque `AccountMessage`
   // appartient déjà à un seul compte, pas besoin de le générer dans plusieurs langues à la
@@ -90,6 +98,16 @@ async function ensureAutomaticMessages(supabase: SupabaseClient, account: Accoun
         created_at: addDays(account.created_at, TRIAL_DAYS - 4),
       });
       await logAutomaticMessageSent(supabase, accountId, "essai_rappel_4j");
+      await sendEmail({
+        to: account.email,
+        subject: t("trialReminder4Subject"),
+        html: renderEmailHtml({
+          title: t("trialReminder4Subject"),
+          body: t("trialReminder4Body"),
+          buttonLabel: t("emailOpenButton"),
+          buttonUrl: espaceUrl,
+        }),
+      });
     }
     if (remaining <= 1 && !(await hasAccountMessage(supabase, accountId, "essai_rappel_1j"))) {
       await sendAccountMessage(supabase, {
@@ -100,19 +118,41 @@ async function ensureAutomaticMessages(supabase: SupabaseClient, account: Accoun
         created_at: addDays(account.created_at, TRIAL_DAYS - 1),
       });
       await logAutomaticMessageSent(supabase, accountId, "essai_rappel_1j");
+      await sendEmail({
+        to: account.email,
+        subject: t("trialReminder1Subject"),
+        html: renderEmailHtml({
+          title: t("trialReminder1Subject"),
+          body: t("trialReminder1Body", { hours: GRACE_HOURS }),
+          buttonLabel: t("emailOpenButton"),
+          buttonUrl: espaceUrl,
+        }),
+      });
     }
   }
 
   for (const animal of await getStaleFichesDisponibles(supabase, accountId)) {
     if (!(await hasAccountMessage(supabase, accountId, "rappel_fiche", animal.id))) {
+      const subject = t("staleSubject", { name: animal.nom });
+      const body = t("staleBody", { name: animal.nom, days: STALE_FICHE_DAYS });
       await sendAccountMessage(supabase, {
         account_id: accountId,
         kind: "rappel_fiche",
-        subject: t("staleSubject", { name: animal.nom }),
-        body: t("staleBody", { name: animal.nom, days: STALE_FICHE_DAYS }),
+        subject,
+        body,
         animal_id: animal.id,
       });
       await logAutomaticMessageSent(supabase, accountId, "rappel_fiche", animal.id);
+      await sendEmail({
+        to: account.email,
+        subject,
+        html: renderEmailHtml({
+          title: subject,
+          body,
+          buttonLabel: t("emailOpenButton"),
+          buttonUrl: `${espaceUrl}/fiches`,
+        }),
+      });
     }
   }
 }
@@ -135,9 +175,20 @@ export default async function EspaceLayout({ children }: { children: React.React
   const t = await getTranslations("admin");
   const tTrial = await getTranslations("admin.trialPopup");
 
+  // Même priorité que la langue (`Account.langue_interface` sur `src/i18n/request.ts`) :
+  // préférence enregistrée sur le compte d'abord, cookie `THEME_PREFERENCE` en repli (utile
+  // tant que le compte n'a encore jamais choisi explicitement), voir DECISIONS.md.
+  const cookieTheme = (await cookies()).get("THEME_PREFERENCE")?.value;
+  const theme =
+    account.theme_preference ??
+    (cookieTheme === "light" || cookieTheme === "dark" ? cookieTheme : undefined);
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <header className="sticky top-0 z-10 border-b border-border bg-white">
+    <div
+      className="app-theme-scope flex min-h-screen flex-col bg-background"
+      data-theme={theme === "light" ? "light" : theme === "dark" ? "dark" : undefined}
+    >
+      <header className="sticky top-0 z-10 border-b border-border bg-card">
         {/* `flex flex-wrap` plutôt que `grid grid-cols-3` : sur un petit écran (375px), 3
             colonnes égales de largeur fixe n'ont pas la place d'accueillir le nom du compte
             (variable, parfois long) sans déborder par-dessus le bouton Déconnexion (bug
@@ -160,19 +211,20 @@ export default async function EspaceLayout({ children }: { children: React.React
                 type="submit"
                 aria-label={t("logout")}
                 title={t("logout")}
-                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-white px-2.5 py-1.5 text-sm font-medium text-foreground shadow-sm transition-opacity hover:opacity-80 sm:px-3"
+                className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1.5 text-sm font-medium text-foreground shadow-sm transition-opacity hover:opacity-80 sm:px-3"
               >
                 <LogOut className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("logout")}</span>
               </button>
             </form>
+            <ThemeToggle label={t("login.themeToggle")} />
             <LocaleSwitcher current={locale} />
           </div>
         </div>
         <EspaceNav unreadMessages={unreadMessages} />
       </header>
       <main className="flex-1">
-        <div className="mx-auto max-w-[100rem] px-6 py-8">{children}</div>
+        <div className="mx-auto max-w-[100rem] px-6 pb-8 pt-3">{children}</div>
       </main>
       {showPlanPopup && (
         <PlanPopup

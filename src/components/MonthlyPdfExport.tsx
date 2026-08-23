@@ -196,7 +196,7 @@ export function PdfExportButton({
         onChange={(e) => setStartDate(e.target.value)}
         aria-label={t("exportStartDateLabel")}
         max={endDate}
-        className="rounded-lg border border-border px-2 py-1 text-xs text-foreground outline-none focus:border-foreground"
+        className="rounded-lg border border-foreground bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-foreground"
       />
       <span className="text-xs text-foreground">-</span>
       <input
@@ -205,14 +205,14 @@ export function PdfExportButton({
         onChange={(e) => setEndDate(e.target.value)}
         aria-label={t("exportEndDateLabel")}
         min={startDate}
-        className="rounded-lg border border-border px-2 py-1 text-xs text-foreground outline-none focus:border-foreground"
+        className="rounded-lg border border-foreground bg-card px-2 py-1 text-xs text-foreground outline-none focus:border-foreground"
       />
       <button
         type="button"
         disabled={list.length === 0}
         onClick={downloadPdf}
         title={list.length === 0 ? t("exportEmptyTooltip", { label }) : undefined}
-        className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground transition-colors enabled:cursor-pointer enabled:hover:bg-muted disabled:opacity-40"
+        className="inline-flex items-center gap-1.5 rounded-full border border-foreground bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors enabled:cursor-pointer enabled:hover:bg-muted disabled:opacity-40"
       >
         <Download className="h-3.5 w-3.5" />
         PDF ({list.length})

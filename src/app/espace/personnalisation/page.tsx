@@ -24,6 +24,7 @@ export default async function PersonnalisationPage() {
       <p className="mt-1 text-sm text-foreground">{t("intro")}</p>
 
       <PersonnalisationForm
+        accountId={account.id}
         nomAffichage={account.nom_affichage}
         currentPolice={currentPolice}
         currentDisposition={theme?.disposition_photos ?? "grille"}

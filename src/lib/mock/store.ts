@@ -48,6 +48,14 @@ export async function updateAccountLangueInterface(
   await supabase.from("accounts").update({ langue_interface: locale }).eq("id", accountId);
 }
 
+export async function updateAccountThemePreference(
+  supabase: SupabaseClient,
+  accountId: string,
+  theme: "light" | "dark"
+): Promise<void> {
+  await supabase.from("accounts").update({ theme_preference: theme }).eq("id", accountId);
+}
+
 export async function setAccountPlan(
   supabase: SupabaseClient,
   accountId: string,
@@ -87,16 +95,37 @@ export async function listAccountPhotosMutable(
   return (data as AccountPhoto[]) ?? [];
 }
 
+/** Chemin Storage à partir d'une URL publique (`.../storage/v1/object/public/photos/...`),
+ * `null` si l'URL n'est pas une photo de ce bucket (ex. une éventuelle ligne `data:` restante
+ * d'avant la migration vers Storage, voir docs/DECISIONS.md). */
+function storagePathFromUrl(url: string): string | null {
+  const marker = "/storage/v1/object/public/photos/";
+  const i = url.indexOf(marker);
+  return i === -1 ? null : url.slice(i + marker.length);
+}
+
+/** Supprime du bucket les fichiers qui ne sont plus référencés nulle part (photo retirée par
+ * le compte, logo remplacé, fiche supprimée). Best-effort : ne fait jamais échouer
+ * l'opération appelante si la suppression Storage elle-même échoue. */
+async function deleteStorageObjects(supabase: SupabaseClient, urls: string[]): Promise<void> {
+  const paths = urls.map(storagePathFromUrl).filter((p): p is string => p !== null);
+  if (paths.length > 0) await supabase.storage.from("photos").remove(paths);
+}
+
 export async function replaceAccountPhotos(
   supabase: SupabaseClient,
   accountId: string,
   urls: string[]
 ): Promise<void> {
+  const nextSet = new Set(urls.map((u) => u.trim()).filter(Boolean));
+  const existing = await listAccountPhotosMutable(supabase, accountId);
+  await deleteStorageObjects(
+    supabase,
+    existing.map((p) => p.url).filter((u) => !nextSet.has(u))
+  );
+
   await supabase.from("account_photos").delete().eq("account_id", accountId);
-  const rows = urls
-    .map((u) => u.trim())
-    .filter(Boolean)
-    .map((url, index) => ({ account_id: accountId, url, ordre: index + 1 }));
+  const rows = [...nextSet].map((url, index) => ({ account_id: accountId, url, ordre: index + 1 }));
   if (rows.length > 0) await supabase.from("account_photos").insert(rows);
 }
 
@@ -129,6 +158,17 @@ export async function updateAccountTheme(
     >
   >
 ): Promise<void> {
+  // Remplacement du logo : l'ancien fichier n'est plus référencé nulle part une fois
+  // écrasé, à supprimer du bucket. `"logo_url" in input` distingue un appel qui touche
+  // vraiment le logo (Personnalisation) d'un appel qui ne fait que mettre à jour d'autres
+  // champs de account_theme (ex. lien_retour_site depuis la page Compte).
+  if ("logo_url" in input) {
+    const current = await getAccountThemeMutable(supabase, accountId);
+    if (current?.logo_url && current.logo_url !== input.logo_url) {
+      await deleteStorageObjects(supabase, [current.logo_url]);
+    }
+  }
+
   await supabase
     .from("account_theme")
     .update({ ...input, updated_at: new Date().toISOString() })
@@ -349,8 +389,12 @@ export async function changeAnimalStatut(
 
 export async function deleteAnimal(supabase: SupabaseClient, id: string): Promise<void> {
   // `animal_badges`/`animal_photos`/`animal_views` sont en `on delete cascade` (voir
-  // supabase/migrations/0001_init.sql) : pas besoin de les supprimer explicitement ici.
+  // supabase/migrations/0001_init.sql) : pas besoin de supprimer ces lignes explicitement,
+  // seuls les fichiers Storage correspondants (jamais nettoyés automatiquement par un
+  // simple delete de ligne en base) doivent l'être à part.
+  const photos = await listPhotosForAnimalMutable(supabase, id);
   await supabase.from("animaux").delete().eq("id", id);
+  await deleteStorageObjects(supabase, photos.map((p) => p.url));
 }
 
 export async function listBadgesForAnimalMutable(
@@ -596,6 +640,22 @@ export async function getSupportMessageById(
   return (data as SupportMessage) ?? undefined;
 }
 
+/** Messages envoyés au webmaster par le compte lui-même (onglet "Envoyés" côté pro,
+ * `/espace/messages?view=envoyes`), quel que soit leur statut côté admin (actif, archivé,
+ * corbeille) : ces statuts sont un concept de traitement admin, pas quelque chose que le pro
+ * doit voir disparaître de sa propre liste. Lecture seule, aucune action possible dessus. */
+export async function listSupportMessagesSentByAccount(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<SupportMessage[]> {
+  const { data } = await supabase
+    .from("support_messages")
+    .select("*")
+    .eq("account_id", accountId)
+    .order("created_at", { ascending: false });
+  return (data as SupportMessage[]) ?? [];
+}
+
 export async function listSupportMessages(supabase: SupabaseClient): Promise<SupportMessage[]> {
   const { data } = await supabase
     .from("support_messages")
@@ -732,10 +792,14 @@ async function replacePhotos(
   animalId: string,
   urls: string[]
 ): Promise<void> {
+  const nextSet = new Set(urls.map((u) => u.trim()).filter(Boolean));
+  const existing = await listPhotosForAnimalMutable(supabase, animalId);
+  await deleteStorageObjects(
+    supabase,
+    existing.map((p) => p.url).filter((u) => !nextSet.has(u))
+  );
+
   await supabase.from("animal_photos").delete().eq("animal_id", animalId);
-  const rows = urls
-    .map((u) => u.trim())
-    .filter(Boolean)
-    .map((url, index) => ({ animal_id: animalId, url, ordre: index + 1 }));
+  const rows = [...nextSet].map((url, index) => ({ animal_id: animalId, url, ordre: index + 1 }));
   if (rows.length > 0) await supabase.from("animal_photos").insert(rows);
 }

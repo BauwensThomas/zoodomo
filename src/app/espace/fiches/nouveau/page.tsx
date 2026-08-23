@@ -22,12 +22,13 @@ export default async function NouvelleFichePage() {
         <ArrowLeft className="h-4 w-4" />
         {t("backToList")}
       </Link>
-      <h1 className="mt-3 font-heading text-2xl font-medium tracking-tight text-foreground">
+      <h1 className="mt-2 font-heading text-2xl font-medium tracking-tight text-foreground">
         {t("newTitle")}
       </h1>
-      <div className="mt-6">
+      <div className="mt-4">
         <FicheForm
           action={createAnimalAction}
+          accountId={account.id}
           especes={mockEspeces}
           languesActives={account.langues_actives}
           submitLabel={t("createSubmit")}

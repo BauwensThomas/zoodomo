@@ -89,6 +89,14 @@ export interface Account {
    */
   langue_interface: Locale | null;
   /**
+   * Préférence de mode sombre du pro connecté, même principe que `langue_interface` : suit
+   * le compte d'un appareil à l'autre plutôt que de dépendre du cookie `THEME_PREFERENCE` de
+   * l'appareil courant (utilisé, lui, pour les pages hors espace membre). `null` = suit la
+   * préférence système (comportement par défaut, jamais réglé explicitement), voir
+   * `src/app/espace/layout.tsx`, `docs/DECISIONS.md`.
+   */
+  theme_preference: "light" | "dark" | null;
+  /**
    * `"essai"` pendant les 15 jours gratuits suivant l'inscription (`TRIAL_DAYS`,
    * `src/lib/mock/helpers.ts`, calculé à partir de `created_at`, jamais stocké tel quel pour
    * éviter un décompte qui dérive). Passe à `"mensuel"` ou `"annuel"` une fois un plan choisi

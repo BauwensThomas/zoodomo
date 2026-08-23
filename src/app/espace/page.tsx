@@ -109,7 +109,7 @@ export default async function DashboardPage() {
       )}
 
       {!account.adresse && (
-        <div className="mt-4 flex items-center gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-sm text-amber-900">
+        <div className="mt-3 flex items-center gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-sm text-amber-900">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <p className="flex-1">{t("addressMissingNotice")}</p>
           <Link
@@ -121,7 +121,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="mt-6 flex flex-col gap-3 rounded-2xl border border-border bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="mt-4 flex flex-col gap-3 rounded-2xl border border-foreground bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="text-xs font-medium text-foreground">{t("publicUrlLabel")}</p>
           <a
@@ -140,15 +140,15 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {statsBeforeAdopted.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-border bg-white p-4">
+          <div key={stat.label} className="rounded-2xl border border-foreground bg-card p-4">
             <stat.icon className="h-5 w-5 text-foreground" />
             <p className="mt-3 text-2xl font-semibold text-foreground">{stat.value}</p>
             <p className="text-xs text-foreground">{stat.label}</p>
           </div>
         ))}
-        <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="rounded-2xl border border-foreground bg-card p-4">
           <HeartHandshake className="h-5 w-5 text-foreground" />
           <p className="mt-3 text-2xl font-semibold text-foreground">
             {adoptedThisMonth}
@@ -160,7 +160,7 @@ export default async function DashboardPage() {
           </p>
         </div>
         {statsAfterAdopted.map((stat) => (
-          <div key={stat.label} className="rounded-2xl border border-border bg-white p-4">
+          <div key={stat.label} className="rounded-2xl border border-foreground bg-card p-4">
             <stat.icon className="h-5 w-5 text-foreground" />
             <p className="mt-3 text-2xl font-semibold text-foreground">{stat.value}</p>
             <p className="text-xs text-foreground">{stat.label}</p>
@@ -168,7 +168,7 @@ export default async function DashboardPage() {
         ))}
       </div>
 
-      <div className="mt-8 flex items-center justify-between">
+      <div className="mt-6 flex items-center justify-between">
         <h2 className="font-heading text-lg font-medium text-foreground">{t("latest")}</h2>
         <Link
           href="/espace/fiches"
@@ -179,14 +179,14 @@ export default async function DashboardPage() {
       </div>
 
       {animaux.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+        <p className="mt-3 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
           {t("empty")}{" "}
           <Link href="/espace/fiches/nouveau" className="font-medium text-foreground underline">
             {t("emptyCreate")}
           </Link>
         </p>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-white">
+        <div className="mt-3 overflow-x-auto rounded-2xl border border-foreground bg-card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-foreground">
               <tr className="divide-x divide-border">

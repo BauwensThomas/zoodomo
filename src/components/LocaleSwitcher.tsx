@@ -53,7 +53,7 @@ export function LocaleSwitcher({ current }: LocaleSwitcherProps) {
         aria-expanded={open}
         aria-label={t(current)}
         disabled={isPending}
-        className="flex cursor-pointer items-center gap-1 rounded-full border border-border bg-white px-2 py-1.5 shadow-sm transition-opacity hover:opacity-80 disabled:opacity-50"
+        className="flex cursor-pointer items-center gap-1 rounded-full border border-border bg-card px-2 py-1.5 shadow-sm transition-opacity hover:opacity-80 disabled:opacity-50"
       >
         <FlagIcon locale={current} className="h-4 w-4 rounded-full" />
         <ChevronDown
@@ -62,7 +62,7 @@ export function LocaleSwitcher({ current }: LocaleSwitcherProps) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full z-20 mt-2 flex flex-col gap-1 rounded-xl border border-border bg-white p-1.5 shadow-md">
+        <div className="absolute right-0 top-full z-20 mt-2 flex flex-col gap-1 rounded-xl border border-border bg-card p-1.5 shadow-md">
           {others.map((locale) => (
             <button
               key={locale}

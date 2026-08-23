@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { CheckCircle2, Send } from "lucide-react";
 import { AutoDismiss } from "@/components/AutoDismiss";
-import { PhotoUploadField } from "@/components/PhotoUploadField";
+import { LegacyPhotoUploadField } from "@/components/LegacyPhotoUploadField";
 import { sendSupportMessageAction, type SavedState } from "../actions";
 
 const initialState: SavedState = { saved: false };
@@ -40,7 +40,7 @@ export function ContactWebmasterForm({
   const [state, formAction] = useActionState(sendSupportMessageAction, initialState);
 
   return (
-    <form action={formAction} className="space-y-4 rounded-2xl border border-border bg-white p-5">
+    <form action={formAction} className="space-y-4 rounded-2xl border border-foreground bg-card p-5">
       <div>
         <label htmlFor="reason" className="block text-sm font-medium text-foreground">
           {reasonLabel}
@@ -84,7 +84,7 @@ export function ContactWebmasterForm({
         <label className="block text-sm font-medium text-foreground">{photoLabel}</label>
         {/* `key` sur `savedAt` : réinitialise le champ après un envoi réussi, pour ne pas
             réattacher par erreur la même capture d'écran au message suivant. */}
-        <PhotoUploadField
+        <LegacyPhotoUploadField
           key={state.savedAt ?? "empty"}
           name="photo"
           maxPhotos={1}

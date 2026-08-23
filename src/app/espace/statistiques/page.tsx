@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { Eye, CalendarRange, Trophy } from "lucide-react";
+import { Eye, CalendarRange, Trophy, Euro, Coins } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
 import { createClient } from "@/lib/supabase/server";
 import { listAnimauxByAccountAll, getEspeceById, listViewsForAnimalIds } from "@/lib/mock";
 import { STATUT_BADGE_CLASS } from "@/lib/statut-badge";
 import { StatsFilters } from "@/components/StatsFilters";
+import { StatsPdfExportButton } from "@/components/StatsPdfExportButton";
 import { ViewsChart } from "@/components/ViewsChart";
 import type { Animal, Locale } from "@/types";
 
@@ -185,6 +186,28 @@ export default async function StatistiquesPage({
           ...lifecycleCountsForBucket((d) => d.getDate() === i + 1),
         }));
 
+  // Troisième graphe : prix des animaux adoptés sur la période sélectionnée, un animal par
+  // barre (contrairement aux deux graphes précédents, groupés par mois/jour) : le prix est
+  // une donnée propre à chaque fiche, pas quelque chose qui s'additionne dans le temps.
+  const adoptedWithPrice = animaux
+    .filter((a) => a.statut === "adopte" && a.prix !== null && a.date_adoption)
+    .filter((a) => {
+      const d = new Date(a.date_adoption!);
+      return d >= periodStart && d < periodEnd;
+    })
+    .sort((a, b) => new Date(a.date_adoption!).getTime() - new Date(b.date_adoption!).getTime());
+  const priceSeriesKey = t("seriesPrice");
+  const priceChartData = adoptedWithPrice.map((a) => ({ label: a.nom, [priceSeriesKey]: a.prix! }));
+  const priceSeries = [{ key: priceSeriesKey, color: "#10b981" }];
+
+  // Totaux affichés dans les cartes : "totales" respecte le filtre espèce/animal mais pas la
+  // période (même logique que totalViewsAllTime/totalViewsPeriod plus bas), "sur la période"
+  // réutilise la liste déjà filtrée par periodStart/periodEnd.
+  const totalAdoptedPriceAllTime = animaux
+    .filter((a) => a.statut === "adopte" && a.prix !== null)
+    .reduce((sum, a) => sum + a.prix!, 0);
+  const totalAdoptedPricePeriod = adoptedWithPrice.reduce((sum, a) => sum + a.prix!, 0);
+
   const viewsByAnimal = new Map<string, number>();
   for (const v of viewsInPeriod) {
     viewsByAnimal.set(v.animal_id, (viewsByAnimal.get(v.animal_id) ?? 0) + 1);
@@ -202,11 +225,31 @@ export default async function StatistiquesPage({
   const totalViewsAllTime = views.length;
   const totalViewsPeriod = viewsInPeriod.length;
 
+  // Libellés utilisés dans le résumé PDF exporté (bouton plus bas), pour refléter exactement
+  // les filtres actifs à l'écran plutôt qu'un export toujours identique.
+  const periodLabel = mode === "annuel" ? String(year) : `${monthNames[month - 1]} ${year}`;
+  const especeLabel =
+    especeId === "toutes" ? t("filterAllSpecies") : especesDisponibles.find((e) => e.id === especeId)?.nom ?? t("filterAllSpecies");
+  const animalLabel =
+    animalId === "tous" ? t("filterAllAnimals") : animauxDeLEspece.find((a) => a.id === animalId)?.nom ?? t("filterAllAnimals");
+
   return (
     <div>
-      <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground">
-        {t("title")}
-      </h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-heading text-2xl font-medium tracking-tight text-foreground">
+          {t("title")}
+        </h1>
+        <StatsPdfExportButton
+          accountName={account.nom_affichage}
+          periodLabel={periodLabel}
+          especeLabel={especeLabel}
+          animalLabel={animalLabel}
+          totalViewsAllTime={totalViewsAllTime}
+          totalViewsPeriod={totalViewsPeriod}
+          totalAdoptedPriceAllTime={totalAdoptedPriceAllTime}
+          totalAdoptedPricePeriod={totalAdoptedPricePeriod}
+        />
+      </div>
 
       <StatsFilters
         mode={mode}
@@ -225,18 +268,18 @@ export default async function StatistiquesPage({
       />
       <p className="mt-2 text-xs text-foreground">{t("filterHint")}</p>
 
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-white p-4">
+      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="rounded-2xl border border-foreground bg-card p-4">
           <Eye className="h-5 w-5 text-foreground" />
           <p className="mt-3 text-2xl font-semibold text-foreground">{totalViewsAllTime}</p>
           <p className="text-xs text-foreground">{t("statTotalViews")}</p>
         </div>
-        <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="rounded-2xl border border-foreground bg-card p-4">
           <CalendarRange className="h-5 w-5 text-foreground" />
           <p className="mt-3 text-2xl font-semibold text-foreground">{totalViewsPeriod}</p>
           <p className="text-xs text-foreground">{t("statPeriodViews")}</p>
         </div>
-        <div className="rounded-2xl border border-border bg-white p-4">
+        <div className="rounded-2xl border border-foreground bg-card p-4">
           <Trophy className="h-5 w-5 text-foreground" />
           <p className="mt-3 truncate text-2xl font-semibold text-foreground">
             {mostViewed ? mostViewed.animal.nom : "-"}
@@ -247,23 +290,42 @@ export default async function StatistiquesPage({
               : t("statMostViewedEmpty")}
           </p>
         </div>
+        <div className="rounded-2xl border border-foreground bg-card p-4">
+          <Euro className="h-5 w-5 text-foreground" />
+          <p className="mt-3 text-2xl font-semibold text-foreground">{totalAdoptedPriceAllTime} €</p>
+          <p className="text-xs text-foreground">{t("statAdoptedPriceTotal")}</p>
+        </div>
+        <div className="rounded-2xl border border-foreground bg-card p-4">
+          <Coins className="h-5 w-5 text-foreground" />
+          <p className="mt-3 text-2xl font-semibold text-foreground">{totalAdoptedPricePeriod} €</p>
+          <p className="text-xs text-foreground">{t("statAdoptedPricePeriod")}</p>
+        </div>
       </div>
 
-      <h2 className="mt-8 font-heading text-lg font-medium text-foreground">{t("chartTitle")}</h2>
+      <h2 className="mt-6 font-heading text-lg font-medium text-foreground">{t("chartTitle")}</h2>
       <ViewsChart data={chartData} series={chartSeries} />
 
-      <h2 className="mt-8 font-heading text-lg font-medium text-foreground">
+      <h2 className="mt-6 font-heading text-lg font-medium text-foreground">
         {t("lifecycleChartTitle")}
       </h2>
       <ViewsChart data={lifecycleChartData} series={lifecycleSeries} />
 
-      <h2 className="mt-8 font-heading text-lg font-medium text-foreground">{t("tableTitle")}</h2>
+      <h2 className="mt-6 font-heading text-lg font-medium text-foreground">{t("priceChartTitle")}</h2>
+      {priceChartData.length === 0 ? (
+        <p className="mt-3 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+          {t("priceChartEmpty")}
+        </p>
+      ) : (
+        <ViewsChart data={priceChartData} series={priceSeries} />
+      )}
+
+      <h2 className="mt-6 font-heading text-lg font-medium text-foreground">{t("tableTitle")}</h2>
       {animaux.length === 0 ? (
-        <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+        <p className="mt-3 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
           {t("empty")}
         </p>
       ) : (
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-white">
+        <div className="mt-3 overflow-x-auto rounded-2xl border border-foreground bg-card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-foreground">
               <tr className="divide-x divide-border">

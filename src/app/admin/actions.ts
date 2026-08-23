@@ -14,7 +14,11 @@ import {
   deleteSupportMessage,
   setSupportMessageRead,
 } from "@/lib/mock";
+import { getTranslations } from "next-intl/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { sendEmail } from "@/lib/email/resend";
+import { renderEmailHtml } from "@/lib/email/template";
+import type { Locale } from "@/types";
 import { ADMIN_SESSION_COOKIE_NAME, isAdminSession } from "@/lib/mock/admin-auth";
 import { isBlocked, recordFailedAttempt, resetAttempts } from "@/lib/mock/admin-login-attempts";
 
@@ -112,14 +116,30 @@ export async function sendAdminBroadcastAction(
   const allAccounts = await listAccounts(admin);
   const accounts = target === "tous" ? allAccounts : allAccounts.filter((a) => a.id === target);
 
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+
   let sentAny = false;
   for (const account of accounts) {
-    const locale = account.langue_interface ?? "fr";
+    const locale = (account.langue_interface ?? "fr") as Locale;
     const subject = get(`subject_${locale}`);
     const body = get(`body_${locale}`);
     if (!subject || !body) continue;
     await sendAccountMessage(admin, { account_id: account.id, kind: "admin", subject, body });
     sentAny = true;
+
+    const t = await getTranslations({ locale, namespace: "admin.messages" });
+    await sendEmail({
+      to: account.email,
+      subject,
+      html: renderEmailHtml({
+        title: t("adminMessageEmailIntro"),
+        body,
+        buttonLabel: t("emailOpenButton"),
+        buttonUrl: `${protocol}://${host}/espace/messages`,
+      }),
+    });
   }
   if (!sentAny) return initialSaved;
 

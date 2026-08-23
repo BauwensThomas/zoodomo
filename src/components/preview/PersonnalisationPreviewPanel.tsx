@@ -24,23 +24,26 @@ const DEVICE_TABS: { id: PreviewDevice; icon: typeof Monitor; label: string }[] 
 export function PersonnalisationPreviewPanel({
   content,
   settings,
+  page,
+  onPageChange,
 }: {
   content: PreviewContent;
   settings: PreviewSettings;
+  page: PreviewPage;
+  onPageChange: (page: PreviewPage) => void;
 }) {
-  const [page, setPage] = useState<PreviewPage>("accueil");
   const [device, setDevice] = useState<PreviewDevice>("desktop");
 
   return (
-    <div className="rounded-3xl border border-border bg-white p-4 shadow-sm">
+    <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
       <div className="flex flex-wrap gap-1.5 rounded-full bg-muted p-1">
         {PAGE_TABS.map(({ id, label }) => (
           <button
             key={id}
             type="button"
-            onClick={() => setPage(id)}
+            onClick={() => onPageChange(id)}
             className={`flex-1 cursor-pointer rounded-full px-3 py-1.5 text-xs font-semibold transition-colors ${
-              page === id ? "bg-white text-foreground shadow-sm" : "text-foreground"
+              page === id ? "bg-card text-foreground shadow-sm" : "text-foreground"
             }`}
           >
             {label}

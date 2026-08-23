@@ -21,11 +21,11 @@ export default async function ContactWebmasterPage() {
         {t("title")}
       </Link>
 
-      <h1 className="mt-4 font-heading text-2xl font-medium tracking-tight text-foreground">
+      <h1 className="mt-3 font-heading text-2xl font-medium tracking-tight text-foreground">
         {t("contactTitle")}
       </h1>
 
-      <div className="mt-6">
+      <div className="mt-4">
         <ContactWebmasterForm
           reasonLabel={t("contactReasonLabel")}
           reasonBug={t("contactReasonBug")}

@@ -27,7 +27,7 @@ import { AutoDismiss } from "@/components/AutoDismiss";
 import { POLICE_IDS, POLICE_FONT_VARS } from "@/lib/fonts";
 import type { PoliceId } from "@/lib/fonts";
 import { PersonnalisationPreviewPanel } from "@/components/preview/PersonnalisationPreviewPanel";
-import type { PreviewContent } from "@/components/preview/types";
+import type { PreviewContent, PreviewPage } from "@/components/preview/types";
 import type { DispositionEspeces, DispositionGalerie, DispositionPresentation } from "@/types";
 import { updatePersonnalisationAction, type SavedState } from "../actions";
 
@@ -55,6 +55,7 @@ const initialState: SavedState = { saved: false };
 const PREVIEW_PANEL_WIDTH = 460;
 
 export function PersonnalisationForm({
+  accountId,
   nomAffichage,
   currentPolice,
   currentDisposition,
@@ -65,6 +66,7 @@ export function PersonnalisationForm({
   logoUrl,
   previewContent,
 }: {
+  accountId: string;
   nomAffichage: string;
   currentPolice: PoliceId;
   currentDisposition: DispositionGalerie;
@@ -90,6 +92,10 @@ export function PersonnalisationForm({
     useState<DispositionPresentation>(currentPresentation);
   const [dispositionGalerie, setDispositionGalerie] = useState<DispositionGalerie>(currentDisposition);
   const [showPreview, setShowPreview] = useState(false);
+  // Onglet du panneau de visualisation basculé automatiquement vers la page publique
+  // concernée par le réglage qu'on vient de changer (accueil par défaut, catégorie pour la
+  // disposition de la galerie), en plus de l'ouverture automatique du panneau lui-même.
+  const [previewPage, setPreviewPage] = useState<PreviewPage>("accueil");
 
   const previewSettings = {
     police,
@@ -123,34 +129,43 @@ export function PersonnalisationForm({
           pointerEvents: showPreview ? "auto" : "none",
         }}
       >
-        <PersonnalisationPreviewPanel content={previewContent} settings={previewSettings} />
+        <PersonnalisationPreviewPanel
+          content={previewContent}
+          settings={previewSettings}
+          page={previewPage}
+          onPageChange={setPreviewPage}
+        />
       </div>
 
       <div className={showPreview ? "xl:pr-115" : ""}>
-        <form action={formAction} className="mt-6 space-y-6">
+        <form action={formAction} className="mt-4 space-y-4">
           <SectionCard icon={Type} accent="indigo" title={t("sectionPolice")} hint={t("policeHint")}>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {POLICE_IDS.map((id) => (
                 <label
                   key={id}
-                  className="flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-border bg-white p-4 transition-colors has-checked:border-foreground has-checked:bg-muted/50"
+                  className="group flex cursor-pointer flex-col gap-2 rounded-2xl border-2 border-border bg-card p-4 transition-colors has-checked:border-green-600 has-checked:bg-green-50"
                 >
                   <input
                     type="radio"
                     name="police"
                     value={id}
                     checked={police === id}
-                    onChange={() => setPolice(id)}
+                    onChange={() => {
+                      setPolice(id);
+                      setShowPreview(true);
+                      setPreviewPage("accueil");
+                    }}
                     className="sr-only"
                   />
                   <span
-                    className="text-lg font-medium text-foreground"
+                    className="text-lg font-medium text-foreground group-has-checked:text-green-900"
                     style={{ fontFamily: POLICE_FONT_VARS[id].heading }}
                   >
                     {nomAffichage}
                   </span>
                   <span
-                    className="text-xs text-foreground"
+                    className="text-xs text-foreground group-has-checked:text-green-900"
                     style={{ fontFamily: POLICE_FONT_VARS[id].body }}
                   >
                     {t(`police.${id}`)}
@@ -168,19 +183,30 @@ export function PersonnalisationForm({
               primaryHint={t("colorPrimaryHint")}
               secondaryLabel={t("colorSecondary")}
               secondaryHint={t("colorSecondaryHint")}
-              onPrimaryChange={setPrimary}
-              onSecondaryChange={setSecondary}
+              onPrimaryChange={(value) => {
+                setPrimary(value);
+                setShowPreview(true);
+                setPreviewPage("accueil");
+              }}
+              onSecondaryChange={(value) => {
+                setSecondary(value);
+                setShowPreview(true);
+                setPreviewPage("accueil");
+              }}
             />
           </SectionCard>
 
           <SectionCard icon={ImageIcon} accent="amber" title={t("sectionLogo")} hint={t("logoHint")}>
             <PhotoUploadField
               name="logo"
+              accountId={accountId}
+              category="logo"
               defaultPhotos={logoUrl ? [logoUrl] : []}
               maxPhotos={1}
               dropLabel={t("logoDropLabel")}
               maxReachedLabel={t("logoMaxReached")}
               removeLabel={t("logoRemoveAria")}
+              uploadErrorLabel={t("logoUploadError")}
             />
           </SectionCard>
 
@@ -189,21 +215,25 @@ export function PersonnalisationForm({
               {ESPECES_OPTIONS.map(({ id, icon: Icon }) => (
                 <label
                   key={id}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-white p-4 text-center transition-colors has-checked:border-foreground has-checked:bg-muted/50"
+                  className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 text-center transition-colors has-checked:border-green-600 has-checked:bg-green-50"
                 >
                   <input
                     type="radio"
                     name="disposition_especes"
                     value={id}
                     checked={dispositionEspeces === id}
-                    onChange={() => setDispositionEspeces(id)}
+                    onChange={() => {
+                      setDispositionEspeces(id);
+                      setShowPreview(true);
+                      setPreviewPage("accueil");
+                    }}
                     className="sr-only"
                   />
-                  <Icon className="h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">
+                  <Icon className="h-6 w-6 text-foreground group-has-checked:text-green-900" />
+                  <span className="text-sm font-medium text-foreground group-has-checked:text-green-900">
                     {t(`especes.${id}.label`)}
                   </span>
-                  <span className="text-xs text-foreground">{t(`especes.${id}.hint`)}</span>
+                  <span className="text-xs text-foreground group-has-checked:text-green-900">{t(`especes.${id}.hint`)}</span>
                 </label>
               ))}
             </div>
@@ -219,21 +249,25 @@ export function PersonnalisationForm({
               {PRESENTATION_OPTIONS.map(({ id, icon: Icon }) => (
                 <label
                   key={id}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-white p-4 text-center transition-colors has-checked:border-foreground has-checked:bg-muted/50"
+                  className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 text-center transition-colors has-checked:border-green-600 has-checked:bg-green-50"
                 >
                   <input
                     type="radio"
                     name="disposition_presentation"
                     value={id}
                     checked={dispositionPresentation === id}
-                    onChange={() => setDispositionPresentation(id)}
+                    onChange={() => {
+                      setDispositionPresentation(id);
+                      setShowPreview(true);
+                      setPreviewPage("accueil");
+                    }}
                     className="sr-only"
                   />
-                  <Icon className="h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">
+                  <Icon className="h-6 w-6 text-foreground group-has-checked:text-green-900" />
+                  <span className="text-sm font-medium text-foreground group-has-checked:text-green-900">
                     {t(`presentation.${id}.label`)}
                   </span>
-                  <span className="text-xs text-foreground">{t(`presentation.${id}.hint`)}</span>
+                  <span className="text-xs text-foreground group-has-checked:text-green-900">{t(`presentation.${id}.hint`)}</span>
                 </label>
               ))}
             </div>
@@ -249,21 +283,25 @@ export function PersonnalisationForm({
               {DISPOSITION_OPTIONS.map(({ id, icon: Icon }) => (
                 <label
                   key={id}
-                  className="flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-white p-4 text-center transition-colors has-checked:border-foreground has-checked:bg-muted/50"
+                  className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl border-2 border-border bg-card p-4 text-center transition-colors has-checked:border-green-600 has-checked:bg-green-50"
                 >
                   <input
                     type="radio"
                     name="disposition_photos"
                     value={id}
                     checked={dispositionGalerie === id}
-                    onChange={() => setDispositionGalerie(id)}
+                    onChange={() => {
+                      setDispositionGalerie(id);
+                      setShowPreview(true);
+                      setPreviewPage("categorie");
+                    }}
                     className="sr-only"
                   />
-                  <Icon className="h-6 w-6 text-foreground" />
-                  <span className="text-sm font-medium text-foreground">
+                  <Icon className="h-6 w-6 text-foreground group-has-checked:text-green-900" />
+                  <span className="text-sm font-medium text-foreground group-has-checked:text-green-900">
                     {t(`disposition.${id}.label`)}
                   </span>
-                  <span className="text-xs text-foreground">{t(`disposition.${id}.hint`)}</span>
+                  <span className="text-xs text-foreground group-has-checked:text-green-900">{t(`disposition.${id}.hint`)}</span>
                 </label>
               ))}
             </div>

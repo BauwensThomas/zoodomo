@@ -38,7 +38,7 @@ export function ConfirmDialog({
       <div
         role="alertdialog"
         aria-modal="true"
-        className="w-full max-w-sm rounded-2xl border border-border bg-white p-5 shadow-xl"
+        className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         <p className="text-sm text-foreground">{message}</p>

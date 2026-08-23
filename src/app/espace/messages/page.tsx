@@ -14,6 +14,7 @@ import {
   Mail,
   MailOpen,
   MessageCircleQuestion,
+  Send,
   type LucideIcon,
 } from "lucide-react";
 import { getSessionAccount } from "@/lib/mock/auth";
@@ -23,6 +24,7 @@ import {
   listAccountMessages,
   listArchivedAccountMessages,
   listTrashedAccountMessages,
+  listSupportMessagesSentByAccount,
   getAnimalById,
   STALE_FICHE_DAYS,
   TRIAL_DAYS,
@@ -37,7 +39,7 @@ import {
   deleteMessageAction,
   setMessageReadAction,
 } from "../actions";
-import type { AccountMessage, AccountMessageKind, Locale } from "@/types";
+import type { AccountMessage, AccountMessageKind, Locale, SupportReason } from "@/types";
 
 const KIND_ICON: Record<AccountMessageKind, LucideIcon> = {
   bienvenue: Sparkles,
@@ -46,6 +48,13 @@ const KIND_ICON: Record<AccountMessageKind, LucideIcon> = {
   essai_rappel_4j: Hourglass,
   essai_rappel_1j: Hourglass,
   admin: Megaphone,
+};
+
+const REASON_LABEL_KEY: Record<SupportReason, string> = {
+  bug: "contactReasonBug",
+  compte: "contactReasonCompte",
+  suggestion: "contactReasonSuggestion",
+  autre: "contactReasonAutre",
 };
 
 /**
@@ -87,7 +96,7 @@ async function renderMessageText(
   return { subject: message.subject, body: message.body };
 }
 
-type View = "inbox" | "archives" | "corbeille";
+type View = "inbox" | "archives" | "corbeille" | "envoyes";
 
 export default async function MessagesPage({
   searchParams,
@@ -99,7 +108,13 @@ export default async function MessagesPage({
 
   const { view: viewParam } = await searchParams;
   const view: View =
-    viewParam === "archives" ? "archives" : viewParam === "corbeille" ? "corbeille" : "inbox";
+    viewParam === "archives"
+      ? "archives"
+      : viewParam === "corbeille"
+        ? "corbeille"
+        : viewParam === "envoyes"
+          ? "envoyes"
+          : "inbox";
 
   const t = await getTranslations("admin.messages");
   const locale = (await getLocale()) as Locale;
@@ -111,7 +126,10 @@ export default async function MessagesPage({
       ? await listArchivedAccountMessages(supabase, account.id)
       : view === "corbeille"
         ? await listTrashedAccountMessages(supabase, account.id)
-        : await listAccountMessages(supabase, account.id);
+        : view === "envoyes"
+          ? []
+          : await listAccountMessages(supabase, account.id);
+  const sentMessages = view === "envoyes" ? await listSupportMessagesSentByAccount(supabase, account.id) : [];
 
   const renderedByMessageId = new Map(
     await Promise.all(
@@ -123,6 +141,7 @@ export default async function MessagesPage({
     { key: "inbox", href: "/espace/messages", label: t("inbox") },
     { key: "archives", href: "/espace/messages?view=archives", label: t("viewArchived") },
     { key: "corbeille", href: "/espace/messages?view=corbeille", label: t("viewTrash") },
+    { key: "envoyes", href: "/espace/messages?view=envoyes", label: t("viewSent") },
   ];
 
   return (
@@ -142,7 +161,7 @@ export default async function MessagesPage({
         )}
       </div>
 
-      <div className="sticky top-25.25 z-10 mt-4 flex gap-1 border-b border-border bg-background">
+      <div className="sticky top-25.25 z-10 mt-3 flex gap-1 border-b border-border bg-background">
         {tabs.map((tab) => (
           <TabLink key={tab.key} href={tab.href} active={view === tab.key}>
             {tab.label}
@@ -150,28 +169,22 @@ export default async function MessagesPage({
         ))}
       </div>
 
-      {messages.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
-          {view === "archives" ? t("emptyArchived") : view === "corbeille" ? t("emptyTrash") : t("empty")}
-        </p>
-      ) : (
-        <div className="mt-6 space-y-3">
-          {messages.map((message) => {
-            const Icon = KIND_ICON[message.kind];
-            const { subject, body } = renderedByMessageId.get(message.id)!;
-            return (
+      {view === "envoyes" ? (
+        sentMessages.length === 0 ? (
+          <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+            {t("emptySent")}
+          </p>
+        ) : (
+          <div className="mt-4 space-y-2.5">
+            {sentMessages.map((message) => (
               <div
                 key={message.id}
-                className={`flex items-start gap-3 rounded-2xl border p-4 ${
-                  view === "inbox" && !message.read
-                    ? "border-orange-300 bg-orange-100"
-                    : "border-border bg-white"
-                }`}
+                className="flex items-start gap-3 rounded-2xl border border-foreground bg-card p-4"
               >
-                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-(--account-primary)" />
+                <Send className="mt-0.5 h-5 w-5 shrink-0 text-(--account-primary)" />
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-                    <p className="font-medium text-foreground">{subject}</p>
+                    <p className="font-medium text-foreground">{message.subject}</p>
                     <p className="shrink-0 text-xs text-foreground">
                       {new Date(message.created_at).toLocaleString(dateLocale, {
                         dateStyle: "short",
@@ -179,7 +192,43 @@ export default async function MessagesPage({
                       })}
                     </p>
                   </div>
-                  <p className="mt-1 whitespace-pre-line text-sm text-foreground">{body}</p>
+                  <p className="text-xs text-foreground">{t(REASON_LABEL_KEY[message.reason])}</p>
+                  <p className="mt-1 whitespace-pre-line text-sm text-foreground">{message.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
+      ) : messages.length === 0 ? (
+        <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+          {view === "archives" ? t("emptyArchived") : view === "corbeille" ? t("emptyTrash") : t("empty")}
+        </p>
+      ) : (
+        <div className="mt-4 space-y-2.5">
+          {messages.map((message) => {
+            const Icon = KIND_ICON[message.kind];
+            const { subject, body } = renderedByMessageId.get(message.id)!;
+            const unread = view === "inbox" && !message.read;
+            const textClass = unread ? "text-orange-950" : "text-foreground";
+            return (
+              <div
+                key={message.id}
+                className={`flex items-start gap-3 rounded-2xl border p-4 ${
+                  unread ? "border-orange-300 bg-orange-100" : "border-foreground bg-card"
+                }`}
+              >
+                <Icon className="mt-0.5 h-5 w-5 shrink-0 text-(--account-primary)" />
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                    <p className={`font-medium ${textClass}`}>{subject}</p>
+                    <p className={`shrink-0 text-xs ${textClass}`}>
+                      {new Date(message.created_at).toLocaleString(dateLocale, {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      })}
+                    </p>
+                  </div>
+                  <p className={`mt-1 whitespace-pre-line text-sm ${textClass}`}>{body}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-1">
                   {view === "corbeille" ? (
@@ -215,7 +264,7 @@ export default async function MessagesPage({
                             type="submit"
                             aria-label={message.read ? t("markUnread") : t("markRead")}
                             title={message.read ? t("markUnread") : t("markRead")}
-                            className="cursor-pointer rounded-full p-1.5 text-foreground transition-colors hover:bg-muted"
+                            className={`cursor-pointer rounded-full p-1.5 transition-colors hover:bg-muted ${textClass}`}
                           >
                             {message.read ? (
                               <Mail className="h-4 w-4" />
@@ -231,7 +280,7 @@ export default async function MessagesPage({
                             type="submit"
                             aria-label={t("unarchive")}
                             title={t("unarchive")}
-                            className="cursor-pointer rounded-full p-1.5 text-foreground transition-colors hover:bg-muted"
+                            className={`cursor-pointer rounded-full p-1.5 transition-colors hover:bg-muted ${textClass}`}
                           >
                             <ArchiveRestore className="h-4 w-4" />
                           </button>
@@ -242,7 +291,7 @@ export default async function MessagesPage({
                             type="submit"
                             aria-label={t("archive")}
                             title={t("archive")}
-                            className="cursor-pointer rounded-full p-1.5 text-foreground transition-colors hover:bg-muted"
+                            className={`cursor-pointer rounded-full p-1.5 transition-colors hover:bg-muted ${textClass}`}
                           >
                             <Archive className="h-4 w-4" />
                           </button>
@@ -253,7 +302,7 @@ export default async function MessagesPage({
                           type="submit"
                           aria-label={t("delete")}
                           title={t("delete")}
-                          className="cursor-pointer rounded-full p-1.5 text-foreground transition-colors hover:bg-muted"
+                          className={`cursor-pointer rounded-full p-1.5 transition-colors hover:bg-muted ${textClass}`}
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>

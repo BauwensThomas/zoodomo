@@ -24,6 +24,7 @@ function inputClass() {
 
 interface FicheFormProps {
   action: (formData: FormData) => void | Promise<void>;
+  accountId: string;
   especes: Espece[];
   languesActives: Locale[];
   animal?: Animal;
@@ -34,6 +35,7 @@ interface FicheFormProps {
 
 export function FicheForm({
   action,
+  accountId,
   especes,
   languesActives,
   animal,
@@ -258,7 +260,7 @@ export function FicheForm({
                   name={`description_${locale}`}
                   rows={3}
                   defaultValue={animal?.description?.[locale]}
-                  className={`${inputClass()} bg-white`}
+                  className={`${inputClass()} bg-card`}
                 />
               </div>
               <div className="mt-3">
@@ -272,7 +274,7 @@ export function FicheForm({
                   name={`foyer_ideal_${locale}`}
                   rows={3}
                   defaultValue={animal?.foyer_ideal?.[locale]}
-                  className={`${inputClass()} bg-white`}
+                  className={`${inputClass()} bg-card`}
                 />
               </div>
             </div>
@@ -316,11 +318,14 @@ export function FicheForm({
       >
         <PhotoUploadField
           name="photos"
+          accountId={accountId}
+          category="animals"
           defaultPhotos={photos.map((p) => p.url)}
           maxPhotos={5}
           dropLabel={t("photosDropLabel")}
           maxReachedLabel={t("photosMaxReached")}
           removeLabel={t("photosRemoveAria")}
+          uploadErrorLabel={t("photosUploadError")}
         />
       </SectionCard>
 

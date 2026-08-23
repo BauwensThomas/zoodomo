@@ -10,16 +10,22 @@ export function ViewsChart({
   series: { key: string; color: string }[];
 }) {
   return (
-    <div className="mt-3 w-full rounded-2xl border border-border bg-white p-4">
+    <div className="mt-3 w-full rounded-2xl border border-foreground bg-card p-4">
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e7e2d8" vertical={false} />
-            <XAxis dataKey="label" tick={{ fontSize: 12, fill: "#57534e" }} axisLine={{ stroke: "#e7e2d8" }} tickLine={false} />
-            <YAxis allowDecimals={false} width={30} tick={{ fontSize: 12, fill: "#57534e" }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="label" tick={{ fontSize: 12, fill: "var(--foreground)" }} axisLine={{ stroke: "var(--border)" }} tickLine={false} />
+            <YAxis allowDecimals={false} width={30} tick={{ fontSize: 12, fill: "var(--foreground)" }} axisLine={false} tickLine={false} />
             <Tooltip
-              cursor={{ fill: "#f5f2ec" }}
-              contentStyle={{ borderRadius: 12, border: "1px solid #e7e2d8", fontSize: 13 }}
+              cursor={{ fill: "var(--muted)" }}
+              contentStyle={{
+                borderRadius: 12,
+                border: "1px solid var(--border)",
+                backgroundColor: "var(--card)",
+                fontSize: 13,
+              }}
+              labelStyle={{ color: "var(--foreground)", fontWeight: 600 }}
             />
             {/* Légende sous le graphe (`verticalAlign="bottom"`) : couleur <-> nom d'espèce. */}
             <Legend verticalAlign="bottom" height={32} wrapperStyle={{ fontSize: 13 }} />

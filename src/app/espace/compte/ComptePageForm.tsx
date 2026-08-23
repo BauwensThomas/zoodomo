@@ -48,7 +48,7 @@ export function ComptePageForm({
   }, [state.error]);
 
   return (
-    <form action={formAction} className="mt-6 space-y-6">
+    <form action={formAction} className="mt-4 space-y-4">
       <div className="flex items-start gap-2.5 rounded-2xl border border-amber-100 bg-amber-50 p-3.5 text-sm text-amber-900">
         <Info className="mt-0.5 h-4 w-4 shrink-0" />
         <p>{tForm("requiredHint")}</p>
@@ -120,7 +120,7 @@ export function ComptePageForm({
       </SectionCard>
 
       <SectionCard icon={Building2} accent="teal" title={t("sectionAddress")}>
-        <div className="space-y-5">
+        <div className="space-y-4">
           <div>
             <FieldLabel htmlFor="adresse" label={t("address")} optionalLabel={optionalLabel} />
             <textarea
@@ -166,6 +166,7 @@ export function ComptePageForm({
       </SectionCard>
 
       <LanguesPresentationSection
+        accountId={account.id}
         initialLangues={account.langues_actives}
         aPropos={account.a_propos}
         photoUrls={photoUrls}

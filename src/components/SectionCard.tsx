@@ -24,7 +24,7 @@ export function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-3xl border border-border bg-white p-6 shadow-sm sm:p-7">
+    <section className="rounded-3xl border border-foreground bg-card p-5 shadow-sm sm:p-6">
       <div className="flex items-center gap-3">
         <span
           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${ACCENT_CLASSES[accent]}`}
@@ -36,7 +36,7 @@ export function SectionCard({
           {hint && <p className="mt-0.5 text-xs text-foreground">{hint}</p>}
         </div>
       </div>
-      <div className="mt-5">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }

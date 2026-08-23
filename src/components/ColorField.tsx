@@ -29,7 +29,7 @@ export function ColorField({
           value={value}
           onChange={(e) => update(e.target.value)}
           aria-label={label}
-          className="h-10 w-14 cursor-pointer rounded-lg border border-border bg-white p-1"
+          className="h-10 w-14 cursor-pointer rounded-lg border border-border bg-card p-1"
         />
         <input
           type="text"

@@ -16,7 +16,7 @@ export function FeatureHighlights() {
   return (
     <div>
       <p className="font-heading text-lg font-medium text-foreground">{t("whyTitle")}</p>
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-3 space-y-2">
         {items.map((label) => (
           <li key={label} className="flex items-start gap-3">
             <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#2f6b4f]" />

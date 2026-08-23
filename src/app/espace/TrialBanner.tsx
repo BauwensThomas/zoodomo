@@ -32,7 +32,7 @@ export function TrialBanner({
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-muted/60 p-3.5 text-sm text-foreground">
+    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-orange-200 bg-orange-100 p-3.5 text-sm text-orange-900">
       <span>{daysText}</span>
       <button
         type="button"

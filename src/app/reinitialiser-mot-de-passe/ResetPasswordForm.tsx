@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { ZoodomoLogo } from "@/components/ZoodomoLogo";
 import { LocaleSwitcher } from "@/components/LocaleSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SitePreviewMockup } from "@/components/SitePreviewMockup";
 import { FeatureHighlights } from "@/components/FeatureHighlights";
 import { PasswordRequirements } from "@/components/PasswordRequirements";
@@ -39,11 +40,14 @@ export function ResetPasswordForm() {
   const locale = useLocale() as Locale;
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[5fr_7fr]">
-      <div className="flex flex-col px-6 py-8 sm:px-12 sm:py-10">
+    <div className="grid min-h-screen bg-background lg:h-screen lg:grid-cols-[5fr_7fr] lg:overflow-hidden">
+      <div className="flex flex-col px-6 py-6 sm:px-12 sm:py-8 lg:overflow-y-auto">
         <div className="flex items-center justify-between">
           <ZoodomoLogo width={130} />
-          <LocaleSwitcher current={locale} />
+          <div className="flex items-center gap-2">
+            <ThemeToggle label={tLogin("themeToggle")} />
+            <LocaleSwitcher current={locale} />
+          </div>
         </div>
 
         <div className="flex flex-1 flex-col justify-center">
@@ -67,7 +71,7 @@ export function ResetPasswordForm() {
                   setMismatchError(false);
                 }
               }}
-              className="mt-6 space-y-3"
+              className="mt-4 space-y-3"
             >
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-foreground">
@@ -93,7 +97,7 @@ export function ResetPasswordForm() {
                     onPaste={blockClipboard}
                     onCopy={blockClipboard}
                     onCut={blockClipboard}
-                    className="w-full rounded-xl border border-border px-3.5 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-foreground"
+                    className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-foreground"
                   />
                   <button
                     type="button"
@@ -104,7 +108,7 @@ export function ResetPasswordForm() {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                   {passwordFocused && (
-                    <div className="absolute left-0 top-full z-10 mt-2 w-full rounded-xl border border-border bg-white p-3 shadow-md">
+                    <div className="absolute left-0 top-full z-10 mt-2 w-full rounded-xl border border-border bg-card p-3 shadow-md">
                       <PasswordRequirements
                         password={password}
                         minLengthLabel={t("passwordMinLength")}
@@ -134,7 +138,7 @@ export function ResetPasswordForm() {
                     onPaste={blockClipboard}
                     onCopy={blockClipboard}
                     onCut={blockClipboard}
-                    className="w-full rounded-xl border border-border px-3.5 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-foreground"
+                    className="w-full rounded-xl border border-border bg-card px-3.5 py-2.5 pr-10 text-sm text-foreground outline-none focus:border-foreground"
                   />
                   <button
                     type="button"
@@ -166,18 +170,20 @@ export function ResetPasswordForm() {
         </div>
       </div>
 
-      <div className="relative hidden overflow-hidden border-l border-border bg-muted lg:flex lg:flex-col lg:justify-center lg:gap-10 lg:px-16 lg:py-12">
-        <div>
-          <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
-            {tLogin("heroTitle")}
-          </h2>
-          <p className="mt-4 text-foreground">{tLogin("heroSubtitle")}</p>
-          <div className="mt-8">
-            <FeatureHighlights />
+      <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-5">
+        <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-4">
+          <div>
+            <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
+              {tLogin("heroTitle")}
+            </h2>
+            <p className="mt-4 text-foreground">{tLogin("heroSubtitle")}</p>
+            <div className="mt-5">
+              <FeatureHighlights />
+            </div>
           </div>
-        </div>
 
-        <SitePreviewMockup />
+          <SitePreviewMockup />
+        </div>
       </div>
     </div>
   );

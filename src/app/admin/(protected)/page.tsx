@@ -9,7 +9,6 @@ import {
   MailOpen,
   Reply,
   Search,
-  Send,
   X,
 } from "lucide-react";
 import {
@@ -100,21 +99,35 @@ export default async function AdminHomePage({
         : viewParam === "envoyes"
           ? "envoyes"
           : "inbox";
-  const isSearching = view !== "envoyes" && Boolean(q && q.trim());
+  const isSearching = Boolean(q && q.trim());
 
   const admin = createAdminClient();
   const accounts = await listAccounts(admin);
   const unreadSupport = await countUnreadSupportMessages(admin);
+  // Une recherche cherche partout à la fois (boîte de réception, archives, corbeille ET
+  // envoyés), indépendamment de l'onglet actif au moment de la soumission : `view` ne sert
+  // plus qu'à savoir où revenir une fois la recherche effacée (voir le lien "Effacer" plus
+  // bas), pas à restreindre les résultats pendant qu'on cherche.
   const supportMessages = isSearching
     ? await searchSupportMessages(admin, q!)
-    : view === "archives"
-      ? await listArchivedSupportMessages(admin)
-      : view === "corbeille"
-        ? await listTrashedSupportMessages(admin)
-        : view === "envoyes"
-          ? []
+    : view === "envoyes"
+      ? []
+      : view === "archives"
+        ? await listArchivedSupportMessages(admin)
+        : view === "corbeille"
+          ? await listTrashedSupportMessages(admin)
           : await listSupportMessages(admin);
-  const sentMessages = view === "envoyes" ? await listSentAdminMessages(admin) : [];
+  const sentMessagesAll = isSearching || view === "envoyes" ? await listSentAdminMessages(admin) : [];
+  const sentMessages = isSearching
+    ? sentMessagesAll.filter((m) => {
+        const query = q!.trim().toLowerCase();
+        return (
+          m.subject.toLowerCase().includes(query) ||
+          m.body.toLowerCase().includes(query) ||
+          m.accountName.toLowerCase().includes(query)
+        );
+      })
+    : sentMessagesAll;
   const accountsById = new Map(accounts.map((a) => [a.id, a]));
   const originalMessage = replyMessageId ? await getSupportMessageById(admin, replyMessageId) : undefined;
   const animalCountByAccountId = new Map(
@@ -134,8 +147,8 @@ export default async function AdminHomePage({
     <div className="space-y-8">
       <section>
         <h1 className="flex items-center gap-2 font-heading text-xl font-medium text-foreground">
-          {view === "envoyes" ? <Send className="h-5 w-5" /> : <Inbox className="h-5 w-5" />}
-          {view === "envoyes" ? "Messages envoyés" : "Messages reçus (contact webmaster)"}
+          <Inbox className="h-5 w-5" />
+          Messages
           {view !== "envoyes" && unreadSupport > 0 && (
             <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-semibold text-white">
               {unreadSupport}
@@ -143,40 +156,39 @@ export default async function AdminHomePage({
           )}
         </h1>
 
-        {view !== "envoyes" && (
-          <form
-            action="/admin"
-            method="get"
-            className="mt-4 flex flex-wrap items-center gap-2"
+        <form
+          action="/admin"
+          method="get"
+          className="mt-4 flex flex-wrap items-center gap-2"
+        >
+          <input type="hidden" name="view" value={view} />
+          <div className="relative min-w-55 max-w-sm flex-1">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
+            <input
+              type="search"
+              name="q"
+              defaultValue={q ?? ""}
+              placeholder="Rechercher un message (objet, texte, compte)..."
+              className="w-full rounded-full border border-foreground bg-card py-2 pl-9 pr-3.5 text-sm text-foreground outline-none focus:border-foreground"
+            />
+          </div>
+          <button
+            type="submit"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
           >
-            <div className="relative min-w-55 max-w-sm flex-1">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
-              <input
-                type="search"
-                name="q"
-                defaultValue={q ?? ""}
-                placeholder="Rechercher un message (objet, texte, compte)..."
-                className="w-full rounded-full border border-border py-2 pl-9 pr-3.5 text-sm text-foreground outline-none focus:border-foreground"
-              />
-            </div>
-            <button
-              type="submit"
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-sm font-semibold text-background transition-opacity hover:opacity-90"
+            <Search className="h-4 w-4" />
+            Rechercher
+          </button>
+          {isSearching && (
+            <Link
+              href={tabs.find((t) => t.key === view)?.href ?? "/admin"}
+              className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-foreground px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
             >
-              <Search className="h-4 w-4" />
-              Rechercher
-            </button>
-            {isSearching && (
-              <Link
-                href="/admin"
-                className="inline-flex cursor-pointer items-center gap-1 rounded-full border border-border px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted"
-              >
-                <X className="h-4 w-4" />
-                Effacer
-              </Link>
-            )}
-          </form>
-        )}
+              <X className="h-4 w-4" />
+              Effacer
+            </Link>
+          )}
+        </form>
 
         {!isSearching && (
           <div className="sticky top-0 z-10 mt-4 flex gap-1 border-b border-border bg-background">
@@ -188,15 +200,24 @@ export default async function AdminHomePage({
           </div>
         )}
 
-        {view === "envoyes" && (
+        {isSearching && (
+          <p className="mt-4 text-sm text-foreground">
+            {supportMessages.length + sentMessages.length === 0
+              ? `Aucun résultat pour "${q}".`
+              : `${supportMessages.length + sentMessages.length} résultat${supportMessages.length + sentMessages.length > 1 ? "s" : ""} pour "${q}" (${supportMessages.length} reçu${supportMessages.length > 1 ? "s" : ""}, ${sentMessages.length} envoyé${sentMessages.length > 1 ? "s" : ""}).`}
+          </p>
+        )}
+
+        {(isSearching ? sentMessages.length > 0 : view === "envoyes") && (
           <div className="mt-4 space-y-3">
+            {isSearching && <p className="text-xs font-medium text-foreground">Envoyés</p>}
             {sentMessages.length === 0 ? (
               <p className="rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-sm text-foreground">
                 Aucun message envoyé pour le moment.
               </p>
             ) : (
               sentMessages.map((message) => (
-                <div key={message.id} className="rounded-2xl border border-border bg-white p-4">
+                <div key={message.id} className="rounded-2xl border border-foreground bg-card p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="text-sm font-medium text-foreground">
@@ -218,25 +239,19 @@ export default async function AdminHomePage({
           </div>
         )}
 
-        {isSearching && (
-          <p className="mt-4 text-sm text-foreground">
-            {supportMessages.length === 0
-              ? `Aucun résultat pour "${q}".`
-              : `${supportMessages.length} résultat${supportMessages.length > 1 ? "s" : ""} pour "${q}", tous statuts confondus.`}
-          </p>
-        )}
-
-        {view !== "envoyes" && (supportMessages.length === 0 && !isSearching ? (
-          <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-sm text-foreground">
-            {view === "archives"
-              ? "Aucun message archivé."
-              : view === "corbeille"
-                ? "Corbeille vide."
-                : "Aucun message pour le moment."}
-          </p>
-        ) : (
+        {(isSearching ? supportMessages.length > 0 : view !== "envoyes") && (
           <div className="mt-4 space-y-3">
-            {supportMessages.map((message) => {
+            {isSearching && <p className="text-xs font-medium text-foreground">Reçus</p>}
+            {supportMessages.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-sm text-foreground">
+                {view === "archives"
+                  ? "Aucun message archivé."
+                  : view === "corbeille"
+                    ? "Corbeille vide."
+                    : "Aucun message pour le moment."}
+              </p>
+            ) : (
+              supportMessages.map((message) => {
               const account = accountsById.get(message.account_id);
               const messageView = isSearching ? statusToView(message.status) : view;
               return (
@@ -245,7 +260,7 @@ export default async function AdminHomePage({
                   className={`rounded-2xl border p-4 ${
                     !message.read && messageView === "inbox"
                       ? "border-orange-300 bg-orange-100"
-                      : "border-border bg-white"
+                      : "border-foreground bg-card"
                   }`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
@@ -365,10 +380,11 @@ export default async function AdminHomePage({
                     })}
                   </p>
                 </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
-        ))}
+        )}
       </section>
 
       <div id="envoyer-un-message">
@@ -399,7 +415,7 @@ export default async function AdminHomePage({
         <h2 className="font-heading text-xl font-medium text-foreground">
           Comptes clients ({accounts.length})
         </h2>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-white">
+        <div className="mt-4 overflow-x-auto rounded-2xl border border-foreground bg-card">
           <table className="w-full text-left text-sm">
             <thead className="border-b border-border bg-muted/40 text-xs text-foreground">
               <tr className="divide-x divide-border">

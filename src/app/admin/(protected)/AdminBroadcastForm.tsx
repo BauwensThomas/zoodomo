@@ -86,10 +86,10 @@ export function AdminBroadcastForm({
   }, [target, accounts]);
 
   const inputClass =
-    "mt-1.5 w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground";
+    "mt-1.5 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground";
 
   return (
-    <section className="rounded-2xl border border-border bg-white p-5">
+    <section className="rounded-2xl border border-foreground bg-card p-5">
       <h2 className="font-heading text-lg font-medium text-foreground">Envoyer un message</h2>
 
       {originalMessage && (

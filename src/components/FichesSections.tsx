@@ -38,7 +38,7 @@ export function FichesSections({
 
   return (
     <div>
-      <div className="relative mt-6 w-full max-w-sm">
+      <div className="relative mt-4 w-full max-w-sm">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-foreground" />
         <input
           type="text"
@@ -46,7 +46,7 @@ export function FichesSections({
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("searchPlaceholder")}
           aria-label={t("searchPlaceholder")}
-          className="w-full rounded-full border border-border bg-white py-2 pl-9 pr-4 text-sm text-foreground outline-none focus:border-foreground"
+          className="w-full rounded-full border border-foreground bg-card py-2 pl-9 pr-4 text-sm text-foreground outline-none focus:border-foreground"
         />
       </div>
 
@@ -54,7 +54,7 @@ export function FichesSections({
         const list = rows.filter((r) => r.statut === statut);
         if (list.length === 0) return null;
         return (
-          <section key={statut} className="mt-8">
+          <section key={statut} className="mt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-heading text-lg font-medium text-foreground">
                 {title} ({list.length})

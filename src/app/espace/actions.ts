@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { getTranslations } from "next-intl/server";
@@ -25,6 +26,8 @@ import {
 } from "@/lib/mock";
 import { getSessionAccount } from "@/lib/mock/auth";
 import { createClient } from "@/lib/supabase/server";
+import { sendEmail } from "@/lib/email/resend";
+import { renderEmailHtml } from "@/lib/email/template";
 import {
   LOCALES,
   type AccountTheme,
@@ -361,6 +364,39 @@ export async function sendSupportMessageAction(
     subject,
     body,
     photo_url: photoUrl || null,
+  });
+
+  // Email à l'admin en français, comme le reste du panneau admin (pas de langue par
+  // utilisateur côté équipe interne), indépendamment de la langue du compte expéditeur.
+  const tAdmin = await getTranslations({ locale: "fr", namespace: "admin.messages" });
+  const reasonLabel = tAdmin(
+    reason === "bug"
+      ? "contactReasonBug"
+      : reason === "compte"
+        ? "contactReasonCompte"
+        : reason === "suggestion"
+          ? "contactReasonSuggestion"
+          : "contactReasonAutre"
+  );
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+  await sendEmail({
+    to: process.env.ZOODOMO_ADMIN_EMAIL!,
+    subject: `[Zoodomo] Nouveau message : ${subject}`,
+    html: renderEmailHtml({
+      title: "Nouveau message via Contacter le webmaster",
+      body: [
+        `De : ${account.nom_affichage} (${account.email})`,
+        `Raison : ${reasonLabel}`,
+        `Objet : ${subject}`,
+        "",
+        body,
+        photoUrl ? "\nUne capture d'écran a été jointe, consultable dans le panneau admin." : "",
+      ].join("\n"),
+      buttonLabel: "Ouvrir le panneau admin",
+      buttonUrl: `${protocol}://${host}/admin`,
+    }),
   });
 
   revalidatePath("/espace/messages");

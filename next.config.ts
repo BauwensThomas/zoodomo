@@ -4,12 +4,35 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
-  experimental: {
-    serverActions: {
-      // Défaut 1 Mo trop juste pour jusqu'à 5 photos compressées côté client envoyées
-      // en une seule action (upload réel vers Supabase Storage remplacera ce chemin plus tard).
-      bodySizeLimit: "8mb",
-    },
+  // Cache navigateur/CDN longue durée sur les assets statiques qui ne changent jamais une
+  // fois publiés (logo Zoodomo, images du mockup "aperçu du site" sur les pages de connexion) :
+  // contrairement aux chunks `_next/static/*` (hashés, cache automatique de Next.js), les
+  // fichiers servis directement depuis `public/` n'ont par défaut aucun `Cache-Control` long,
+  // voir node_modules/next/dist/docs (self-hosting.md, "Automatic Caching"). Si l'un de ces
+  // fichiers doit un jour changer, renommer le fichier (nouvelle URL) plutôt que l'écraser en
+  // place, sinon les navigateurs déjà passés ici garderont l'ancienne version jusqu'à un an.
+  async headers() {
+    return [
+      {
+        source: "/brand/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+      {
+        source: "/mock/:path*",
+        headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }],
+      },
+    ];
+  },
+  images: {
+    // Photos de compte/animaux/logo servies depuis Supabase Storage (bucket public `photos`,
+    // voir supabase/migrations/0009_photos_storage_bucket.sql et docs/DECISIONS.md).
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname,
+        pathname: "/storage/v1/object/public/**",
+      },
+    ],
   },
 };
 

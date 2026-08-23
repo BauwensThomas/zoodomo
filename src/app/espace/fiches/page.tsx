@@ -140,7 +140,7 @@ export default async function MesFichesPage({
 
       {(saved === "created" || saved === "updated") && (
         <AutoDismiss>
-          <p className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
+          <p className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-emerald-600">
             <CheckCircle2 className="h-4 w-4" />
             {saved === "created" ? t("createdConfirmation") : t("savedConfirmation")}
           </p>
@@ -148,7 +148,7 @@ export default async function MesFichesPage({
       )}
 
       {animaux.length === 0 ? (
-        <p className="mt-6 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
+        <p className="mt-4 rounded-2xl border border-dashed border-border bg-muted/60 p-8 text-center text-foreground">
           {t("empty")}
         </p>
       ) : (

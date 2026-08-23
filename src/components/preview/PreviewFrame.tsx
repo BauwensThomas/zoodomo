@@ -33,7 +33,7 @@ export function PreviewFrame({
 
   return (
     <div
-      className="mx-auto overflow-x-hidden overflow-y-auto rounded-2xl border border-border bg-white shadow-sm"
+      className="preview-always-light mx-auto overflow-x-hidden overflow-y-auto rounded-2xl border border-border bg-white shadow-sm"
       style={{ width: DISPLAY_WIDTH, maxHeight: DISPLAY_HEIGHT }}
     >
       {/*

@@ -5,6 +5,7 @@
   --foreground: #221c16;
   --muted: #efe9e0;
   --border: #e5ddd0;
+  --card: #ffffff;
   color-scheme: light;
   /* Police par défaut (Zoodomo, espace membre, connexion) ; les pages publiques d'un
      compte (`[compte]/layout.tsx`) redéfinissent ces deux variables localement selon la
@@ -18,8 +19,94 @@
   --color-foreground: var(--foreground);
   --color-muted: var(--muted);
   --color-border: var(--border);
+  --color-card: var(--card);
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
+}
+
+/*
+ * Mode sombre : scopé écran par écran via `.app-theme-scope` (posé sur le conteneur racine de
+ * chaque page/layout concerné, ex. `admin/(protected)/layout.tsx`, `admin/login/page.tsx`,
+ * `app/page.tsx`), jamais sur `:root` ni `<html>` : les pages publiques `/[compte]/...`
+ * restent volontairement toujours claires (voir plus bas), et les écrans pas encore reskinnés
+ * ne doivent pas basculer en sombre juste parce que le cookie est posé. Suit la préférence
+ * système tant qu'aucun choix explicite n'a été fait (`data-theme` absent), sinon le cookie
+ * `THEME_PREFERENCE` (`setThemeAction`, `src/app/actions.ts`) l'emporte via
+ * `data-theme="light"|"dark"`.
+ */
+@media (prefers-color-scheme: dark) {
+  .app-theme-scope:not([data-theme="light"]) {
+    --background: #17130f;
+    --foreground: #f2ece3;
+    --muted: #2b2419;
+    --border: #3d3527;
+    --card: #221c16;
+    color-scheme: dark;
+  }
+}
+.app-theme-scope[data-theme="dark"] {
+  --background: #17130f;
+  --foreground: #f2ece3;
+  --muted: #2b2419;
+  --border: #3d3527;
+  --card: #221c16;
+  color-scheme: dark;
+}
+
+.theme-toggle-sun {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  .app-theme-scope:not([data-theme="light"]) .theme-toggle-sun {
+    display: block;
+  }
+  .app-theme-scope:not([data-theme="light"]) .theme-toggle-moon {
+    display: none;
+  }
+}
+.app-theme-scope[data-theme="dark"] .theme-toggle-sun {
+  display: block;
+}
+.app-theme-scope[data-theme="dark"] .theme-toggle-moon {
+  display: none;
+}
+
+/* Logo Zoodomo : même principe que le bouton soleil/lune ci-dessus, deux versions toujours
+   rendues (`src/components/ZoodomoLogo.tsx`), affichage tranché en CSS pur selon le thème
+   effectif. La version sombre reste masquée par défaut (hors de `.app-theme-scope`, ou tant
+   qu'aucun mode sombre n'est actif). */
+.logo-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  .app-theme-scope:not([data-theme="light"]) .logo-light {
+    display: none;
+  }
+  .app-theme-scope:not([data-theme="light"]) .logo-dark {
+    display: block;
+  }
+}
+.app-theme-scope[data-theme="dark"] .logo-light {
+  display: none;
+}
+.app-theme-scope[data-theme="dark"] .logo-dark {
+  display: block;
+}
+
+/* Aperçu du site public (`SitePreviewMockup.tsx`, panneau hero des pages de connexion) :
+   représente une vraie page publique, qui reste toujours claire indépendamment du thème de la
+   page qui l'affiche (même règle que plus bas pour les pages publiques elles-mêmes). Sans
+   cette réinitialisation, ses `bg-white` en dur (jamais retouchés) se retrouveraient avec le
+   texte clair du mode sombre hérité par cascade (`--foreground`), illisible. Toujours
+   appliquée (pas de media query/`data-theme`) : cet aperçu ne doit jamais suivre le thème de
+   la page qui l'affiche. */
+.app-theme-scope .preview-always-light {
+  --background: #faf8f5;
+  --foreground: #221c16;
+  --muted: #efe9e0;
+  --border: #e5ddd0;
+  --card: #ffffff;
+  color-scheme: light;
 }
 
 /*

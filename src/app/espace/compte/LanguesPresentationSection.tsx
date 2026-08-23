@@ -9,14 +9,16 @@ import { PhotoUploadField } from "@/components/PhotoUploadField";
 import { LOCALES, type Locale } from "@/types";
 
 function inputClass() {
-  return "mt-1.5 w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground";
+  return "mt-1.5 w-full rounded-xl border border-border bg-card px-3.5 py-2.5 text-sm text-foreground outline-none focus:border-foreground";
 }
 
 export function LanguesPresentationSection({
+  accountId,
   initialLangues,
   aPropos,
   photoUrls,
 }: {
+  accountId: string;
   initialLangues: Locale[];
   aPropos: Partial<Record<Locale, string>>;
   photoUrls: string[];
@@ -87,11 +89,14 @@ export function LanguesPresentationSection({
             </label>
             <PhotoUploadField
               name="account_photos"
+              accountId={accountId}
+              category="account"
               defaultPhotos={photoUrls}
               maxPhotos={2}
               dropLabel={tForm("photosDropLabel")}
               maxReachedLabel={t("aboutPhotosMaxReached")}
               removeLabel={tForm("photosRemoveAria")}
+              uploadErrorLabel={t("aboutPhotosUploadError")}
             />
           </div>
         </div>

@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getSessionAccount } from "@/lib/mock/auth";
 import { ResetPasswordForm } from "./ResetPasswordForm";
@@ -9,5 +10,14 @@ export default async function ReinitialiserMotDePassePage() {
   const account = await getSessionAccount();
   if (!account) redirect("/mot-de-passe-oublie");
 
-  return <ResetPasswordForm />;
+  const theme = (await cookies()).get("THEME_PREFERENCE")?.value;
+
+  return (
+    <div
+      className="app-theme-scope"
+      data-theme={theme === "light" ? "light" : theme === "dark" ? "dark" : undefined}
+    >
+      <ResetPasswordForm />
+    </div>
+  );
 }

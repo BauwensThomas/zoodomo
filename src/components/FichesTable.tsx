@@ -229,7 +229,7 @@ export function FichesTable({
 
   return (
     <div className="mt-3">
-      <div className="overflow-x-auto rounded-2xl border border-border bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-foreground bg-card">
       <table className="w-full text-left text-sm">
         <thead className="border-b border-border bg-muted/40 text-xs text-foreground">
           <tr className="divide-x divide-border">
