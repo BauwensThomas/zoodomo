@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useActionState } from "react";
 import { Eye, EyeOff, ShieldCheck } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { TurnstileWidget } from "@/components/TurnstileWidget";
 import { adminLoginAction, type AdminLoginState } from "../actions";
 
 const initialState: AdminLoginState = {};
@@ -60,6 +61,8 @@ export function AdminLoginForm() {
             </button>
           </div>
         </div>
+
+        <TurnstileWidget action="admin-login" />
 
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 

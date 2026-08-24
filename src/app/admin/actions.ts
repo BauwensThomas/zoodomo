@@ -1,7 +1,6 @@
 "use server";
 
-import { timingSafeEqual } from "crypto";
-import { cookies, headers } from "next/headers";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import {
@@ -15,11 +14,11 @@ import {
   setSupportMessageRead,
 } from "@/lib/mock";
 import { getTranslations } from "next-intl/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import { sendEmail } from "@/lib/email/resend";
 import { renderEmailHtml } from "@/lib/email/template";
 import type { Locale } from "@/types";
-import { ADMIN_SESSION_COOKIE_NAME, isAdminSession } from "@/lib/mock/admin-auth";
+import { isAdminSession } from "@/lib/mock/admin-auth";
 import { isBlocked, recordFailedAttempt, resetAttempts } from "@/lib/mock/admin-login-attempts";
 
 /** IP du visiteur depuis les headers de la requête (`x-forwarded-for` posé par le proxy/CDN
@@ -34,22 +33,15 @@ export interface AdminLoginState {
   error?: string;
 }
 
-/** Comparaison en temps constant : évite qu'un attaquant déduise le mot de passe correct
- * en mesurant le temps de réponse (les fuites de longueur restent possibles, acceptable
- * pour ce stopgap de phase mockée, voir `src/lib/mock/admin-auth.ts`). */
-function safeCompare(a: string, b: string) {
-  const bufA = Buffer.from(a);
-  const bufB = Buffer.from(b);
-  if (bufA.length !== bufB.length) return false;
-  return timingSafeEqual(bufA, bufB);
-}
-
 export async function adminLoginAction(
   _prevState: AdminLoginState,
   formData: FormData
 ): Promise<AdminLoginState> {
   const email = String(formData.get("email") || "").trim().toLowerCase();
   const password = String(formData.get("password") || "");
+  // Page admin volontairement en français uniquement (équipe Zoodomo interne), pas de
+  // next-intl ici contrairement au reste de l'app.
+  const genericError = { error: "Email ou mot de passe incorrect." };
 
   const clientKey = await getClientKey();
   const blockedUntil = isBlocked(clientKey);
@@ -58,36 +50,42 @@ export async function adminLoginAction(
     return { error: `Trop de tentatives échouées. Réessayez dans ${minutes} minute(s).` };
   }
 
-  const expectedEmail = (process.env.ZOODOMO_ADMIN_EMAIL || "").trim().toLowerCase();
-  const expectedPassword = process.env.ZOODOMO_ADMIN_PASSWORD || "";
+  // Le CAPTCHA Cloudflare Turnstile activé côté Supabase (Attack Protection) s'applique à
+  // toute authentification par mot de passe, admin comprise, voir `src/app/login-actions.ts`.
+  const captchaToken = String(formData.get("cf-turnstile-response") || "");
 
-  if (
-    !expectedEmail ||
-    !expectedPassword ||
-    email !== expectedEmail ||
-    !safeCompare(password, expectedPassword)
-  ) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+    options: { captchaToken },
+  });
+
+  if (error || !data.user) {
     recordFailedAttempt(clientKey);
-    // Page admin volontairement en français uniquement (équipe Zoodomo interne),
-    // pas de next-intl ici contrairement au reste de l'app.
-    return { error: "Email ou mot de passe incorrect." };
+    if (error?.code === "captcha_failed") {
+      return { error: "Vérification de sécurité échouée. Réessayez." };
+    }
+    return genericError;
+  }
+
+  // Un compte pro peut se connecter avec succès ici (même mécanisme d'authentification) sans
+  // pour autant avoir accès à l'admin : vérifie l'appartenance à `admin_users` avant de laisser
+  // passer, et referme la session sinon (jamais de session pro qui traîne sur `/admin`).
+  const { data: adminRow } = await supabase.from("admin_users").select("id").eq("id", data.user.id).maybeSingle();
+  if (!adminRow) {
+    await supabase.auth.signOut();
+    recordFailedAttempt(clientKey);
+    return genericError;
   }
 
   resetAttempts(clientKey);
-  const store = await cookies();
-  store.set(ADMIN_SESSION_COOKIE_NAME, "true", {
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 8,
-  });
-
   redirect("/admin");
 }
 
 export async function adminLogoutAction() {
-  const store = await cookies();
-  store.delete(ADMIN_SESSION_COOKIE_NAME);
+  const supabase = await createClient();
+  await supabase.auth.signOut();
   redirect("/admin/login");
 }
 
@@ -112,7 +110,7 @@ export async function sendAdminBroadcastAction(
   const target = String(formData.get("target") || "tous");
   const get = (name: string) => String(formData.get(name) || "").trim();
 
-  const admin = createAdminClient();
+  const admin = await createClient();
   const allAccounts = await listAccounts(admin);
   const accounts = target === "tous" ? allAccounts : allAccounts.filter((a) => a.id === target);
 
@@ -157,41 +155,41 @@ export async function sendAdminBroadcastAction(
 export async function archiveSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await archiveSupportMessage(createAdminClient(), messageId);
+  await archiveSupportMessage(await createClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function unarchiveSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await unarchiveSupportMessage(createAdminClient(), messageId);
+  await unarchiveSupportMessage(await createClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function trashSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await trashSupportMessage(createAdminClient(), messageId);
+  await trashSupportMessage(await createClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function restoreSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await restoreSupportMessageFromTrash(createAdminClient(), messageId);
+  await restoreSupportMessageFromTrash(await createClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function deleteSupportMessageAction(messageId: string) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await deleteSupportMessage(createAdminClient(), messageId);
+  await deleteSupportMessage(await createClient(), messageId);
   revalidatePath("/admin");
 }
 
 export async function setSupportMessageReadAction(messageId: string, read: boolean) {
   if (!(await isAdminSession())) redirect("/admin/login");
 
-  await setSupportMessageRead(createAdminClient(), messageId, read);
+  await setSupportMessageRead(await createClient(), messageId, read);
   revalidatePath("/admin");
 }

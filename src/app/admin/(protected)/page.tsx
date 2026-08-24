@@ -23,7 +23,7 @@ import {
   searchSupportMessages,
 } from "@/lib/mock";
 import { trialDaysRemaining, isTrialExpired } from "@/lib/mock/helpers";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { createClient } from "@/lib/supabase/server";
 import type { Account } from "@/types";
 import { AdminBroadcastForm } from "./AdminBroadcastForm";
 import { OpenPhotoLink } from "./OpenPhotoLink";
@@ -101,7 +101,7 @@ export default async function AdminHomePage({
           : "inbox";
   const isSearching = Boolean(q && q.trim());
 
-  const admin = createAdminClient();
+  const admin = await createClient();
   const accounts = await listAccounts(admin);
   const unreadSupport = await countUnreadSupportMessages(admin);
   // Une recherche cherche partout à la fois (boîte de réception, archives, corbeille ET
