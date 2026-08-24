@@ -21,11 +21,12 @@ import {
   deleteAccountMessage,
   setAccountMessageRead,
   sendSupportMessage,
-  setAccountPlan,
   type AnimalFormInput,
 } from "@/lib/mock";
 import { getSessionAccount } from "@/lib/mock/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getPaddleInstance } from "@/lib/paddle/server";
+import type { CustomerPortalSession } from "@paddle/paddle-node-sdk";
 import { sendEmail } from "@/lib/email/resend";
 import { renderEmailHtml } from "@/lib/email/template";
 import {
@@ -43,17 +44,50 @@ export async function logoutAction() {
   redirect("/");
 }
 
-/** Choix fait dans `PlanPopup.tsx`, affiché une fois l'essai gratuit terminé. Aucun vrai
- * paiement déclenché ici (Paddle pas encore branché, voir docs/DECISIONS.md) : enregistre
- * uniquement le choix, prêt à être relié à un vrai abonnement plus tard. */
-export async function choisirPlanAction(plan: "mensuel" | "annuel") {
+/** Mint une session de portail client Paddle pour le compte connecté. `customerId`/
+ * `subscriptionId` viennent uniquement de la session du compte connecté, jamais d'un
+ * paramètre client, pour ne jamais pouvoir minter un lien vers l'abonnement de quelqu'un
+ * d'autre (voir la compétence d'agent `paddle-customer-portal`). Le lien est à usage unique
+ * et expire rapidement : jamais mis en cache, une session par clic. */
+async function createPortalSession(): Promise<{ session: CustomerPortalSession } | { error: string }> {
   const account = await getSessionAccount();
-  if (!account) redirect("/");
-  const supabase = await createClient();
-  await setAccountPlan(supabase, account.id, plan);
-  revalidatePath("/espace", "layout");
+  if (!account) return { error: "not_authenticated" };
+  if (!account.paddle_customer_id || !account.paddle_subscription_id) {
+    return { error: "no_subscription" };
+  }
+
+  const paddle = getPaddleInstance();
+  const session = await paddle.customerPortalSessions.create(account.paddle_customer_id, [
+    account.paddle_subscription_id,
+  ]);
+  return { session };
 }
 
+/** Lien direct vers l'écran de mise à jour du moyen de paiement (affiché depuis
+ * `PlanPopup.tsx` quand `planPopupReason === "payment_failed"`, voir docs/DECISIONS.md). */
+export async function createUpdatePaymentMethodSessionAction(): Promise<
+  { url: string } | { error: string }
+> {
+  const result = await createPortalSession();
+  if ("error" in result) return result;
+  const url =
+    result.session.urls.subscriptions[0]?.updateSubscriptionPaymentMethod ??
+    result.session.urls.general.overview;
+  return { url };
+}
+
+/** Vue d'ensemble du portail (factures, changer de carte, résilier) : "Gérer mon
+ * abonnement" dans l'onglet Compte. Paddle gère nativement la résiliation "à la fin de la
+ * période" (le pro garde l'accès jusqu'à la date déjà payée, voir docs/DECISIONS.md) et, tant
+ * que cette résiliation programmée n'a pas encore pris effet, permet de l'annuler depuis
+ * cette même page, sans logique personnalisée à recoder ici. */
+export async function createManageSubscriptionSessionAction(): Promise<
+  { url: string } | { error: string }
+> {
+  const result = await createPortalSession();
+  if ("error" in result) return result;
+  return { url: result.session.urls.general.overview };
+}
 function parseAnimalForm(formData: FormData, languesActives: Locale[]): AnimalFormInput {
   const get = (name: string): string | null => {
     const value = formData.get(name);

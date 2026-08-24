@@ -93,6 +93,7 @@ export default async function DashboardPage() {
         <TrialBanner
           daysText={t("trialBanner", { days: remainingTrialDays })}
           upgradeLink={t("trialUpgradeLink")}
+          email={account.email}
           popup={{
             title: tTrial("title"),
             body: tTrial("body"),

@@ -12,10 +12,12 @@ import { PlanPopup } from "./PlanPopup";
 export function TrialBanner({
   daysText,
   upgradeLink,
+  email,
   popup,
 }: {
   daysText: string;
   upgradeLink: string;
+  email: string;
   popup: {
     title: string;
     body: string;
@@ -53,6 +55,7 @@ export function TrialBanner({
           annualHint={popup.annualHint}
           autoRenewNotice={popup.autoRenewNotice}
           choose={popup.choose}
+          email={email}
           onClose={() => setOpen(false)}
           closeLabel={popup.close}
         />

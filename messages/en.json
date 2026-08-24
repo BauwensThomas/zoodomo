@@ -156,6 +156,12 @@
     "trialPopup": {
       "title": "Your free trial has ended",
       "body": "Choose a plan to keep using Zoodomo and keep your public page online.",
+      "canceledTitle": "Your subscription has been canceled",
+      "canceledBody": "Choose a new plan to keep using Zoodomo and keep your public page online.",
+      "paymentFailedTitle": "Your payment has failed",
+      "paymentFailedBody": "Update your payment method to keep using Zoodomo and keep your public page online.",
+      "updatePaymentMethod": "Choose another payment method",
+      "updatePaymentMethodError": "Couldn't open the payment page right now. Please try again in a moment.",
       "monthlyLabel": "Monthly",
       "monthlyPrice": "{price} €/month",
       "annualLabel": "Annual",
@@ -197,7 +203,7 @@
         },
         {
           "title": "7. Termination and account deletion",
-          "body": "You may cancel your subscription and delete your account at any time from your member area. Deleting your account results in the permanent deletion of the associated data (animal listings, photos, messages), subject to any applicable legal retention obligations."
+          "body": "You may cancel your subscription at any time from your member area. Cancellation takes effect at the end of the period already paid for (the current month or year): you keep access until that date, with no further renewal, and no refund is issued for the current period, which remains fully due.\n\nYou may also delete your account at any time from your member area. Deleting your account results in the permanent deletion of the associated data (animal listings, photos, messages), subject to any applicable legal retention obligations."
         },
         {
           "title": "8. Liability",
@@ -231,7 +237,7 @@
         },
         {
           "title": "4. Data recipients",
-          "body": "Your data is hosted and processed by the following processors, strictly within the scope of providing the service:\n\n- Supabase (database, authentication, photo storage), hosted within the European Union (Paris region).\n- Resend (sending transactional emails: account confirmation, notifications).\n- LWS (hosting of the zoodomo.com domain name).\n- Cloudflare (anti-bot protection on the signup and login forms).\n- Sentry (detecting and diagnosing technical errors in the service, to fix bugs faster), hosted within the European Union (Germany). Sentry does not record video of sessions.\n\nSome of these providers may be located, or process data, outside the European Union; in that case, such transfers are covered by appropriate safeguards (European Commission standard contractual clauses).\n\nYour data is never sold or passed on to third parties for advertising purposes."
+          "body": "Your data is hosted and processed by the following processors, strictly within the scope of providing the service:\n\n- Supabase (database, authentication, photo storage), hosted within the European Union (Paris region).\n- Resend (sending transactional emails: account confirmation, notifications).\n- LWS (hosting of the zoodomo.com domain name).\n- Cloudflare (anti-bot protection on the signup and login forms).\n- Sentry (detecting and diagnosing technical errors in the service, to fix bugs faster), hosted within the European Union (Germany). Sentry does not record video of sessions.\n- Paddle (payment processing and subscription billing, acting as our official reseller), based in the United Kingdom.\n\nSome of these providers may be located, or process data, outside the European Union; in that case, such transfers are covered by appropriate safeguards (European Commission standard contractual clauses).\n\nYour data is never sold or passed on to third parties for advertising purposes."
         },
         {
           "title": "5. Retention period",
@@ -418,7 +424,11 @@
       "savedConfirmation": "Changes saved!",
       "sectionLangues": "Content writing languages",
       "languesHint": "Choose which languages you write your animal profiles in (description, ideal home). If you check several, you will need to fill in the content in each. Your visitors will be able to switch between these languages on your public pages.",
-      "save": "Save"
+      "save": "Save",
+      "sectionAbonnement": "Subscription",
+      "manageSubscription": "Manage my subscription",
+      "manageSubscriptionHint": "View your invoices, change your payment method, or cancel (you keep access until the end of the period already paid for).",
+      "manageSubscriptionError": "Couldn't open the management page right now. Please try again in a moment."
     },
     "stats": {
       "title": "Statistics",

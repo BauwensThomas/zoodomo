@@ -51,5 +51,11 @@ next-env.d.ts
 AGENTS.md
 CLAUDE.md
 
+# Compétences d'agent installées via `npx skills add` (ex: Paddle, 2026-08-24), même
+# principe que ci-dessus : instructions pour l'agent IA, pas du code du produit.
+/.agents/
+/.claude/skills/
+/skills-lock.json
+
 # Sentry Config File
 .env.sentry-build-plugin

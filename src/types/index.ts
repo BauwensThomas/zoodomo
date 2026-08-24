@@ -99,13 +99,29 @@ export interface Account {
   /**
    * `"essai"` pendant les 15 jours gratuits suivant l'inscription (`TRIAL_DAYS`,
    * `src/lib/mock/helpers.ts`, calculé à partir de `created_at`, jamais stocké tel quel pour
-   * éviter un décompte qui dérive). Passe à `"mensuel"` ou `"annuel"` une fois un plan choisi
-   * dans le popup affiché après expiration de l'essai (`src/app/espace/PlanPopup.tsx`). Pas de
-   * vrai paiement Paddle branché pour l'instant (V1.1, voir `docs/BRIEF-COMPLET-SAAS-ANIMAUX.md`
-   * section 8) : ce champ suit uniquement le choix du compte, prêt à être relié à un vrai
-   * abonnement plus tard sans changer sa forme.
+   * éviter un décompte qui dérive). Passe à `"mensuel"` ou `"annuel"` une fois un abonnement
+   * Paddle réellement actif (webhook `subscription.*`, voir `paddle_subscription_status`
+   * ci-dessous et `src/app/api/paddle-webhook/route.ts`), jamais directement par une action
+   * utilisateur. Une résiliation ne fait pas revenir ce champ à `"essai"` (trace historique
+   * de ce à quoi le compte était abonné) : c'est `paddle_subscription_status` qui pilote
+   * l'accès réel (`needsPlanChoice`, `src/lib/mock/helpers.ts`).
    */
   plan: "essai" | "mensuel" | "annuel";
+  /** Identifiant client Paddle (`ctm_...`), lié par email au premier `customer.created`/
+   * `customer.updated` reçu. `null` tant qu'aucun checkout n'a jamais été initié. */
+  paddle_customer_id: string | null;
+  /** Identifiant d'abonnement Paddle (`sub_...`). `null` tant qu'aucun abonnement n'existe. */
+  paddle_subscription_id: string | null;
+  /** État réel de l'abonnement côté Paddle, mis à jour uniquement par le webhook. `null` tant
+   * qu'aucun abonnement n'existe. Voir la compétence d'agent `paddle-subscription-sync` pour
+   * la sémantique de chaque valeur (`active`/`trialing`/`past_due`/`paused`/`canceled`). */
+  paddle_subscription_status: "active" | "trialing" | "past_due" | "paused" | "canceled" | null;
+  /** Date du dernier changement réel de `paddle_subscription_status` (pas mis à jour à
+   * chaque livraison de webhook, seulement quand le statut diffère du précédent). Point de
+   * départ du délai de grâce de la page publique quand un abonnement payant cesse d'être
+   * actif (`isPublicPageBlocked`, `src/lib/mock/helpers.ts`). `null` tant qu'aucun
+   * abonnement n'a jamais existé. */
+  paddle_subscription_status_changed_at: string | null;
   created_at: string;
 }
 

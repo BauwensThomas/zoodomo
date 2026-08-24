@@ -16,7 +16,7 @@ import {
   STALE_FICHE_DAYS,
   TRIAL_DAYS,
   GRACE_HOURS,
-  isTrialExpired,
+  planPopupReason,
   trialDaysRemaining,
 } from "@/lib/mock/helpers";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -169,7 +169,7 @@ export default async function EspaceLayout({ children }: { children: React.React
   const supabase = await createClient();
   await ensureAutomaticMessages(supabase, account);
   const unreadMessages = await countUnreadAccountMessages(supabase, account.id);
-  const showPlanPopup = isTrialExpired(account);
+  const planPopupReasonValue = planPopupReason(account);
 
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("admin");
@@ -226,10 +226,22 @@ export default async function EspaceLayout({ children }: { children: React.React
       <main className="flex-1">
         <div className="mx-auto max-w-[100rem] px-6 pb-8 pt-3">{children}</div>
       </main>
-      {showPlanPopup && (
+      {planPopupReasonValue && (
         <PlanPopup
-          title={tTrial("title")}
-          body={tTrial("body")}
+          title={
+            planPopupReasonValue === "payment_failed"
+              ? tTrial("paymentFailedTitle")
+              : planPopupReasonValue === "canceled"
+                ? tTrial("canceledTitle")
+                : tTrial("title")
+          }
+          body={
+            planPopupReasonValue === "payment_failed"
+              ? tTrial("paymentFailedBody")
+              : planPopupReasonValue === "canceled"
+                ? tTrial("canceledBody")
+                : tTrial("body")
+          }
           monthlyLabel={tTrial("monthlyLabel")}
           monthlyPrice={tTrial("monthlyPrice", { price: MONTHLY_PRICE_EUR })}
           annualLabel={tTrial("annualLabel")}
@@ -237,6 +249,15 @@ export default async function EspaceLayout({ children }: { children: React.React
           annualHint={tTrial("annualHint")}
           autoRenewNotice={tTrial("autoRenewNotice")}
           choose={tTrial("choose")}
+          email={account.email}
+          paymentFailed={
+            planPopupReasonValue === "payment_failed"
+              ? {
+                  updatePaymentMethod: tTrial("updatePaymentMethod"),
+                  error: tTrial("updatePaymentMethodError"),
+                }
+              : undefined
+          }
         />
       )}
     </div>

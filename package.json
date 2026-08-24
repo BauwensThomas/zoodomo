@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@paddle/paddle-js": "^1.6.4",
+    "@paddle/paddle-node-sdk": "^3.10.0",
     "@sentry/nextjs": "^10.70.0",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
@@ -32,6 +34,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.0",
     "tailwindcss": "^4",
+    "tsx": "^4.23.12",
     "typescript": "^5"
   }
 }

@@ -32,19 +32,58 @@ export function isTrialExpired(account: Account): boolean {
   return remaining !== null && remaining < 0;
 }
 
-/** Délai de grâce après la fin de l'essai gratuit pendant lequel la page publique reste
- * visible malgré tout (laisse le temps de voir le popup obligatoire et de passer à un
- * abonnement sans que la page ne disparaisse brutalement, ex. un week-end). */
+/** `true` si l'abonnement Paddle du compte est dans un état qui donne réellement accès au
+ * service. `past_due` (paiement échoué, Paddle retente automatiquement sur 30 jours)
+ * **volontairement exclu** malgré la recommandation par défaut de la compétence d'agent
+ * `paddle-subscription-sync` (qui suggère de garder l'accès pendant cette fenêtre) : décision
+ * utilisateur explicite (2026-08-24), accès coupé dès le premier échec plutôt que d'attendre
+ * l'issue des relances. */
+export function hasActivePaddleSubscription(account: Account): boolean {
+  return account.paddle_subscription_status === "active" || account.paddle_subscription_status === "trialing";
+}
+
+export type PlanPopupReason = "trial_ended" | "payment_failed" | "canceled";
+
+/** Raison pour laquelle le popup de choix de plan (`PlanPopup.tsx`) doit être affiché de
+ * façon obligatoire, `null` si l'accès est normal. Détermine à la fois si le popup s'affiche
+ * (`needsPlanChoice`) et son contenu exact : "essai terminé" propose un choix de plan (aucun
+ * abonnement n'a jamais existé), "paiement échoué" redirige vers le portail client Paddle
+ * pour mettre à jour le moyen de paiement de l'abonnement existant (pas un nouveau checkout,
+ * qui créerait un second abonnement en double), "résilié/en pause" propose de nouveau un
+ * choix de plan (plus d'abonnement existant à réparer). */
+export function planPopupReason(account: Account): PlanPopupReason | null {
+  if (account.plan === "essai") return isTrialExpired(account) ? "trial_ended" : null;
+  if (hasActivePaddleSubscription(account)) return null;
+  return account.paddle_subscription_status === "past_due" ? "payment_failed" : "canceled";
+}
+
+export function needsPlanChoice(account: Account): boolean {
+  return planPopupReason(account) !== null;
+}
+
+/** Délai de grâce après la fin de l'essai gratuit (ou après qu'un abonnement payant cesse
+ * d'être actif) pendant lequel la page publique reste visible malgré tout (laisse le temps
+ * de voir le popup obligatoire et de régulariser sans que la page ne disparaisse
+ * brutalement, ex. un week-end). */
 export const GRACE_HOURS = 48;
 
-/** `true` une fois l'essai ET le délai de grâce épuisés pour un compte resté en `"essai"` :
- * ses pages publiques (`/[compte]/...`) doivent alors afficher un message d'indisponibilité
- * plutôt que leur contenu normal, voir `src/app/[compte]/layout.tsx`. Un compte sur un vrai
- * plan (`"mensuel"`/`"annuel"`) n'est jamais concerné. */
+/** `true` une fois l'essai ET le délai de grâce épuisés pour un compte resté en `"essai"`, OU
+ * une fois le même délai de grâce épuisé depuis qu'un abonnement payant a cessé d'être actif
+ * (`paddle_subscription_status_changed_at`, mis à jour par le webhook uniquement quand le
+ * statut change réellement, voir `src/lib/mock/store.ts`) : dans les deux cas, les pages
+ * publiques (`/[compte]/...`) doivent alors afficher un message d'indisponibilité plutôt que
+ * leur contenu normal, voir `src/app/[compte]/layout.tsx`. Contrairement à l'accès dashboard
+ * (`needsPlanChoice`, coupé immédiatement), la page publique bénéficie toujours de ce délai,
+ * décision utilisateur du 2026-08-24 reprenant le mécanisme déjà en place pour l'essai. */
 export function isPublicPageBlocked(account: Account): boolean {
-  if (account.plan !== "essai") return false;
-  const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
-  return elapsedDays > TRIAL_DAYS + GRACE_HOURS / 24;
+  if (account.plan === "essai") {
+    const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
+    return elapsedDays > TRIAL_DAYS + GRACE_HOURS / 24;
+  }
+  if (hasActivePaddleSubscription(account) || !account.paddle_subscription_status_changed_at) return false;
+  const elapsedHours =
+    (Date.now() - new Date(account.paddle_subscription_status_changed_at).getTime()) / 3_600_000;
+  return elapsedHours > GRACE_HOURS;
 }
 
 /** Nombre de jours sans modification à partir duquel une fiche "disponible" est considérée

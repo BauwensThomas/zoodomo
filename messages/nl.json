@@ -156,6 +156,12 @@
     "trialPopup": {
       "title": "Uw gratis proefperiode is afgelopen",
       "body": "Kies een abonnement om Zoodomo te blijven gebruiken en uw openbare pagina online te houden.",
+      "canceledTitle": "Uw abonnement is opgezegd",
+      "canceledBody": "Kies een nieuw abonnement om Zoodomo te blijven gebruiken en uw openbare pagina online te houden.",
+      "paymentFailedTitle": "Uw betaling is mislukt",
+      "paymentFailedBody": "Werk uw betaalmethode bij om Zoodomo te blijven gebruiken en uw openbare pagina online te houden.",
+      "updatePaymentMethod": "Andere betaalmethode kiezen",
+      "updatePaymentMethodError": "De betaalpagina kan momenteel niet worden geopend. Probeer het over enkele ogenblikken opnieuw.",
       "monthlyLabel": "Maandelijks",
       "monthlyPrice": "{price} €/maand",
       "annualLabel": "Jaarlijks",
@@ -197,7 +203,7 @@
         },
         {
           "title": "7. Opzegging en verwijdering van account",
-          "body": "U kunt uw abonnement opzeggen en uw account op elk moment verwijderen vanuit uw ledengedeelte. De verwijdering van het account leidt tot de definitieve verwijdering van de bijbehorende gegevens (dierenfiches, foto's, berichten), onder voorbehoud van eventuele wettelijke bewaarverplichtingen."
+          "body": "U kunt uw abonnement op elk moment opzeggen vanuit uw ledengedeelte. De opzegging gaat in aan het einde van de reeds betaalde periode (lopende maand of jaar): u behoudt toegang tot die datum, zonder verdere verlenging, en er vindt geen terugbetaling plaats voor de lopende periode, die volledig verschuldigd blijft.\n\nU kunt uw account ook op elk moment verwijderen vanuit uw ledengedeelte. De verwijdering van het account leidt tot de definitieve verwijdering van de bijbehorende gegevens (dierenfiches, foto's, berichten), onder voorbehoud van eventuele wettelijke bewaarverplichtingen."
         },
         {
           "title": "8. Aansprakelijkheid",
@@ -231,7 +237,7 @@
         },
         {
           "title": "4. Ontvangers van de gegevens",
-          "body": "Uw gegevens worden gehost en verwerkt door de volgende verwerkers, strikt in het kader van het leveren van de dienst:\n\n- Supabase (database, authenticatie, opslag van foto's), gehost binnen de Europese Unie (regio Parijs).\n- Resend (verzending van transactionele e-mails: accountbevestiging, meldingen).\n- LWS (hosting van het domein zoodomo.com).\n- Cloudflare (bescherming tegen robots op het registratie- en inlogformulier).\n- Sentry (opsporing en diagnose van technische fouten in de dienst, om bugs sneller te verhelpen), gehost binnen de Europese Unie (Duitsland). Sentry maakt geen video-opnames van sessies.\n\nSommige van deze leveranciers kunnen zich buiten de Europese Unie bevinden of daar gegevens verwerken; in dat geval wordt deze overdracht omkaderd door passende waarborgen (modelcontractbepalingen van de Europese Commissie).\n\nUw gegevens worden nooit verkocht of doorgegeven aan derden voor reclamedoeleinden."
+          "body": "Uw gegevens worden gehost en verwerkt door de volgende verwerkers, strikt in het kader van het leveren van de dienst:\n\n- Supabase (database, authenticatie, opslag van foto's), gehost binnen de Europese Unie (regio Parijs).\n- Resend (verzending van transactionele e-mails: accountbevestiging, meldingen).\n- LWS (hosting van het domein zoodomo.com).\n- Cloudflare (bescherming tegen robots op het registratie- en inlogformulier).\n- Sentry (opsporing en diagnose van technische fouten in de dienst, om bugs sneller te verhelpen), gehost binnen de Europese Unie (Duitsland). Sentry maakt geen video-opnames van sessies.\n- Paddle (verwerking van betalingen en facturering van het abonnement, als officiële wederverkoper die in onze naam optreedt), gevestigd in het Verenigd Koninkrijk.\n\nSommige van deze leveranciers kunnen zich buiten de Europese Unie bevinden of daar gegevens verwerken; in dat geval wordt deze overdracht omkaderd door passende waarborgen (modelcontractbepalingen van de Europese Commissie).\n\nUw gegevens worden nooit verkocht of doorgegeven aan derden voor reclamedoeleinden."
         },
         {
           "title": "5. Bewaartermijn",
@@ -418,7 +424,11 @@
       "savedConfirmation": "Wijzigingen opgeslagen!",
       "sectionLangues": "Talen voor de inhoud",
       "languesHint": "Kies in welke talen u uw dierenfiches schrijft (beschrijving, ideaal thuis). Als u er meerdere aanvinkt, moet u de inhoud in elke taal invullen. Uw bezoekers kunnen tussen deze talen wisselen op uw openbare pagina's.",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "sectionAbonnement": "Abonnement",
+      "manageSubscription": "Mijn abonnement beheren",
+      "manageSubscriptionHint": "Bekijk uw facturen, wijzig uw betaalmethode of zeg op (toegang blijft behouden tot het einde van de reeds betaalde periode).",
+      "manageSubscriptionError": "De beheerpagina kan momenteel niet worden geopend. Probeer het over enkele ogenblikken opnieuw."
     },
     "stats": {
       "title": "Statistieken",

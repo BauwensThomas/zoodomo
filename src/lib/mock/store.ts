@@ -56,12 +56,74 @@ export async function updateAccountThemePreference(
   await supabase.from("accounts").update({ theme_preference: theme }).eq("id", accountId);
 }
 
-export async function setAccountPlan(
+/** Lie un client Paddle à son compte Zoodomo par email (appelé depuis le webhook sur
+ * `customer.created`/`customer.updated`, voir `src/app/api/paddle-webhook/route.ts`). Ne
+ * fait rien si aucun compte ne correspond (ex. client Paddle créé pour un autre usage). */
+export async function linkAccountPaddleCustomerId(
+  supabase: SupabaseClient,
+  email: string,
+  paddleCustomerId: string
+): Promise<void> {
+  await supabase.from("accounts").update({ paddle_customer_id: paddleCustomerId }).eq("email", email);
+}
+
+/** Trouve le compte lié à un `paddle_customer_id` donné, `null` si aucun (cas rare d'un
+ * évènement `subscription.*` arrivé avant le `customer.*` correspondant, voir
+ * `src/app/api/paddle-webhook/route.ts`). */
+export async function getAccountByPaddleCustomerId(
+  supabase: SupabaseClient,
+  paddleCustomerId: string
+): Promise<Account | null> {
+  const { data } = await supabase
+    .from("accounts")
+    .select("*")
+    .eq("paddle_customer_id", paddleCustomerId)
+    .maybeSingle();
+  return (data as Account | null) ?? null;
+}
+
+export type PaddleSubscriptionStatus = "active" | "trialing" | "past_due" | "paused" | "canceled";
+
+/** Reflète l'état réel d'un abonnement Paddle sur le compte (webhook `subscription.*`),
+ * seule source de vérité pour `plan`/`paddle_subscription_status` : jamais mis à jour
+ * directement par une action utilisateur, voir docs/DECISIONS.md. `plan` n'est mis à jour
+ * que si l'abonnement est effectivement payant (`active`/`trialing`/`past_due`) et que le
+ * prix correspond à un plan connu ; une résiliation (`canceled`) laisse `plan` tel quel
+ * (trace historique de ce à quoi le compte était abonné), seul `paddle_subscription_status`
+ * change, utilisé pour décider si l'accès doit être bloqué à nouveau (voir `needsPlanChoice`,
+ * `src/lib/mock/helpers.ts`). */
+export async function upsertAccountPaddleSubscription(
   supabase: SupabaseClient,
   accountId: string,
-  plan: "mensuel" | "annuel"
+  input: {
+    paddleCustomerId: string;
+    paddleSubscriptionId: string;
+    status: PaddleSubscriptionStatus;
+    plan: "mensuel" | "annuel" | null;
+  }
 ): Promise<void> {
-  await supabase.from("accounts").update({ plan }).eq("id", accountId);
+  const { data: current } = await supabase
+    .from("accounts")
+    .select("paddle_subscription_status")
+    .eq("id", accountId)
+    .maybeSingle();
+
+  const update: Record<string, string> = {
+    paddle_customer_id: input.paddleCustomerId,
+    paddle_subscription_id: input.paddleSubscriptionId,
+    paddle_subscription_status: input.status,
+  };
+  // Le délai de grâce de la page publique (`isPublicPageBlocked`) se calcule depuis ce
+  // point : ne bouge que quand le statut change vraiment, jamais à chaque redélivrance du
+  // même évènement par Paddle (webhooks livrés au moins une fois, voir la compétence
+  // d'agent `paddle-webhooks`), sinon le délai de grâce ne s'écoulerait jamais.
+  if (current?.paddle_subscription_status !== input.status) {
+    update.paddle_subscription_status_changed_at = new Date().toISOString();
+  }
+  if (input.plan && (input.status === "active" || input.status === "trialing" || input.status === "past_due")) {
+    update.plan = input.plan;
+  }
+  await supabase.from("accounts").update(update).eq("id", accountId);
 }
 
 export interface AccountInfoInput {

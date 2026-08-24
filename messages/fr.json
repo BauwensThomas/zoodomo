@@ -156,6 +156,12 @@
     "trialPopup": {
       "title": "Votre essai gratuit est terminé",
       "body": "Choisissez un abonnement pour continuer à utiliser Zoodomo et garder votre page publique en ligne.",
+      "canceledTitle": "Votre abonnement a été résilié",
+      "canceledBody": "Choisissez un nouvel abonnement pour continuer à utiliser Zoodomo et garder votre page publique en ligne.",
+      "paymentFailedTitle": "Votre paiement a échoué",
+      "paymentFailedBody": "Mettez à jour votre moyen de paiement pour continuer à utiliser Zoodomo et garder votre page publique en ligne.",
+      "updatePaymentMethod": "Choisir un autre moyen de paiement",
+      "updatePaymentMethodError": "Impossible d'ouvrir la page de paiement pour le moment. Réessayez dans quelques instants.",
       "monthlyLabel": "Mensuel",
       "monthlyPrice": "{price} €/mois",
       "annualLabel": "Annuel",
@@ -197,7 +203,7 @@
         },
         {
           "title": "7. Résiliation et suppression de compte",
-          "body": "Vous pouvez résilier votre abonnement et supprimer votre compte à tout moment depuis votre espace membre. La suppression du compte entraîne la suppression définitive des données associées (fiches animaux, photos, messages), sous réserve des obligations légales de conservation le cas échéant."
+          "body": "Vous pouvez résilier votre abonnement à tout moment depuis votre espace membre. La résiliation prend effet à la fin de la période déjà payée (mois ou année en cours) : vous conservez l'accès jusqu'à cette date, sans reconduction ultérieure, et aucun remboursement n'est effectué pour la période en cours, déjà intégralement due.\n\nVous pouvez également supprimer votre compte à tout moment depuis votre espace membre. La suppression du compte entraîne la suppression définitive des données associées (fiches animaux, photos, messages), sous réserve des obligations légales de conservation le cas échéant."
         },
         {
           "title": "8. Responsabilité",
@@ -231,7 +237,7 @@
         },
         {
           "title": "4. Destinataires des données",
-          "body": "Vos données sont hébergées et traitées par les sous-traitants suivants, dans le cadre strict de la fourniture du service :\n\n- Supabase (base de données, authentification, stockage des photos), hébergé dans l'Union européenne (région Paris).\n- Resend (envoi des emails transactionnels : confirmation de compte, notifications).\n- LWS (hébergement du nom de domaine zoodomo.com).\n- Cloudflare (protection anti-robot du formulaire d'inscription et de connexion).\n- Sentry (détection et diagnostic des erreurs techniques du service, pour corriger les bugs plus rapidement), hébergé dans l'Union européenne (Allemagne). Sentry ne réalise aucun enregistrement vidéo des sessions.\n\nCertains de ces prestataires peuvent être situés ou traiter des données en dehors de l'Union européenne ; dans ce cas, ce transfert est encadré par des garanties appropriées (clauses contractuelles types de la Commission européenne).\n\nVos données ne sont jamais vendues ni transmises à des tiers à des fins publicitaires."
+          "body": "Vos données sont hébergées et traitées par les sous-traitants suivants, dans le cadre strict de la fourniture du service :\n\n- Supabase (base de données, authentification, stockage des photos), hébergé dans l'Union européenne (région Paris).\n- Resend (envoi des emails transactionnels : confirmation de compte, notifications).\n- LWS (hébergement du nom de domaine zoodomo.com).\n- Cloudflare (protection anti-robot du formulaire d'inscription et de connexion).\n- Sentry (détection et diagnostic des erreurs techniques du service, pour corriger les bugs plus rapidement), hébergé dans l'Union européenne (Allemagne). Sentry ne réalise aucun enregistrement vidéo des sessions.\n- Paddle (traitement des paiements et de la facturation de l'abonnement, en tant que revendeur officiel agissant en notre nom), basé au Royaume-Uni.\n\nCertains de ces prestataires peuvent être situés ou traiter des données en dehors de l'Union européenne ; dans ce cas, ce transfert est encadré par des garanties appropriées (clauses contractuelles types de la Commission européenne).\n\nVos données ne sont jamais vendues ni transmises à des tiers à des fins publicitaires."
         },
         {
           "title": "5. Durée de conservation",
@@ -418,7 +424,11 @@
       "savedConfirmation": "Modifications enregistrées !",
       "sectionLangues": "Langues de rédaction du contenu",
       "languesHint": "Choisissez dans quelles langues vous rédigez vos fiches animaux (description, foyer idéal). Si vous en cochez plusieurs, il faudra remplir le contenu dans chacune. Vos visiteurs pourront basculer entre ces langues sur vos pages publiques.",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "sectionAbonnement": "Abonnement",
+      "manageSubscription": "Gérer mon abonnement",
+      "manageSubscriptionHint": "Voir vos factures, changer de moyen de paiement ou résilier (accès conservé jusqu'à la fin de la période déjà payée).",
+      "manageSubscriptionError": "Impossible d'ouvrir la page de gestion pour le moment. Réessayez dans quelques instants."
     },
     "stats": {
       "title": "Statistiques",
