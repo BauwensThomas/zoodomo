@@ -28,12 +28,20 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install PostgreSQL 17 client tools
+        # Le runner Ubuntu fournit pg_dump 16 par défaut, mais le serveur Supabase est en
+        # Postgres 17 : pg_dump refuse de dumper une version serveur plus récente que lui.
+        run: |
+          sudo apt-get install -y postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get install -y postgresql-client-17
+
       - name: Dump database
         env:
           # Session pooler (IPv4) plutôt que la connexion directe (IPv6 uniquement, voir
           # docs/DECISIONS.md) : les runners GitHub Actions n'ont pas de connectivité IPv6.
           PGPASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
-        run: pg_dump "postgresql://postgres.rlindslotqbyvnnaxfgt@aws-1-eu-west-3.pooler.supabase.com:5432/postgres" --no-owner --no-privileges -f database.sql
+        run: /usr/lib/postgresql/17/bin/pg_dump "postgresql://postgres.rlindslotqbyvnnaxfgt@aws-1-eu-west-3.pooler.supabase.com:5432/postgres" --no-owner --no-privileges -f database.sql
 
       - name: Backup Storage (photos bucket)
         env:
