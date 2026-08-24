@@ -2,13 +2,16 @@ name: Backup Supabase (database + photos)
 
 # Le plan gratuit Supabase n'inclut aucune sauvegarde automatique (contrairement aux plans
 # payants : 7 jours sur Pro), voir docs/TODO.md/DECISIONS.md. Ce workflow fait une vraie
-# sauvegarde quotidienne : dump complet de la base (schéma + données, y compris `auth`,
-# nécessaire pour une restauration réelle des comptes) et copie de tous les fichiers du
-# bucket Storage "photos". Les deux sont stockés comme artefacts GitHub Actions (jamais
-# commités dans l'historique Git : ce dump contient des données personnelles réelles, y
-# compris des mots de passe hashés dans `auth.users`), avec une rétention de 7 jours,
-# glissante, comme le plan Pro de Supabase. Dépôt privé : accès aux artefacts réservé aux
-# personnes ayant accès au dépôt.
+# sauvegarde hebdomadaire (chaque dimanche 3h du matin) : dump complet de la base (schéma +
+# données, y compris `auth`, nécessaire pour une restauration réelle des comptes) et copie de
+# tous les fichiers du bucket Storage "photos". Les deux sont stockés comme artefacts GitHub
+# Actions (jamais commités dans l'historique Git : ce dump contient des données personnelles
+# réelles, y compris des mots de passe hashés dans `auth.users`), avec une rétention de 90
+# jours, glissante (le maximum autorisé par GitHub Actions), pour permettre de retrouver un
+# état ancien et pas seulement de restaurer après un incident récent, demande utilisateur du
+# 2026-08-24 (rythme passé de quotidien à hebdomadaire le même jour, pour limiter le nombre de
+# copies des données personnelles conservées en même temps à conservation égale). Dépôt privé :
+# accès aux artefacts réservé aux personnes ayant accès au dépôt.
 #
 # Pour restaurer : télécharger l'artefact le plus récent depuis l'onglet Actions du dépôt,
 # puis `psql <connection-string> -f database.sql` pour la base, et recopier le contenu du
@@ -16,15 +19,20 @@ name: Backup Supabase (database + photos)
 # utilisant `supabase.storage.from("photos").upload(...)`).
 on:
   schedule:
-    - cron: "0 3 * * *"
+    - cron: "0 3 * * 0"
   workflow_dispatch:
 
 jobs:
   backup:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - name: Compute backup date
+        # Nom d'artefact lisible (date) plutôt que le numéro de run GitHub (`github.run_id`,
+        # un simple compteur incrémental sans rapport avec le contenu), demande utilisateur.
+        run: echo "BACKUP_DATE=$(date +%Y-%m-%d)" >> "$GITHUB_ENV"
+
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
 
@@ -52,10 +60,10 @@ jobs:
           npm install @supabase/supabase-js
           node scripts/backup-storage.mjs
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
-          name: supabase-backup-${{ github.run_id }}
+          name: supabase-backup-${{ env.BACKUP_DATE }}-${{ github.run_id }}
           path: |
             database.sql
             photos/
-          retention-days: 7
+          retention-days: 90
