@@ -12,13 +12,25 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { SitePreviewMockup } from "@/components/SitePreviewMockup";
 import { FeatureHighlights } from "@/components/FeatureHighlights";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
+import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import type { Locale } from "@/types";
 import { loginAction, type LoginState } from "./login-actions";
 import { ForgotPasswordFields } from "./ForgotPasswordFields";
 
 const initialState: LoginState = {};
 
-function LoginPageContent() {
+interface Testimonial {
+  stars: number;
+  comment: string;
+}
+
+function LoginPageContent({
+  ratingSummary,
+  testimonials,
+}: {
+  ratingSummary: { count: number; average: number } | null;
+  testimonials: Testimonial[];
+}) {
   const searchParams = useSearchParams();
   const [state, formAction, pending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
@@ -173,29 +185,46 @@ function LoginPageContent() {
         </div>
       </div>
 
-      <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-5">
-        <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-4">
+      <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-4">
+        <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-3">
           <div>
-            <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
+            <h2 className="font-heading text-3xl font-medium leading-tight tracking-tight text-foreground">
               {t("heroTitle")}
             </h2>
-            <p className="mt-4 text-foreground">{t("heroSubtitle")}</p>
-            <div className="mt-5">
+            <p className="mt-3 text-sm text-foreground">{t("heroSubtitle")}</p>
+            <div className="mt-4">
               <FeatureHighlights />
             </div>
           </div>
 
           <SitePreviewMockup />
+
+          {ratingSummary && (
+            <TestimonialCarousel
+              ratingLabel={t("testimonialsRating", {
+                average: ratingSummary.average.toFixed(1),
+                count: ratingSummary.count,
+              })}
+              average={ratingSummary.average}
+              comments={testimonials}
+            />
+          )}
         </div>
       </div>
     </div>
   );
 }
 
-export function LoginForm() {
+export function LoginForm({
+  ratingSummary,
+  testimonials,
+}: {
+  ratingSummary: { count: number; average: number } | null;
+  testimonials: Testimonial[];
+}) {
   return (
     <Suspense fallback={null}>
-      <LoginPageContent />
+      <LoginPageContent ratingSummary={ratingSummary} testimonials={testimonials} />
     </Suspense>
   );
 }

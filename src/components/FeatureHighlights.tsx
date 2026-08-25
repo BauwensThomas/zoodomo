@@ -15,11 +15,11 @@ export function FeatureHighlights() {
 
   return (
     <div>
-      <p className="font-heading text-lg font-medium text-foreground">{t("whyTitle")}</p>
-      <ul className="mt-3 space-y-2">
+      <p className="font-heading text-base font-medium text-foreground">{t("whyTitle")}</p>
+      <ul className="mt-2 space-y-1.5">
         {items.map((label) => (
-          <li key={label} className="flex items-start gap-3">
-            <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-[#2f6b4f]" />
+          <li key={label} className="flex items-start gap-2.5">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#2f6b4f]" />
             <span className="text-sm font-medium text-foreground">{label}</span>
           </li>
         ))}

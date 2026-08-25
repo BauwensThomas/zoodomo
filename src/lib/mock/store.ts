@@ -4,6 +4,7 @@ import type {
   AccountMessage,
   AccountMessageKind,
   AccountPhoto,
+  AccountRating,
   AccountTheme,
   Animal,
   AnimalBadge,
@@ -172,6 +173,243 @@ function storagePathFromUrl(url: string): string | null {
 async function deleteStorageObjects(supabase: SupabaseClient, urls: string[]): Promise<void> {
   const paths = urls.map(storagePathFromUrl).filter((p): p is string => p !== null);
   if (paths.length > 0) await supabase.storage.from("photos").remove(paths);
+}
+
+export interface StorageObjectInfo {
+  path: string;
+  size: number;
+}
+
+/** Liste récursivement tous les fichiers du bucket `photos` sous un préfixe donné (les
+ * "dossiers" Storage n'ont pas de `id` propre, il faut descendre dedans plutôt que de les
+ * traiter comme un fichier), même algorithme que `scripts/backup-storage.mjs`. Utilisé pour
+ * la suppression de compte (tous les fichiers sous `{accountId}/`, couvre `account/`,
+ * `animals/` et `logo/` en un seul appel, pas besoin de connaître chaque URL individuelle en
+ * base au préalable) et pour l'onglet Photos admin (taille par fichier, `metadata.size` déjà
+ * fourni par `list()`, aucune colonne dédiée en base). */
+async function listAllStorageObjectsWithInfo(
+  supabase: SupabaseClient,
+  prefix: string
+): Promise<StorageObjectInfo[]> {
+  const { data, error } = await supabase.storage.from("photos").list(prefix, { limit: 1000 });
+  if (error || !data) return [];
+  const files: StorageObjectInfo[] = [];
+  for (const entry of data) {
+    const entryPath = prefix ? `${prefix}/${entry.name}` : entry.name;
+    if (entry.id === null) {
+      files.push(...(await listAllStorageObjectsWithInfo(supabase, entryPath)));
+    } else {
+      files.push({ path: entryPath, size: (entry.metadata?.size as number | undefined) ?? 0 });
+    }
+  }
+  return files;
+}
+
+/** Tous les fichiers Storage de tous les comptes, avec leur taille : chaque compte a son
+ * propre préfixe (`{accountId}/`), voir `listAllStorageObjectsWithInfo`. Utilisé par l'onglet
+ * Photos admin (consultation seule). */
+export async function listAllStorageObjectsForAccount(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<StorageObjectInfo[]> {
+  return listAllStorageObjectsWithInfo(supabase, accountId);
+}
+
+async function listAllStorageObjects(supabase: SupabaseClient, prefix: string): Promise<string[]> {
+  return (await listAllStorageObjectsWithInfo(supabase, prefix)).map((f) => f.path);
+}
+
+/** Supprime définitivement tout ce qui appartient à un compte : tous ses fichiers Storage
+ * (best-effort, ne bloque jamais la suppression du compte lui-même), puis l'utilisateur
+ * `auth.users` correspondant, dont la suppression fait cascader celle de `accounts` et de
+ * toutes les tables liées (`account_theme`, `animaux`, `account_photos`, `account_messages`,
+ * `support_messages`, `account_message_log`, `animal_badges`, `animal_photos`,
+ * `animal_views`, toutes en `on delete cascade` depuis `accounts.id`, lui-même en cascade
+ * depuis `auth.users(id)`, voir `supabase/migrations/0004_accounts_fk_auth_users.sql`) :
+ * aucune suppression manuelle de ligne nécessaire au-delà de cet appel. `supabase` doit être
+ * un client `service_role` (`createAdminClient()`), seul habilité à supprimer un utilisateur
+ * Auth. Voir `deleteAccountAction` (`src/app/espace/actions.ts`) pour l'ordre complet
+ * (résiliation Paddle d'abord, cette fonction ensuite).
+ */
+export async function deleteAccountCompletely(supabase: SupabaseClient, accountId: string): Promise<void> {
+  const paths = await listAllStorageObjects(supabase, accountId);
+  if (paths.length > 0) await supabase.storage.from("photos").remove(paths);
+
+  const { error } = await supabase.auth.admin.deleteUser(accountId);
+  if (error) throw error;
+}
+
+/** Comptes éligibles à une demande d'avis : abonnement Paddle **payant et actif**
+ * (`active` uniquement, pas `trialing`, contrairement à `hasActivePaddleSubscription` :
+ * demander un avis n'a de sens qu'à un client qui a réellement payé) depuis au moins
+ * `minPaidDays` jours (mesuré depuis `paddle_subscription_status_changed_at`, voir
+ * `upsertAccountPaddleSubscription` : ne bouge que quand le statut change vraiment, donc
+ * représente bien depuis quand le compte est `active` en continu), et n'ayant pas encore
+ * soumis d'avis (ligne absente de `account_ratings`, ou présente mais `submitted_at` encore
+ * `null`). Décision utilisateur du 2026-08-25 pour le délai minimum : laisser le temps au
+ * compte d'utiliser le service payant avant de lui demander un avis. Envoi en masse à tous
+ * les comptes éligibles d'un coup, voir `sendRatingRequestsAction`. */
+export async function getEligibleAccountsForRating(
+  supabase: SupabaseClient,
+  minPaidDays: number
+): Promise<Account[]> {
+  const cutoff = new Date(Date.now() - minPaidDays * 86_400_000).toISOString();
+  const { data: accounts } = await supabase
+    .from("accounts")
+    .select("*")
+    .eq("paddle_subscription_status", "active")
+    .lte("paddle_subscription_status_changed_at", cutoff);
+  if (!accounts || accounts.length === 0) return [];
+
+  const { data: submitted } = await supabase
+    .from("account_ratings")
+    .select("account_id")
+    .not("submitted_at", "is", null);
+  const submittedIds = new Set((submitted ?? []).map((r) => r.account_id as string));
+
+  return (accounts as Account[]).filter((a) => !submittedIds.has(a.id));
+}
+
+/** Crée l'invitation à voter d'un compte, ou régénère `token`/`invited_at` si une relance est
+ * envoyée sur une ligne pas encore soumise (`account_id unique`, une seule ligne par compte,
+ * jamais de doublon). Retourne le token à insérer dans le lien envoyé. */
+export async function upsertRatingInvite(supabase: SupabaseClient, accountId: string): Promise<string> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .upsert(
+      { account_id: accountId, token: crypto.randomUUID(), invited_at: new Date().toISOString() },
+      { onConflict: "account_id" }
+    )
+    .select("token")
+    .single();
+  return data!.token as string;
+}
+
+/** Résout un token de la page publique de vote (`/avis/[token]`) en compte associé, `null`
+ * seulement si le token n'existe pas du tout. Renvoie la ligne même si l'avis a déjà été
+ * soumis (`rating.submitted_at` non nul) : la page distingue alors "lien invalide" de "vote
+ * déjà envoyé", deux messages différents, demande utilisateur du 2026-08-25 (auparavant les
+ * deux cas étaient confondus). Pas de session Supabase requise, `supabase` doit être un
+ * client `service_role`. */
+export async function getRatingByToken(
+  supabase: SupabaseClient,
+  token: string
+): Promise<{ rating: AccountRating; account: Account } | null> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .select("*, accounts(*)")
+    .eq("token", token)
+    .maybeSingle();
+  if (!data) return null;
+  const { accounts, ...rating } = data as AccountRating & { accounts: Account };
+  return { rating: rating as AccountRating, account: accounts };
+}
+
+/** Lien de vote actuel d'un compte (dernier token connu, soumis ou non), `null` si aucune
+ * invitation n'a jamais été envoyée. Utilisé par le rendu dynamique du message
+ * "avis_demande" (`resolveRatingRequestContent`) : le lien affiché reflète toujours le
+ * dernier token en date, même si le compte a été relancé depuis l'envoi du message d'origine. */
+export async function getRatingLinkForAccount(
+  supabase: SupabaseClient,
+  accountId: string
+): Promise<{ token: string; alreadyVoted: boolean } | null> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .select("token, submitted_at")
+    .eq("account_id", accountId)
+    .maybeSingle();
+  if (!data) return null;
+  return { token: data.token as string, alreadyVoted: data.submitted_at !== null };
+}
+
+/** Enregistre le vote soumis via la page publique. `submitted_at is null` dans le `where`
+ * garantit qu'un token déjà utilisé ne peut pas revoter (usage unique), même en cas de double
+ * clic ou de lien réutilisé. */
+export async function submitRating(
+  supabase: SupabaseClient,
+  token: string,
+  stars: number,
+  comment: string | null
+): Promise<void> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .update({ stars, comment, submitted_at: new Date().toISOString() })
+    .eq("token", token)
+    .is("submitted_at", null)
+    .select("account_id")
+    .maybeSingle();
+
+  // Un avis vient d'être donné : le message "avis_demande" correspondant n'a plus besoin de
+  // rester mis en évidence comme non lu dans la boîte de réception, demande utilisateur du
+  // 2026-08-25.
+  if (data) {
+    await supabase
+      .from("account_messages")
+      .update({ read: true })
+      .eq("account_id", data.account_id as string)
+      .eq("kind", "avis_demande")
+      .eq("read", false);
+  }
+}
+
+/** Tous les avis soumis, avec le nom du compte associé, pour l'onglet Votes admin. */
+export async function listSubmittedRatings(
+  supabase: SupabaseClient
+): Promise<(AccountRating & { account_nom: string })[]> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .select("*, accounts(nom_affichage)")
+    .not("submitted_at", "is", null)
+    .order("submitted_at", { ascending: false });
+  return ((data ?? []) as (AccountRating & { accounts: { nom_affichage: string } })[]).map(
+    ({ accounts, ...rating }) => ({ ...rating, account_nom: accounts.nom_affichage })
+  );
+}
+
+/** Date d'envoi de la dernière demande de vote (toutes lignes confondues, soumises ou non :
+ * une relance sur une ligne pas encore soumise met à jour `invited_at`, voir
+ * `upsertRatingInvite`), `null` si aucune demande n'a jamais été envoyée. Affiché en haut de
+ * l'onglet Votes admin, demande utilisateur du 2026-08-25. */
+export async function getLastRatingInviteDate(supabase: SupabaseClient): Promise<string | null> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .select("invited_at")
+    .order("invited_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data?.invited_at as string | undefined) ?? null;
+}
+
+/** Moyenne et nombre d'avis soumis, sans filtrage par seuil (donnée brute, utilisée telle
+ * quelle par l'onglet Votes admin). Le seuil d'affichage public (`MIN_RATINGS_TO_SHOW`) est
+ * appliqué séparément par `getPublicRatingSummary` (`src/lib/mock/helpers.ts`), pas ici. */
+export async function getRatingSummary(
+  supabase: SupabaseClient
+): Promise<{ count: number; average: number } | null> {
+  const { data } = await supabase.from("account_ratings").select("stars").not("submitted_at", "is", null);
+  const stars = (data ?? []).map((r) => r.stars as number);
+  if (stars.length === 0) return { count: 0, average: 0 };
+  return { count: stars.length, average: stars.reduce((a, b) => a + b, 0) / stars.length };
+}
+
+/** Meilleurs commentaires à afficher en rotation sur la page de connexion : les mieux notés
+ * (4-5 étoiles) avec un commentaire non vide, les plus récents en premier. Curation
+ * entièrement automatique, décision utilisateur du 2026-08-24. Aucune limite : tous les avis
+ * qualifiants doivent apparaître dans la rotation, décision utilisateur du 2026-08-25. Nom du
+ * compte volontairement absent (jamais affiché publiquement), décision utilisateur du
+ * 2026-08-25. */
+export async function listBestComments(
+  supabase: SupabaseClient
+): Promise<{ stars: number; comment: string }[]> {
+  const { data } = await supabase
+    .from("account_ratings")
+    .select("stars, comment")
+    .not("submitted_at", "is", null)
+    .not("comment", "is", null)
+    .neq("comment", "")
+    .gte("stars", 4)
+    .order("submitted_at", { ascending: false });
+  return (data ?? []) as { stars: number; comment: string }[];
 }
 
 export async function replaceAccountPhotos(
@@ -676,16 +914,17 @@ export async function deleteAccountMessage(supabase: SupabaseClient, id: string)
   await supabase.from("account_messages").delete().eq("id", id);
 }
 
-/** Messages envoyés par l'admin (diffusions/réponses, `kind: "admin"`), tous comptes
- * confondus, pour l'onglet "Envoyés" du panneau admin (`src/app/admin/(protected)/page.tsx`).
- * Nom du compte destinataire résolu via une jointure plutôt qu'une recherche à part. */
+/** Messages envoyés par l'admin (diffusions/réponses `kind: "admin"`, et demandes d'avis
+ * `kind: "avis_demande"`), tous comptes confondus, pour l'onglet "Envoyés" du panneau admin
+ * (`src/app/admin/(protected)/page.tsx`). Nom du compte destinataire résolu via une jointure
+ * plutôt qu'une recherche à part. */
 export async function listSentAdminMessages(
   supabase: SupabaseClient
 ): Promise<(AccountMessage & { accountName: string })[]> {
   const { data } = await supabase
     .from("account_messages")
     .select("*, accounts(nom_affichage)")
-    .eq("kind", "admin")
+    .in("kind", ["admin", "avis_demande"])
     .order("created_at", { ascending: false });
   return ((data as (AccountMessage & { accounts: { nom_affichage: string } | null })[]) ?? []).map(
     (m) => ({ ...m, accountName: m.accounts?.nom_affichage ?? "?" })

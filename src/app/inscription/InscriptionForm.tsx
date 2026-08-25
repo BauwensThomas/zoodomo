@@ -10,6 +10,7 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SitePreviewMockup } from "@/components/SitePreviewMockup";
 import { FeatureHighlights } from "@/components/FeatureHighlights";
+import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { VerificationWaitingFields } from "../VerificationWaitingFields";
 import { PasswordRequirements } from "@/components/PasswordRequirements";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
@@ -26,7 +27,20 @@ function blockClipboard(e: React.ClipboardEvent<HTMLInputElement>) {
   e.preventDefault();
 }
 
-export function InscriptionForm({ signupsEnabled }: { signupsEnabled: boolean }) {
+interface Testimonial {
+  stars: number;
+  comment: string;
+}
+
+export function InscriptionForm({
+  signupsEnabled,
+  ratingSummary,
+  testimonials,
+}: {
+  signupsEnabled: boolean;
+  ratingSummary: { count: number; average: number } | null;
+  testimonials: Testimonial[];
+}) {
   const [state, formAction, pending] = useActionState(signupAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -246,19 +260,30 @@ export function InscriptionForm({ signupsEnabled }: { signupsEnabled: boolean })
         </div>
       </div>
 
-      <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-5">
-        <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-4">
+      <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-4">
+        <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-3">
           <div>
-            <h2 className="font-heading text-4xl font-medium leading-tight tracking-tight text-foreground">
+            <h2 className="font-heading text-3xl font-medium leading-tight tracking-tight text-foreground">
               {tLogin("heroTitle")}
             </h2>
-            <p className="mt-4 text-foreground">{tLogin("heroSubtitle")}</p>
-            <div className="mt-5">
+            <p className="mt-3 text-sm text-foreground">{tLogin("heroSubtitle")}</p>
+            <div className="mt-4">
               <FeatureHighlights />
             </div>
           </div>
 
           <SitePreviewMockup />
+
+          {ratingSummary && (
+            <TestimonialCarousel
+              ratingLabel={tLogin("testimonialsRating", {
+                average: ratingSummary.average.toFixed(1),
+                count: ratingSummary.count,
+              })}
+              average={ratingSummary.average}
+              comments={testimonials}
+            />
+          )}
         </div>
       </div>
     </div>

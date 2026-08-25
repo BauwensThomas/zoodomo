@@ -41,37 +41,37 @@ export function SitePreviewMockup() {
 
   return (
     <div className="preview-always-light w-full overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
-      <div className="flex items-center gap-2 border-b border-border bg-neutral-50 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
-        <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
-        <span className="h-2.5 w-2.5 rounded-full bg-neutral-300" />
-        <span className="ml-2 rounded-md bg-white px-3 py-1 text-xs text-foreground shadow-sm">
+      <div className="flex items-center gap-2 border-b border-border bg-neutral-50 px-3 py-1.5">
+        <span className="h-2 w-2 rounded-full bg-neutral-300" />
+        <span className="h-2 w-2 rounded-full bg-neutral-300" />
+        <span className="h-2 w-2 rounded-full bg-neutral-300" />
+        <span className="ml-2 rounded-md bg-white px-2.5 py-0.5 text-xs text-foreground shadow-sm">
           zoodomo.com/refuge-x/chiens
         </span>
         <span className="text-[10px] italic text-neutral-400">{tCommon("previewLabel")}</span>
       </div>
 
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+      <div className="flex items-center justify-between border-b border-border px-3 py-2">
         <div className="flex items-center gap-2">
-          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-[#2f6b4f] text-white">
-            <PawPrint className="h-3 w-3" />
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#2f6b4f] text-white">
+            <PawPrint className="h-2.5 w-2.5" />
           </span>
-          <span className="text-sm font-medium text-foreground">Refuge des Quatre Pattes</span>
+          <span className="text-xs font-medium text-foreground">Refuge des Quatre Pattes</span>
         </div>
-        <span className="rounded-full border border-[#2f6b4f]/40 px-2.5 py-1 text-[10px] font-medium text-[#2f6b4f]">
+        <span className="rounded-full border border-[#2f6b4f]/40 px-2 py-0.5 text-[10px] font-medium text-[#2f6b4f]">
           {tCommon("backToSite")}
         </span>
       </div>
 
-      <div className="flex justify-center gap-2 p-2">
+      <div className="flex justify-center gap-4 p-2">
         {cards.map((card) => (
-          <div key={card.name} className="w-44 shrink-0 overflow-hidden rounded-lg border border-border">
-            <div className="relative h-28 w-44">
+          <div key={card.name} className="w-32 shrink-0 overflow-hidden rounded-lg border border-border">
+            <div className="relative h-20 w-32">
               <Image
                 src={card.photo}
                 alt=""
                 fill
-                sizes="176px"
+                sizes="128px"
                 className="object-cover"
               />
               {card.badge && (

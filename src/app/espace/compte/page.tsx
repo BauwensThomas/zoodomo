@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getAccountTheme, getAccountPhotos } from "@/lib/mock";
 import { ComptePageForm } from "./ComptePageForm";
 import { ManageSubscriptionButton } from "./ManageSubscriptionButton";
+import { DeleteAccountSection } from "./DeleteAccountSection";
 
 export default async function ComptePage() {
   const account = await getSessionAccount();
@@ -43,6 +44,20 @@ export default async function ComptePage() {
           </div>
         </div>
       )}
+
+      <DeleteAccountSection
+        email={account.email}
+        title={t("sectionDanger")}
+        warning={t("deleteWarning")}
+        confirmLabel={t("deleteConfirmLabel", { email: account.email })}
+        button={t("deleteButton")}
+        confirmDialog={t("deleteConfirmDialog")}
+        errors={{
+          email_mismatch: t("deleteErrorEmailMismatch"),
+          paddle_cancel_failed: t("deleteErrorPaddle"),
+          delete_failed: t("deleteErrorGeneric"),
+        }}
+      />
     </div>
   );
 }

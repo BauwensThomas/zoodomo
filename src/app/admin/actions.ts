@@ -12,9 +12,13 @@ import {
   restoreSupportMessageFromTrash,
   deleteSupportMessage,
   setSupportMessageRead,
+  getEligibleAccountsForRating,
+  upsertRatingInvite,
+  MIN_PAID_DAYS_BEFORE_RATING_REQUEST,
 } from "@/lib/mock";
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/email/resend";
 import { renderEmailHtml } from "@/lib/email/template";
 import type { Locale } from "@/types";
@@ -149,6 +153,59 @@ export async function sendAdminBroadcastAction(
 
   revalidatePath("/espace", "layout");
   revalidatePath("/admin");
+  return { saved: true, savedAt: Date.now() };
+}
+
+/** Envoie une demande d'avis à tous les comptes éligibles (abonnement payant actif depuis au
+ * moins `MIN_PAID_DAYS_BEFORE_RATING_REQUEST` jours, aucun avis soumis) en une seule fois,
+ * chacun dans sa langue : décision utilisateur du 2026-08-24/25, voir
+ * `getEligibleAccountsForRating`. `account_ratings` n'a aucune policy RLS (voir
+ * `supabase/migrations/0019_account_ratings.sql`), un client `service_role` est donc requis
+ * ici, contrairement à `sendAdminBroadcastAction` qui peut utiliser le client de session.
+ *
+ * L'email reste figé dans la langue du compte au moment de l'envoi (comme tout email, une
+ * fois livré il ne peut plus se retraduire). Le message in-app (`kind: "avis_demande"`), lui,
+ * est volontairement rendu dynamiquement à chaque affichage (voir
+ * `resolveRatingRequestContent`) plutôt que figé ici : `subject`/`body` stockés ne servent que
+ * de repli pour la colonne NOT NULL, jamais affichés tels quels pour ce type de message,
+ * décision utilisateur du 2026-08-25 (contrairement à tous les autres types de message,
+ * volontairement figés). */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars -- signature imposée par useActionState (état précédent + FormData), aucun des deux n'est nécessaire ici
+export async function sendRatingRequestsAction(_prevState: SavedState, _formData: FormData): Promise<SavedState> {
+  if (!(await isAdminSession())) redirect("/admin/login");
+
+  const admin = createAdminClient();
+  const eligible = await getEligibleAccountsForRating(admin, MIN_PAID_DAYS_BEFORE_RATING_REQUEST);
+
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+
+  let sentAny = false;
+  for (const account of eligible) {
+    const locale = (account.langue_interface ?? "fr") as Locale;
+    const token = await upsertRatingInvite(admin, account.id);
+
+    const t = await getTranslations({ locale, namespace: "admin.messages" });
+    const subject = t("ratingRequestSubject");
+    const body = t("ratingRequestBody");
+
+    await sendAccountMessage(admin, { account_id: account.id, kind: "avis_demande", subject, body });
+    await sendEmail({
+      to: account.email,
+      subject,
+      html: renderEmailHtml({
+        title: subject,
+        body,
+        buttonLabel: t("ratingRequestButton"),
+        buttonUrl: `${protocol}://${host}/avis/${token}`,
+      }),
+    });
+    sentAny = true;
+  }
+  if (!sentAny) return initialSaved;
+
+  revalidatePath("/admin/votes");
   return { saved: true, savedAt: Date.now() };
 }
 

@@ -251,13 +251,18 @@ export interface AnimalView {
   viewed_at: string;
 }
 
+/** "avis_demande" est le seul type de message rendu dynamiquement (sujet/corps/lien
+ * recalculés à l'affichage dans la langue ACTUELLE du compte), tous les autres restent figés
+ * dans la langue du compte au moment de l'envoi. Décision utilisateur du 2026-08-25, voir
+ * `resolveRatingRequestContent` (`src/lib/mock/rating-message.ts`). */
 export type AccountMessageKind =
   | "bienvenue"
   | "rappel_fiche"
   | "essai_gratuit"
   | "essai_rappel_4j"
   | "essai_rappel_1j"
-  | "admin";
+  | "admin"
+  | "avis_demande";
 
 /** Trois états mutuellement exclusifs plutôt que des booléens indépendants (`archived`
  * + un futur `deleted`) : évite les combinaisons ambiguës (un message archivé ET supprimé
@@ -305,4 +310,19 @@ export interface SupportMessage {
   created_at: string;
   read: boolean;
   status: MessageStatus;
+}
+
+/** Avis client par étoiles (demande utilisateur, 2026-08-24) : une ligne créée dès l'envoi de
+ * l'invitation (`stars`/`comment`/`submitted_at` encore `null`), complétée une fois le pro
+ * passé par la page publique de vote (`/avis/[token]`). Un seul avis par compte
+ * (`account_id` unique en base), une relance réutilise la même ligne avec un nouveau `token`.
+ * Voir `supabase/migrations/0019_account_ratings.sql`. */
+export interface AccountRating {
+  id: string;
+  account_id: string;
+  token: string;
+  stars: number | null;
+  comment: string | null;
+  invited_at: string;
+  submitted_at: string | null;
 }

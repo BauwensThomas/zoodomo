@@ -1,11 +1,21 @@
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { ZoodomoLogo } from "@/components/ZoodomoLogo";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SitePreviewMockup } from "@/components/SitePreviewMockup";
+import { FeatureHighlights } from "@/components/FeatureHighlights";
+import { TestimonialCarousel } from "@/components/TestimonialCarousel";
 import { VerificationWaitingFields } from "../VerificationWaitingFields";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getPublicRatingSummary, listBestComments } from "@/lib/mock";
+import type { Locale } from "@/types";
 
+/** Même habillage à deux colonnes que `/`, `/inscription` et `/mot-de-passe-oublie` (aperçu
+ * du site public + avis), décision utilisateur du 2026-08-25 : cette page restait sur une
+ * seule colonne centrée, incohérente avec le reste du flux de connexion/inscription. */
 export default async function VerificationEmailPage({
   searchParams,
 }: {
@@ -19,29 +29,70 @@ export default async function VerificationEmailPage({
 
   const t = await getTranslations("admin.verifyEmail");
   const tLogin = await getTranslations("admin.login");
+  const locale = (await getLocale()) as Locale;
   const theme = (await cookies()).get("THEME_PREFERENCE")?.value;
+
+  const admin = createAdminClient();
+  const ratingSummary = await getPublicRatingSummary(admin);
+  const testimonials = ratingSummary ? await listBestComments(admin) : [];
 
   return (
     <div
-      className="app-theme-scope bg-background"
+      className="app-theme-scope"
       data-theme={theme === "light" ? "light" : theme === "dark" ? "dark" : undefined}
     >
-      <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center px-6 py-10 text-center">
-        <div className="flex w-full items-center justify-between">
-          <Link href="/">
-            <ZoodomoLogo width={140} />
-          </Link>
-          <ThemeToggle label={tLogin("themeToggle")} />
+      <div className="grid min-h-screen bg-background lg:h-screen lg:grid-cols-[5fr_7fr] lg:overflow-hidden">
+        <div className="flex flex-col px-6 py-6 sm:px-12 sm:py-8 lg:overflow-y-auto">
+          <div className="flex items-center justify-between">
+            <Link href="/">
+              <ZoodomoLogo width={130} />
+            </Link>
+            <div className="flex items-center gap-2">
+              <ThemeToggle label={tLogin("themeToggle")} />
+              <LocaleSwitcher current={locale} />
+            </div>
+          </div>
+
+          <div className="flex flex-1 flex-col items-center justify-center text-center">
+            <div className="w-full max-w-sm">
+              <VerificationWaitingFields email={email} linkInvalid={erreur === "lien_invalide"} />
+
+              <Link
+                href="/"
+                className="mt-8 inline-block text-sm font-medium text-foreground underline transition-opacity hover:opacity-70"
+              >
+                {t("backToLogin")}
+              </Link>
+            </div>
+          </div>
         </div>
 
-        <VerificationWaitingFields email={email} linkInvalid={erreur === "lien_invalide"} />
+        <div className="relative hidden overflow-x-hidden border-l border-border bg-muted lg:flex lg:overflow-y-auto lg:px-16 lg:py-4">
+          <div className="lg:m-auto lg:flex lg:w-full lg:flex-col lg:gap-3">
+            <div>
+              <h2 className="font-heading text-3xl font-medium leading-tight tracking-tight text-foreground">
+                {tLogin("heroTitle")}
+              </h2>
+              <p className="mt-3 text-sm text-foreground">{tLogin("heroSubtitle")}</p>
+              <div className="mt-4">
+                <FeatureHighlights />
+              </div>
+            </div>
 
-        <Link
-          href="/"
-          className="mt-8 text-sm font-medium text-foreground underline transition-opacity hover:opacity-70"
-        >
-          {t("backToLogin")}
-        </Link>
+            <SitePreviewMockup />
+
+            {ratingSummary && (
+              <TestimonialCarousel
+                ratingLabel={tLogin("testimonialsRating", {
+                  average: ratingSummary.average.toFixed(1),
+                  count: ratingSummary.count,
+                })}
+                average={ratingSummary.average}
+                comments={testimonials}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

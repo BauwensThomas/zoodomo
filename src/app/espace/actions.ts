@@ -21,10 +21,12 @@ import {
   deleteAccountMessage,
   setAccountMessageRead,
   sendSupportMessage,
+  deleteAccountCompletely,
   type AnimalFormInput,
 } from "@/lib/mock";
 import { getSessionAccount } from "@/lib/mock/auth";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getPaddleInstance } from "@/lib/paddle/server";
 import type { CustomerPortalSession } from "@paddle/paddle-node-sdk";
 import { sendEmail } from "@/lib/email/resend";
@@ -88,6 +90,57 @@ export async function createManageSubscriptionSessionAction(): Promise<
   if ("error" in result) return result;
   return { url: result.session.urls.general.overview };
 }
+
+export interface DeleteAccountState {
+  error?: "email_mismatch" | "paddle_cancel_failed" | "delete_failed";
+}
+
+/** Supprime définitivement le compte connecté (`DeleteAccountSection.tsx`, onglet Compte).
+ * Ordre volontaire, chaque étape peut arrêter l'action avec une erreur explicite plutôt que
+ * de continuer sur un échec silencieux : (1) l'email retapé doit correspondre exactement ;
+ * (2) si un abonnement Paddle existe, le résilier immédiatement (`effectiveFrom:
+ * "immediately"`, pas "à la fin de la période" comme le bouton "Gérer mon abonnement") avant
+ * de toucher aux données, jamais l'inverse, pour ne jamais risquer de supprimer le compte
+ * sans avoir réussi à couper le prélèvement automatique ; (3) suppression réelle des données
+ * (`deleteAccountCompletely`, Storage puis `auth.users`, la cascade DB fait le reste) ; (4)
+ * déconnexion et retour à l'accueil. Voir docs/DECISIONS.md. */
+export async function deleteAccountAction(
+  _prevState: DeleteAccountState,
+  formData: FormData
+): Promise<DeleteAccountState> {
+  const account = await getSessionAccount();
+  if (!account) redirect("/");
+
+  const confirmEmail = String(formData.get("confirmEmail") || "")
+    .trim()
+    .toLowerCase();
+  if (confirmEmail !== account.email.toLowerCase()) {
+    return { error: "email_mismatch" };
+  }
+
+  if (account.paddle_subscription_id) {
+    try {
+      await getPaddleInstance().subscriptions.cancel(account.paddle_subscription_id, {
+        effectiveFrom: "immediately",
+      });
+    } catch (e) {
+      console.error("Échec de la résiliation Paddle lors de la suppression de compte:", e);
+      return { error: "paddle_cancel_failed" };
+    }
+  }
+
+  try {
+    await deleteAccountCompletely(createAdminClient(), account.id);
+  } catch (e) {
+    console.error("Échec de la suppression de compte:", e);
+    return { error: "delete_failed" };
+  }
+
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
+}
+
 function parseAnimalForm(formData: FormData, languesActives: Locale[]): AnimalFormInput {
   const get = (name: string): string | null => {
     const value = formData.get(name);

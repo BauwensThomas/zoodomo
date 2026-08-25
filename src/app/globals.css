@@ -93,6 +93,20 @@
   display: block;
 }
 
+/* Bouton "Laisser un avis" (`espace/messages/page.tsx`) : fond `bg-foreground` clair en
+   sombre, posé sur la carte de message dont le fond orange clair reste volontairement fixe
+   même en sombre (même principe que les cartes de Personnalisation) : sans contour, le bouton
+   clair se détache mal de la carte elle-même claire. Contour noir en sombre uniquement sur ce
+   bouton précis (pas sur la carte), demande utilisateur du 2026-08-25. */
+@media (prefers-color-scheme: dark) {
+  .app-theme-scope:not([data-theme="light"]) .rating-request-button {
+    border: 1px solid #000;
+  }
+}
+.app-theme-scope[data-theme="dark"] .rating-request-button {
+  border: 1px solid #000;
+}
+
 /* Aperçu du site public (`SitePreviewMockup.tsx`, panneau hero des pages de connexion) :
    représente une vraie page publique, qui reste toujours claire indépendamment du thème de la
    page qui l'affiche (même règle que plus bas pour les pages publiques elles-mêmes). Sans
@@ -117,6 +131,15 @@
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+/* Espace réservé pour la barre de défilement verticale en permanence (qu'elle soit
+   nécessaire ou non sur la page courante) : sans ça, une page assez courte pour ne pas
+   avoir besoin de défiler (ex. l'onglet Photos/Votes admin avec peu de contenu) est
+   légèrement plus large qu'une page qui défile (ex. l'onglet Messages), ce qui décale tout
+   le contenu centré de quelques pixels d'une page à l'autre. */
+html {
+  scrollbar-gutter: stable;
 }
 
 /* Edge (et l'ancien IE) affichent leur propre icône "œil" native dans les champs mot de

@@ -8,6 +8,7 @@ import {
   listAccountPhotosMutable,
   getAccountThemeMutable,
   countViewsForAnimal,
+  getRatingSummary,
 } from "./store";
 
 export async function getViewCount(supabase: SupabaseClient, animalId: string): Promise<number> {
@@ -84,6 +85,31 @@ export function isPublicPageBlocked(account: Account): boolean {
   const elapsedHours =
     (Date.now() - new Date(account.paddle_subscription_status_changed_at).getTime()) / 3_600_000;
   return elapsedHours > GRACE_HOURS;
+}
+
+/** Seuil d'avis soumis à partir duquel le widget d'avis (étoiles + commentaires) s'affiche sur
+ * la page de connexion, décision utilisateur du 2026-08-24. Constante simple, jamais lue
+ * depuis un composant client (calcul entièrement côté serveur), pas besoin de
+ * `NEXT_PUBLIC_*`. */
+export const MIN_RATINGS_TO_SHOW = 20;
+
+/** Nombre de jours minimum en abonnement Paddle payant (`active`) avant qu'un compte reçoive
+ * une demande d'avis, décision utilisateur du 2026-08-25 : laisser le temps au compte de
+ * vraiment utiliser le service payant avant de lui demander un avis. Mesuré depuis
+ * `paddle_subscription_status_changed_at` (voir `getEligibleAccountsForRating`,
+ * `src/lib/mock/store.ts`), passé en paramètre plutôt qu'importé directement dans `store.ts`
+ * pour éviter un import circulaire (`helpers.ts` importe déjà `store.ts`). */
+export const MIN_PAID_DAYS_BEFORE_RATING_REQUEST = 15;
+
+/** Moyenne et nombre d'avis pour le widget de la page de connexion, `null` en dessous du
+ * seuil d'affichage (`MIN_RATINGS_TO_SHOW`) : le widget ne s'affiche alors pas du tout,
+ * décision utilisateur du 2026-08-24. */
+export async function getPublicRatingSummary(
+  supabase: SupabaseClient
+): Promise<{ count: number; average: number } | null> {
+  const summary = await getRatingSummary(supabase);
+  if (!summary || summary.count < MIN_RATINGS_TO_SHOW) return null;
+  return summary;
 }
 
 /** Nombre de jours sans modification à partir duquel une fiche "disponible" est considérée

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { headers } from "next/headers";
 import {
   Inbox,
   Archive,
@@ -12,19 +13,17 @@ import {
   X,
 } from "lucide-react";
 import {
-  countUnreadSupportMessages,
   getSupportMessageById,
   listAccounts,
-  listAnimauxByAccountAll,
   listArchivedSupportMessages,
   listSentAdminMessages,
   listSupportMessages,
   listTrashedSupportMessages,
   searchSupportMessages,
+  resolveRatingRequestContent,
 } from "@/lib/mock";
-import { trialDaysRemaining, isTrialExpired } from "@/lib/mock/helpers";
 import { createClient } from "@/lib/supabase/server";
-import type { Account } from "@/types";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { AdminBroadcastForm } from "./AdminBroadcastForm";
 import { OpenPhotoLink } from "./OpenPhotoLink";
 import { TabLink } from "@/components/TabLink";
@@ -36,7 +35,7 @@ import {
   deleteSupportMessageAction,
   setSupportMessageReadAction,
 } from "../actions";
-import type { MessageStatus, SupportReason } from "@/types";
+import type { Locale, MessageStatus, SupportReason } from "@/types";
 
 const REASON_LABEL: Record<SupportReason, string> = {
   bug: "Problème technique / bug",
@@ -44,26 +43,6 @@ const REASON_LABEL: Record<SupportReason, string> = {
   suggestion: "Suggestion d'amélioration",
   autre: "Autre",
 };
-
-const PLAN_LABEL: Record<Account["plan"], string> = {
-  essai: "Essai",
-  mensuel: "Mensuel",
-  annuel: "Annuel",
-};
-
-function planDisplay(account: Account): { label: string; className: string } {
-  if (account.plan === "essai") {
-    if (isTrialExpired(account)) {
-      return { label: "Essai expiré", className: "bg-rose-100 text-rose-700" };
-    }
-    const remaining = trialDaysRemaining(account) ?? 0;
-    return {
-      label: `Essai (${remaining}j restant${remaining > 1 ? "s" : ""})`,
-      className: "bg-amber-100 text-amber-700",
-    };
-  }
-  return { label: PLAN_LABEL[account.plan], className: "bg-emerald-100 text-emerald-700" };
-}
 
 type View = "inbox" | "archives" | "corbeille" | "envoyes";
 
@@ -103,7 +82,6 @@ export default async function AdminHomePage({
 
   const admin = await createClient();
   const accounts = await listAccounts(admin);
-  const unreadSupport = await countUnreadSupportMessages(admin);
   // Une recherche cherche partout à la fois (boîte de réception, archives, corbeille ET
   // envoyés), indépendamment de l'onglet actif au moment de la soumission : `view` ne sert
   // plus qu'à savoir où revenir une fois la recherche effacée (voir le lien "Effacer" plus
@@ -130,9 +108,28 @@ export default async function AdminHomePage({
     : sentMessagesAll;
   const accountsById = new Map(accounts.map((a) => [a.id, a]));
   const originalMessage = replyMessageId ? await getSupportMessageById(admin, replyMessageId) : undefined;
-  const animalCountByAccountId = new Map(
+
+  // `resolveRatingRequestContent` lit `account_ratings`, sans policy RLS pour le rôle
+  // `authenticated` (voir docs/DECISIONS.md, même correctif déjà appliqué aux onglets
+  // Photos/Votes) : un client service_role dédié est nécessaire ici, `admin` (client de
+  // session) ne suffit pas. Résolu dans la langue ACTUELLE du compte destinataire (pas celle
+  // de l'admin, l'admin reste français uniquement) : reflète ce que le pro verrait s'il
+  // ouvrait ce message maintenant, sans que l'admin ait besoin de quitter son propre tableau
+  // de bord pour vérifier, demande utilisateur du 2026-08-25.
+  const hdrs = await headers();
+  const host = hdrs.get("host") ?? "localhost:3000";
+  const protocol = host.startsWith("localhost") || host.startsWith("127.0.0.1") ? "http" : "https";
+  const baseUrl = `${protocol}://${host}`;
+  const serviceRole = createAdminClient();
+  const ratingContentByMessageId = new Map(
     await Promise.all(
-      accounts.map(async (a) => [a.id, (await listAnimauxByAccountAll(admin, a.id)).length] as const)
+      sentMessages
+        .filter((m) => m.kind === "avis_demande")
+        .map(async (m) => {
+          const locale = (accountsById.get(m.account_id)?.langue_interface ?? "fr") as Locale;
+          const content = await resolveRatingRequestContent(serviceRole, m.account_id, locale, baseUrl);
+          return [m.id, content] as const;
+        })
     )
   );
 
@@ -149,11 +146,6 @@ export default async function AdminHomePage({
         <h1 className="flex items-center gap-2 font-heading text-xl font-medium text-foreground">
           <Inbox className="h-5 w-5" />
           Messages
-          {view !== "envoyes" && unreadSupport > 0 && (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-semibold text-white">
-              {unreadSupport}
-            </span>
-          )}
         </h1>
 
         <form
@@ -191,7 +183,7 @@ export default async function AdminHomePage({
         </form>
 
         {!isSearching && (
-          <div className="sticky top-0 z-10 mt-4 flex gap-1 border-b border-border bg-background">
+          <div className="mt-4 flex gap-1 border-b border-border bg-background">
             {tabs.map((tab) => (
               <TabLink key={tab.key} href={tab.href} active={view === tab.key}>
                 {tab.label}
@@ -216,25 +208,43 @@ export default async function AdminHomePage({
                 Aucun message envoyé pour le moment.
               </p>
             ) : (
-              sentMessages.map((message) => (
-                <div key={message.id} className="rounded-2xl border border-foreground bg-card p-4">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">
-                        À {message.accountName}
+              sentMessages.map((message) => {
+                const ratingContent = ratingContentByMessageId.get(message.id);
+                const subject = ratingContent?.subject ?? message.subject;
+                const body = ratingContent?.body ?? message.body;
+                return (
+                  <div key={message.id} className="rounded-2xl border border-foreground bg-card p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div>
+                        <p className="text-sm font-medium text-foreground">
+                          À {message.accountName}
+                        </p>
+                        <p className="mt-0.5 font-medium text-foreground">{subject}</p>
+                      </div>
+                      <p className="shrink-0 text-xs text-foreground">
+                        {new Date(message.created_at).toLocaleString("fr", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}
                       </p>
-                      <p className="mt-0.5 font-medium text-foreground">{message.subject}</p>
                     </div>
-                    <p className="shrink-0 text-xs text-foreground">
-                      {new Date(message.created_at).toLocaleString("fr", {
-                        dateStyle: "short",
-                        timeStyle: "short",
-                      })}
-                    </p>
+                    <p className="mt-2 whitespace-pre-line text-sm text-foreground">{body}</p>
+                    {ratingContent &&
+                      (ratingContent.linkUrl ? (
+                        <a
+                          href={ratingContent.linkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-foreground px-3.5 py-1.5 text-xs font-semibold text-background transition-opacity hover:opacity-90"
+                        >
+                          {ratingContent.buttonLabel}
+                        </a>
+                      ) : (
+                        <p className="mt-2 text-xs font-medium text-foreground">{ratingContent.buttonLabel}</p>
+                      ))}
                   </div>
-                  <p className="mt-2 whitespace-pre-line text-sm text-foreground">{message.body}</p>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         )}
@@ -410,65 +420,6 @@ export default async function AdminHomePage({
           }
         />
       </div>
-
-      <section>
-        <h2 className="font-heading text-xl font-medium text-foreground">
-          Comptes clients ({accounts.length})
-        </h2>
-        <div className="mt-4 overflow-x-auto rounded-2xl border border-foreground bg-card">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-border bg-muted/40 text-xs text-foreground">
-              <tr className="divide-x divide-border">
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Nom</th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Email</th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Langue</th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Abonnement</th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Animaux</th>
-                <th className="whitespace-nowrap px-3 py-2 font-medium">Créé le</th>
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((account) => (
-                <tr
-                  key={account.id}
-                  className="divide-x divide-border border-b border-border text-foreground last:border-b-0"
-                >
-                  <td className="whitespace-nowrap px-3 py-2 font-medium">{account.nom_affichage}</td>
-                  <td className="whitespace-nowrap px-3 py-2">{account.email}</td>
-                  <td className="whitespace-nowrap px-3 py-2">
-                    <span
-                      title={
-                        account.langue_interface
-                          ? undefined
-                          : "Ce compte ne s'est encore jamais connecté : sa langue sera fixée automatiquement (choix fait à ce moment-là) dès sa première connexion."
-                      }
-                      className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium text-foreground"
-                    >
-                      {account.langue_interface ? account.langue_interface.toUpperCase() : "Automatique"}
-                    </span>
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2">
-                    {(() => {
-                      const plan = planDisplay(account);
-                      return (
-                        <span
-                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${plan.className}`}
-                        >
-                          {plan.label}
-                        </span>
-                      );
-                    })()}
-                  </td>
-                  <td className="whitespace-nowrap px-3 py-2">{animalCountByAccountId.get(account.id) ?? 0}</td>
-                  <td className="whitespace-nowrap px-3 py-2">
-                    {new Date(account.created_at).toLocaleDateString("fr")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
     </div>
   );
 }

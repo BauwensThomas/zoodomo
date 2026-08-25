@@ -105,6 +105,7 @@
       "linkInvalid": "Deze link is niet meer geldig of is al gebruikt.",
       "heroTitle": "Uw online etalage om uw dieren te presenteren, zonder een regel code te schrijven.",
       "heroSubtitle": "Zoodomo is gemaakt voor asielen en professionele verkopers: presenteer uw dieren voor adoptie of verkoop op een pagina in uw eigen kleuren, te koppelen vanaf uw website of rechtstreeks te delen als u er nog geen heeft.",
+      "testimonialsRating": "{average} van de 5 ({count} beoordelingen)",
       "showPassword": "Wachtwoord tonen",
       "hidePassword": "Wachtwoord verbergen",
       "themeToggle": "Thema wijzigen",
@@ -428,7 +429,15 @@
       "sectionAbonnement": "Abonnement",
       "manageSubscription": "Mijn abonnement beheren",
       "manageSubscriptionHint": "Bekijk uw facturen, wijzig uw betaalmethode of zeg op (toegang blijft behouden tot het einde van de reeds betaalde periode).",
-      "manageSubscriptionError": "De beheerpagina kan momenteel niet worden geopend. Probeer het over enkele ogenblikken opnieuw."
+      "manageSubscriptionError": "De beheerpagina kan momenteel niet worden geopend. Probeer het over enkele ogenblikken opnieuw.",
+      "sectionDanger": "Mijn account verwijderen",
+      "deleteWarning": "Deze actie is onomkeerbaar en verwijdert onmiddellijk: al uw gegevens en dierenfiches, uw openbare pagina, uw Paddle-abonnement (direct opgezegd, er wordt nooit meer geld afgeschreven). Er is geen enkele manier om deze gegevens achteraf terug te krijgen.",
+      "deleteConfirmLabel": "Typ uw e-mailadres opnieuw ({email}) om te bevestigen",
+      "deleteButton": "Mijn account definitief verwijderen",
+      "deleteConfirmDialog": "Weet u echt zeker dat u uw account wilt verwijderen? Deze actie is onmiddellijk en onomkeerbaar.",
+      "deleteErrorEmailMismatch": "Het ingevoerde e-mailadres komt niet overeen met dat van uw account.",
+      "deleteErrorPaddle": "Uw Paddle-abonnement kan momenteel niet worden opgezegd, uw account is niet verwijderd. Probeer het over enkele ogenblikken opnieuw of neem contact met ons op.",
+      "deleteErrorGeneric": "Er is een fout opgetreden, uw account is niet verwijderd. Probeer het over enkele ogenblikken opnieuw."
     },
     "stats": {
       "title": "Statistieken",
@@ -504,7 +513,11 @@
       "adminMessageEmailIntro": "U heeft een nieuw bericht ontvangen van het Zoodomo-team:",
       "emailOpenButton": "Mijn berichten bekijken",
       "viewSent": "Verzonden",
-      "emptySent": "Geen bericht naar de webmaster verzonden."
+      "emptySent": "Geen bericht naar de webmaster verzonden.",
+      "ratingRequestSubject": "Wat vindt u van Zoodomo?",
+      "ratingRequestBody": "Uw mening helpt ons Zoodomo te verbeteren en toekomstige asielen/verkopers gerust te stellen die nog twijfelen. Neem een minuutje de tijd om ons een score en, indien gewenst, een reactie achter te laten.",
+      "ratingRequestButton": "Een beoordeling achterlaten",
+      "ratingRequestAlreadyVoted": "Bedankt, uw beoordeling is al verzonden!"
     },
     "personnalisation": {
       "title": "Personalisatie",
@@ -608,6 +621,21 @@
       "submit": "Wachtwoord opslaan",
       "submitting": "Opslaan...",
       "error": "Er is een fout opgetreden. Vraag een nieuwe resetlink aan."
+    },
+    "avis": {
+      "invalidTitle": "Ongeldige link",
+      "invalidBody": "Deze link is niet (meer) geldig. Bedankt voor uw interesse in Zoodomo.",
+      "title": "Wat vindt u van Zoodomo, {name}?",
+      "starsLabel": "Uw score",
+      "commentLabel": "Een reactie? (optioneel)",
+      "commentPlaceholder": "Uw ervaring met Zoodomo...",
+      "charactersRemaining": "tekens resterend",
+      "submitButton": "Beoordeling versturen",
+      "thankYouTitle": "Bedankt voor uw beoordeling!",
+      "thankYouBody": "Uw score is geregistreerd.",
+      "errorInvalid": "Kies een score voordat u verstuurt.",
+      "alreadyVotedTitle": "Beoordeling al verzonden",
+      "alreadyVotedBody": "U heeft al gereageerd op deze uitnodiging, nogmaals bedankt!"
     }
   },
   "email": {

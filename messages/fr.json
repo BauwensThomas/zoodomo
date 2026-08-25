@@ -105,6 +105,7 @@
       "linkInvalid": "Ce lien n'est plus valide ou a déjà été utilisé.",
       "heroTitle": "Votre vitrine en ligne pour présenter vos animaux, sans écrire une ligne de code.",
       "heroSubtitle": "Zoodomo s'adresse aux refuges et vendeurs professionnels : présentez vos animaux à l'adoption ou à la vente sur une page à vos couleurs, à relier depuis votre site ou à partager directement si vous n'en avez pas.",
+      "testimonialsRating": "{average} sur 5 ({count} avis)",
       "showPassword": "Afficher le mot de passe",
       "hidePassword": "Masquer le mot de passe",
       "themeToggle": "Changer de thème",
@@ -428,7 +429,15 @@
       "sectionAbonnement": "Abonnement",
       "manageSubscription": "Gérer mon abonnement",
       "manageSubscriptionHint": "Voir vos factures, changer de moyen de paiement ou résilier (accès conservé jusqu'à la fin de la période déjà payée).",
-      "manageSubscriptionError": "Impossible d'ouvrir la page de gestion pour le moment. Réessayez dans quelques instants."
+      "manageSubscriptionError": "Impossible d'ouvrir la page de gestion pour le moment. Réessayez dans quelques instants.",
+      "sectionDanger": "Supprimer mon compte",
+      "deleteWarning": "Cette action est irréversible et supprime immédiatement : toutes vos informations et fiches animaux, votre page publique, votre abonnement Paddle (résilié sur-le-champ, aucun prélèvement ne sera plus jamais effectué). Il n'y a aucun moyen de récupérer ces données après coup.",
+      "deleteConfirmLabel": "Retapez votre email ({email}) pour confirmer",
+      "deleteButton": "Supprimer définitivement mon compte",
+      "deleteConfirmDialog": "Êtes-vous vraiment certain de vouloir supprimer votre compte ? Cette action est immédiate et irréversible.",
+      "deleteErrorEmailMismatch": "L'email saisi ne correspond pas à celui de votre compte.",
+      "deleteErrorPaddle": "Impossible de résilier votre abonnement Paddle pour le moment, votre compte n'a pas été supprimé. Réessayez dans quelques instants ou contactez-nous.",
+      "deleteErrorGeneric": "Une erreur est survenue, votre compte n'a pas été supprimé. Réessayez dans quelques instants."
     },
     "stats": {
       "title": "Statistiques",
@@ -504,7 +513,11 @@
       "adminMessageEmailIntro": "Vous avez reçu un nouveau message de l'équipe Zoodomo :",
       "emailOpenButton": "Voir mes messages",
       "viewSent": "Envoyés",
-      "emptySent": "Aucun message envoyé au webmaster."
+      "emptySent": "Aucun message envoyé au webmaster.",
+      "ratingRequestSubject": "Que pensez-vous de Zoodomo ?",
+      "ratingRequestBody": "Votre avis nous aide à améliorer Zoodomo et à rassurer les futurs refuges/vendeurs qui hésitent encore. Merci de prendre une minute pour nous laisser une note et, si vous le souhaitez, un commentaire.",
+      "ratingRequestButton": "Laisser un avis",
+      "ratingRequestAlreadyVoted": "Merci, votre avis a déjà été envoyé !"
     },
     "personnalisation": {
       "title": "Personnalisation",
@@ -608,6 +621,21 @@
       "submit": "Enregistrer le mot de passe",
       "submitting": "Enregistrement...",
       "error": "Une erreur est survenue. Redemandez un lien de réinitialisation."
+    },
+    "avis": {
+      "invalidTitle": "Lien invalide",
+      "invalidBody": "Ce lien n'est pas ou plus valide. Merci quand même de l'intérêt porté à Zoodomo.",
+      "title": "Que pensez-vous de Zoodomo, {name} ?",
+      "starsLabel": "Votre note",
+      "commentLabel": "Un commentaire ? (optionnel)",
+      "commentPlaceholder": "Votre expérience avec Zoodomo...",
+      "charactersRemaining": "caractères restants",
+      "submitButton": "Envoyer mon avis",
+      "thankYouTitle": "Merci pour votre avis !",
+      "thankYouBody": "Votre note a bien été enregistrée.",
+      "errorInvalid": "Merci de choisir une note avant d'envoyer.",
+      "alreadyVotedTitle": "Vote déjà envoyé",
+      "alreadyVotedBody": "Vous avez déjà répondu à cette demande d'avis, merci encore !"
     }
   },
   "email": {
