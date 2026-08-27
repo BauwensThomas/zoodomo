@@ -41,6 +41,8 @@
     "contactByEmail": "Stuur ons een e-mail",
     "about": "Over {name}",
     "idealHome": "Ideaal thuis",
+    "otherAnimals": "Andere beschikbare {species}",
+    "seeAllSpecies": "Alle {species} bekijken",
     "textOnlyAvailableIn": "Deze tekst is enkel beschikbaar in {languages}.",
     "backToGallery": "Terug naar het overzicht",
     "print": "Afdrukken",

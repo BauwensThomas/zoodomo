@@ -41,6 +41,8 @@
     "contactByEmail": "Email us",
     "about": "About {name}",
     "idealHome": "Ideal home",
+    "otherAnimals": "Other available {species}",
+    "seeAllSpecies": "See all {species}",
     "textOnlyAvailableIn": "This text is only available in {languages}.",
     "backToGallery": "Back to gallery",
     "print": "Print",
