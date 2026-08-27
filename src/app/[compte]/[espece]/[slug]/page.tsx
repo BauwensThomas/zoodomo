@@ -96,21 +96,24 @@ export default async function AnimalPage({
   const t = await getTranslations("animal");
   const tStatus = await getTranslations("status");
   const tLocales = await getTranslations("locales");
-  const tSpecies = await getTranslations("species");
 
   // Autres fiches de la même espèce, en dessous de la fiche actuelle (demande utilisateur,
   // 2026-08-27) : incite à continuer à parcourir plutôt que de repartir après une seule
-  // fiche vue. Limité à 3 (même rythme que la grille publique, `lg:grid-cols-3`), la fiche
-  // courante exclue.
-  const autresAnimaux = (await getAnimauxVisibles(supabase, account.id, espece.id))
-    .filter((a) => a.id !== animal.id)
-    .slice(0, 3);
+  // fiche vue. Cartes volontairement plus petites que la grille publique (3 colonnes en
+  // tablette, 4 en desktop, demande utilisateur), tous les autres animaux affichés (pas de
+  // plafond, autant de lignes que nécessaire), la fiche courante exclue. Titre
+  // volontairement générique ("Autres animaux", pas "Autres {espèce}") : le nom d'espèce en
+  // base n'est stocké qu'au singulier, l'accorder au pluriel dans les 3 langues aurait
+  // demandé un vrai système de pluralisation pour un gain minime (retour utilisateur :
+  // "c'est bizarre, met quelque chose de plus court").
+  const autresAnimaux = (await getAnimauxVisibles(supabase, account.id, espece.id)).filter(
+    (a) => a.id !== animal.id
+  );
   const autresPhotos = new Map(
     await Promise.all(
       autresAnimaux.map(async (a) => [a.id, (await getPhotosForAnimal(supabase, a.id))[0]] as const)
     )
   );
-  const especeNom = tSpecies.has(espece.slug) ? tSpecies(espece.slug) : espece.nom;
 
   const listFormatter = new Intl.ListFormat(locale === "en" ? "en" : locale, {
     style: "long",
@@ -229,7 +232,13 @@ export default async function AnimalPage({
           </Link>
         </div>
 
-        <div className="mt-6 grid gap-10 md:grid-cols-2">
+        {/* Cadre dans la couleur de marque du compte (demande utilisateur, "comme ça ça se
+            détache bien") : distingue visuellement tout le bloc principal (photos + infos +
+            à propos + foyer idéal) du reste de la page. La section "autres animaux" plus bas
+            reste volontairement hors cadre : c'est une invitation à quitter cette fiche, pas
+            son contenu propre. */}
+        <div className="mt-6 rounded-2xl border-2 border-(--account-primary) p-6">
+        <div className="grid gap-10 md:grid-cols-2">
           <PhotoCarousel
             photos={photos}
             alt={animal.nom}
@@ -313,29 +322,36 @@ export default async function AnimalPage({
             )}
           </section>
         )}
+        </div>
 
         {autresAnimaux.length > 0 && (
           <section className="mt-12">
             <div className="flex items-center justify-between">
               <h2 className="font-heading text-xl font-medium text-foreground">
-                {t("otherAnimals", { species: especeNom })}
+                {t("otherAnimals")}
               </h2>
               <Link
                 href={`/${account.slug}/${espece.slug}`}
                 className="inline-flex items-center gap-1.5 text-sm font-medium text-(--account-primary)"
               >
-                {t("seeAllSpecies", { species: especeNom })}
+                {t("seeAllSpecies")}
                 <ArrowLeft className="h-4 w-4 rotate-180" />
               </Link>
             </div>
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {autresAnimaux.map((autre) => {
                 const photo = autresPhotos.get(autre.id);
+                const autreSexeKey = getSexeLabelKey(autre);
+                const autreAge = autre.date_naissance
+                  ? new Date(autre.date_naissance).toLocaleDateString(locale === "en" ? "en-GB" : locale)
+                  : autre.annee_naissance
+                    ? String(autre.annee_naissance)
+                    : null;
                 return (
                   <Link
                     key={autre.id}
                     href={`/${account.slug}/${espece.slug}/${autre.slug}`}
-                    className="group block overflow-hidden rounded-2xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+                    className="group block overflow-hidden rounded-xl border border-border bg-white shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
                   >
                     <div className="relative aspect-4/3 bg-muted">
                       {photo && (
@@ -343,32 +359,51 @@ export default async function AnimalPage({
                           src={photo.url}
                           alt={autre.nom}
                           fill
-                          sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
                           loading="lazy"
                           unoptimized={photo.url.startsWith("data:")}
                           className="object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       )}
                     </div>
-                    <div className="p-4">
+                    <div className="p-3">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-heading text-base font-medium text-foreground">
+                        <h3 className="font-heading text-sm font-medium text-foreground">
                           {autre.nom}
                         </h3>
-                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
-                          <span
-                            className={`h-1.5 w-1.5 rounded-full ${
-                              autre.statut === "disponible"
-                                ? "bg-emerald-500"
-                                : autre.statut === "reserve"
-                                  ? "bg-amber-500"
-                                  : "bg-neutral-400"
-                            }`}
-                          />
-                          {tStatus(autre.statut)}
-                        </span>
+                        <span
+                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${
+                            autre.statut === "disponible"
+                              ? "bg-emerald-500"
+                              : autre.statut === "reserve"
+                                ? "bg-amber-500"
+                                : "bg-neutral-400"
+                          }`}
+                        />
                       </div>
-                      {autre.race && <p className="mt-1 text-sm text-foreground">{autre.race}</p>}
+                      {autre.race && (
+                        <p className="mt-0.5 truncate text-xs text-foreground">{autre.race}</p>
+                      )}
+                      {(autreSexeKey || autreAge) && (
+                        <div className="mt-1.5 flex flex-col gap-1 text-xs text-foreground">
+                          {autreSexeKey && (
+                            <span className="inline-flex items-center gap-1">
+                              {autre.sexe === "male" ? (
+                                <Mars className="h-3.5 w-3.5 text-(--account-primary)" />
+                              ) : (
+                                <Venus className="h-3.5 w-3.5 text-(--account-primary)" />
+                              )}
+                              {t(autreSexeKey)}
+                            </span>
+                          )}
+                          {autreAge && (
+                            <span className="inline-flex items-center gap-1">
+                              <Cake className="h-3.5 w-3.5 text-(--account-primary)" />
+                              {autreAge}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </Link>
                 );

@@ -49,7 +49,11 @@ function AnimalInfoBlock({
           2026-08-27, même correctif que la vraie galerie publique, `[compte]/[espece]/page.tsx`) ;
           prix réservé à "row" (pas de place en grille). */}
       {(sexeKey || age || (variant === "row" && animal.prix !== null)) && (
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-foreground">
+        <div
+          className={`mt-3 text-sm text-foreground ${
+            variant === "card" ? "flex flex-col gap-1" : "flex flex-wrap gap-x-4 gap-y-2"
+          }`}
+        >
           {sexeKey && (
             <span className="inline-flex items-center gap-1.5">
               {animal.sexe === "male" ? (
@@ -172,7 +176,7 @@ export function GalleryPreviewContent({
             })}
           </div>
         ) : (
-          <div className="mt-8 grid gap-6 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-3">
+          <div className="mt-8 grid gap-6 @min-[768px]:grid-cols-3 @min-[1024px]:grid-cols-4">
             {sampleAnimaux.map((animal, index) => {
               const photo = photosByAnimal[animal.id]?.[0];
               const badges = badgesByAnimal[animal.id] ?? [];

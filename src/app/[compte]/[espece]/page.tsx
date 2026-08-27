@@ -168,7 +168,11 @@ function AnimalInfo({
           Le prix n'a de sens qu'en "row" (plus de place), gardé conditionné à part
           ci-dessous ; description restée réservée à "row" (pas de place en grille). */}
       {(sexeKey || age || (variant === "row" && animal.prix !== null)) && (
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-foreground">
+        <div
+          className={`mt-3 text-sm text-foreground ${
+            variant === "card" ? "flex flex-col gap-1" : "flex flex-wrap gap-x-4 gap-y-2"
+          }`}
+        >
           {sexeKey && (
             <span className="inline-flex items-center gap-1.5">
               {animal.sexe === "male" ? (
@@ -316,7 +320,7 @@ export default async function EspeceGaleriePage({
           })}
         </div>
       ) : (
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid gap-6 md:grid-cols-3 lg:grid-cols-4">
           {animaux.map((animal, index) => {
             const photo = photosByAnimalId.get(animal.id)?.[0];
             const badges = badgesByAnimalId.get(animal.id) ?? [];

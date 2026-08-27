@@ -98,7 +98,10 @@ export function AnimalPreviewContent({
           </span>
         </div>
 
-        <div className="mt-6 grid gap-10 @min-[640px]:grid-cols-2">
+        {/* Même cadre couleur de marque que la vraie fiche animal (`[compte]/[espece]/[slug]/page.tsx`),
+            demande utilisateur du 2026-08-27. */}
+        <div className="mt-6 rounded-2xl border-2 border-(--account-primary) p-6">
+        <div className="grid gap-10 @min-[640px]:grid-cols-2">
           <PhotoCarousel
             photos={photos}
             alt={animal.nom}
@@ -158,6 +161,7 @@ export function AnimalPreviewContent({
             </ul>
           </section>
         )}
+        </div>
       </div>
     </div>
   );
