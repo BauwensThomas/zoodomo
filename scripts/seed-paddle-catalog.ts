@@ -5,12 +5,13 @@
 // Exécution (charge PADDLE_API_KEY depuis .env.local) :
 //   node --env-file=.env.local node_modules/tsx/dist/cli.mjs scripts/seed-paddle-catalog.ts
 //
-// À rejouer une fois pour l'environnement Live (Environment.production ci-dessous, et une
-// vraie clé API Live dans PADDLE_API_KEY) une fois prêt à basculer hors sandbox.
+// Pour l'environnement Live : PADDLE_SEED_LIVE=1 avec une vraie clé API Live dans
+// PADDLE_API_KEY (catalogues Sandbox et Live totalement séparés, à rejouer une fois pour
+// chacun), voir docs/DECISIONS.md.
 import { Environment, Paddle } from "@paddle/paddle-node-sdk";
 
 const paddle = new Paddle(process.env.PADDLE_API_KEY!, {
-  environment: Environment.sandbox,
+  environment: process.env.PADDLE_SEED_LIVE === "1" ? Environment.production : Environment.sandbox,
 });
 
 async function seed() {
