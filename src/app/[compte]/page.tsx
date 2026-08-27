@@ -7,8 +7,9 @@ import {
   getAccountBySlug,
   getAccountPhotos,
   getAccountTheme,
-  getAnimauxVisibles,
-  getEspecesAvecAnimauxVisibles,
+  listAnimauxByAccountAll,
+  isAnimalVisiblePublicly,
+  mockEspeces,
   pickLocalized,
   localesWithContent,
 } from "@/lib/mock";
@@ -42,15 +43,19 @@ export default async function CompteIndexPage({
   const account = await getAccountBySlug(supabase, compte);
   if (!account) notFound();
 
-  const especes = await getEspecesAvecAnimauxVisibles(supabase, account.id);
-  const [photos, theme] = await Promise.all([
+  // Une seule requête pour tous les animaux du compte, espèces représentées et comptage par
+  // espèce dérivés en mémoire ensuite : évite de rappeler une fonction qui refait la même
+  // requête complète une fois par espèce (N+1, voir le test de charge du 2026-08-27,
+  // docs/DECISIONS.md).
+  const [animauxVisibles, photos, theme] = await Promise.all([
+    listAnimauxByAccountAll(supabase, account.id).then((a) => a.filter(isAnimalVisiblePublicly)),
     getAccountPhotos(supabase, account.id),
     getAccountTheme(supabase, account.id),
   ]);
+  const especeIds = new Set(animauxVisibles.map((a) => a.espece_id));
+  const especes = mockEspeces.filter((e) => especeIds.has(e.id)).sort((a, b) => a.ordre - b.ordre);
   const especeAnimalCounts = new Map(
-    await Promise.all(
-      especes.map(async (e) => [e.id, (await getAnimauxVisibles(supabase, account.id, e.id)).length] as const)
-    )
+    especes.map((e) => [e.id, animauxVisibles.filter((a) => a.espece_id === e.id).length] as const)
   );
   const dispositionEspeces = theme?.disposition_especes ?? "liste";
   const dispositionPresentation = theme?.disposition_presentation ?? "photo_texte";

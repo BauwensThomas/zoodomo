@@ -1,5 +1,10 @@
 import type { MetadataRoute } from "next";
-import { listAccounts, getEspecesAvecAnimauxVisibles, getAnimauxVisibles } from "@/lib/mock";
+import {
+  listAccounts,
+  listAnimauxByAccountAll,
+  isAnimalVisiblePublicly,
+  mockEspeces,
+} from "@/lib/mock";
 import { isPublicPageBlocked } from "@/lib/mock/helpers";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -25,6 +30,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const accounts = (await listAccounts(supabase)).filter((a) => !isPublicPageBlocked(a));
 
+  // Une seule requête par compte (`listAnimauxByAccountAll`), regroupement par espèce fait
+  // ensuite en mémoire : la version précédente rappelait `getEspecesAvecAnimauxVisibles` puis
+  // `getAnimauxVisibles` par espèce, qui refont chacune une requête complète de tous les
+  // animaux du compte (N+1, jusqu'à un appel de trop par espèce représentée). Sans
+  // conséquence visible avec la poignée de vrais comptes actuels, mais fait planter le build
+  // (timeout) à l'échelle testée par le test de charge du 2026-08-27 (1500 comptes), voir
+  // docs/DECISIONS.md.
   const accountEntries: MetadataRoute.Sitemap = [];
   for (const account of accounts) {
     accountEntries.push({
@@ -34,7 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     });
 
-    const especes = await getEspecesAvecAnimauxVisibles(supabase, account.id);
+    const animauxVisibles = (await listAnimauxByAccountAll(supabase, account.id)).filter(
+      isAnimalVisiblePublicly
+    );
+    const especeIds = new Set(animauxVisibles.map((a) => a.espece_id));
+    const especes = mockEspeces.filter((e) => especeIds.has(e.id)).sort((a, b) => a.ordre - b.ordre);
+
     for (const espece of especes) {
       accountEntries.push({
         url: `${BASE_URL}/${account.slug}/${espece.slug}`,
@@ -43,8 +60,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.6,
       });
 
-      const animaux = await getAnimauxVisibles(supabase, account.id, espece.id);
-      for (const animal of animaux) {
+      for (const animal of animauxVisibles.filter((a) => a.espece_id === espece.id)) {
         accountEntries.push({
           url: `${BASE_URL}/${account.slug}/${espece.slug}/${animal.slug}`,
           lastModified: animal.updated_at,
