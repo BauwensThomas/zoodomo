@@ -175,7 +175,7 @@
     "legalPage": {
       "termsTitle": "Gebruiksvoorwaarden",
       "privacyTitle": "Privacybeleid",
-      "lastUpdated": "Laatst bijgewerkt: 23 augustus 2026",
+      "lastUpdated": "Laatst bijgewerkt: 27 augustus 2026",
       "back": "Terug",
       "termsSections": [
         {
@@ -253,12 +253,44 @@
           "body": "Zoodomo neemt passende technische maatregelen om uw gegevens te beschermen: versleuteling van wachtwoorden, strikte scheiding van gegevens tussen accounts (row level security), toegang beperkt tot enkel de gegevens die nodig zijn voor elke functionaliteit."
         }
       ],
+      "refundTitle": "Terugbetalingsbeleid",
+      "refundSections": [
+        {
+          "title": "1. Gratis proefperiode vóór elke betaling",
+          "body": "Zoodomo biedt een gratis proefperiode van 15 dagen, zonder dat een bankkaart nodig is tijdens deze periode. Er wordt geen betaling afgeschreven voordat u een betaald abonnement (maandelijks of jaarlijks) hebt gekozen en bevestigd."
+        },
+        {
+          "title": "2. Geen terugbetaling na betaling",
+          "body": "Zodra het abonnement is afgesloten, zijn betalingen niet terugbetaalbaar, ook niet naar rato van een reeds gestarte periode. U kunt uw abonnement op elk moment opzeggen vanuit uw ledenruimte; de opzegging gaat in aan het einde van de reeds betaalde periode (lopende maand of jaar), zonder verdere verlenging of extra afschrijving."
+        },
+        {
+          "title": "3. Factureringsfout",
+          "body": "Bij een bewezen factureringsfout (dubbele afschrijving, onjuist bedrag) neemt u contact met ons op via 'Contact opnemen met de webmaster' vanuit uw ledenruimte, of via info@zoodomo.com. Wij corrigeren de fout zo snel mogelijk."
+        },
+        {
+          "title": "4. Betalingen verwerkt door Paddle",
+          "body": "Betalingen worden verwerkt door Paddle.com Market Limited, onze officiële wederverkoper (Merchant of Record). Bij een geschil of terugboeking (chargeback) kan Paddle zijn eigen procedures toepassen, in overeenstemming met zijn algemene voorwaarden."
+        }
+      ],
       "cookiesSectionTitle": "Gebruikte cookies",
       "cookiesIntro": "Zoodomo gebruikt uitsluitend cookies die strikt noodzakelijk zijn voor de werking van de site, hieronder opgesomd. Er worden momenteel geen tracking- of advertentiecookies gebruikt; mocht dat veranderen, dan worden deze pagina en de cookiebanner dienovereenkomstig bijgewerkt.",
       "cookieNextLocale": "Onthoudt de gekozen taal (Frans, Nederlands of Engels). Duur: 1 jaar.",
       "cookieTheme": "Onthoudt uw voorkeur voor lichte of donkere weergave. Duur: 1 jaar.",
       "cookieAuth": "Houdt uw sessie ingelogd als u een professioneel account beheert (geplaatst door Supabase Auth, onze authenticatieleverancier). Duur: gekoppeld aan de sessie.",
       "cookieConsentAck": "Onthoudt dat u de cookiebanner hebt gezien. Duur: 1 jaar."
+    },
+    "pricingPage": {
+      "title": "Tarieven",
+      "subtitle": "Eén abonnement, alle functies inbegrepen. Probeer 15 dagen gratis, zonder bankkaart.",
+      "perMonth": "maand",
+      "perYear": "jaar",
+      "mostPopular": "Meest gekozen",
+      "freeTrialNote": "Zonder verbintenis, op elk moment opzegbaar vanuit uw ledenruimte.",
+      "trialLabel": "Gratis proefperiode",
+      "trialDuration": "{days} dagen",
+      "noCardRequired": "Geen bankkaart vereist",
+      "trialCta": "Start de gratis proefperiode",
+      "back": "Terug"
     },
     "dashboard": {
       "title": "Dashboard",

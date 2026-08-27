@@ -175,7 +175,7 @@
     "legalPage": {
       "termsTitle": "Terms of Service",
       "privacyTitle": "Privacy Policy",
-      "lastUpdated": "Last updated: August 23, 2026",
+      "lastUpdated": "Last updated: August 27, 2026",
       "back": "Back",
       "termsSections": [
         {
@@ -253,12 +253,44 @@
           "body": "Zoodomo implements appropriate technical measures to protect your data: password encryption, strict data isolation between accounts (row level security), access restricted to only the data needed for each feature."
         }
       ],
+      "refundTitle": "Refund Policy",
+      "refundSections": [
+        {
+          "title": "1. Free trial before any payment",
+          "body": "Zoodomo offers a 15-day free trial, with no credit card required during this period. No payment is charged until you have chosen and confirmed a paid subscription (monthly or annual)."
+        },
+        {
+          "title": "2. No refunds after payment",
+          "body": "Once a subscription is taken out, payments are non-refundable, including on a pro-rated basis for a period already started. You can cancel your subscription at any time from your member area; cancellation takes effect at the end of the already-paid period (current month or year), with no further renewal or charge."
+        },
+        {
+          "title": "3. Billing error",
+          "body": "In the event of a confirmed billing error (duplicate charge, incorrect amount), contact us via 'Contact the webmaster' from your member area, or at info@zoodomo.com. We will correct the error as soon as possible."
+        },
+        {
+          "title": "4. Payments processed by Paddle",
+          "body": "Payments are processed by Paddle.com Market Limited, our official reseller (Merchant of Record). In the event of a dispute or chargeback, Paddle may apply its own procedures, in accordance with its terms and conditions."
+        }
+      ],
       "cookiesSectionTitle": "Cookies used",
       "cookiesIntro": "Zoodomo only uses cookies strictly necessary for the site to work, listed below. No tracking or advertising cookies are used at this time; if that were to change, this page and the cookie banner would be updated accordingly.",
       "cookieNextLocale": "Remembers your chosen language (French, Dutch, or English). Duration: 1 year.",
       "cookieTheme": "Remembers your light/dark display preference. Duration: 1 year.",
       "cookieAuth": "Keeps you logged in if you manage a professional account (set by Supabase Auth, our authentication provider). Duration: tied to the session.",
       "cookieConsentAck": "Remembers that you've seen the cookie banner. Duration: 1 year."
+    },
+    "pricingPage": {
+      "title": "Pricing",
+      "subtitle": "One subscription, all features included. Try it free for 15 days, no credit card required.",
+      "perMonth": "month",
+      "perYear": "year",
+      "mostPopular": "Most popular",
+      "freeTrialNote": "No commitment, cancel anytime from your member area.",
+      "trialLabel": "Free trial",
+      "trialDuration": "{days} days",
+      "noCardRequired": "No credit card required",
+      "trialCta": "Start your free trial",
+      "back": "Back"
     },
     "dashboard": {
       "title": "Dashboard",

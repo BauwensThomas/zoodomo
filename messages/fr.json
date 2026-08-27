@@ -175,7 +175,7 @@
     "legalPage": {
       "termsTitle": "Conditions d'utilisation",
       "privacyTitle": "Politique de confidentialité",
-      "lastUpdated": "Dernière mise à jour : 23 août 2026",
+      "lastUpdated": "Dernière mise à jour : 27 août 2026",
       "back": "Retour",
       "termsSections": [
         {
@@ -253,12 +253,44 @@
           "body": "Zoodomo met en œuvre des mesures techniques appropriées pour protéger vos données : chiffrement des mots de passe, cloisonnement strict des données entre comptes (row level security), accès restreint aux seules données nécessaires à chaque fonctionnalité."
         }
       ],
+      "refundTitle": "Politique de remboursement",
+      "refundSections": [
+        {
+          "title": "1. Essai gratuit avant tout paiement",
+          "body": "Zoodomo propose un essai gratuit de 15 jours, sans carte bancaire requise pendant cette période. Aucun paiement n'est prélevé avant que vous n'ayez choisi et confirmé un abonnement payant (mensuel ou annuel)."
+        },
+        {
+          "title": "2. Aucun remboursement après paiement",
+          "body": "Une fois l'abonnement souscrit, les paiements ne sont pas remboursables, y compris au prorata d'une période commencée. Vous pouvez résilier votre abonnement à tout moment depuis votre espace membre ; la résiliation prend effet à la fin de la période déjà payée (mois ou année en cours), sans reconduction ultérieure ni prélèvement supplémentaire."
+        },
+        {
+          "title": "3. Erreur de facturation",
+          "body": "En cas d'erreur de facturation avérée (double prélèvement, montant incorrect), contactez-nous via « Contacter le webmaster » depuis votre espace membre, ou à info@zoodomo.com. Nous corrigeons l'erreur dans les meilleurs délais."
+        },
+        {
+          "title": "4. Paiements traités par Paddle",
+          "body": "Les paiements sont traités par Paddle.com Market Limited, notre revendeur officiel (Merchant of Record). En cas de litige ou de rétrofacturation (chargeback), Paddle peut être amené à appliquer ses propres procédures, conformément à ses conditions générales."
+        }
+      ],
       "cookiesSectionTitle": "Cookies utilisés",
       "cookiesIntro": "Zoodomo utilise uniquement des cookies strictement nécessaires au fonctionnement du site, listés ci-dessous. Aucun cookie de suivi publicitaire ou d'analyse n'est utilisé pour le moment ; si cela devait changer, cette page et le bandeau de consentement seraient mis à jour en conséquence.",
       "cookieNextLocale": "Mémorise la langue choisie (français, néerlandais ou anglais). Durée : 1 an.",
       "cookieTheme": "Mémorise votre préférence d'affichage clair ou sombre. Durée : 1 an.",
       "cookieAuth": "Maintient votre session connectée si vous gérez un compte professionnel (posé par Supabase Auth, notre fournisseur d'authentification). Durée : liée à la session.",
       "cookieConsentAck": "Mémorise que vous avez pris connaissance du bandeau de cookies. Durée : 1 an."
+    },
+    "pricingPage": {
+      "title": "Tarifs",
+      "subtitle": "Un seul abonnement, toutes les fonctionnalités incluses. Essayez gratuitement pendant 15 jours, sans carte bancaire.",
+      "perMonth": "mois",
+      "perYear": "an",
+      "mostPopular": "Le plus populaire",
+      "freeTrialNote": "Sans engagement, résiliable à tout moment depuis votre espace membre.",
+      "trialLabel": "Essai gratuit",
+      "trialDuration": "{days} jours",
+      "noCardRequired": "Aucune carte bancaire requise",
+      "trialCta": "Commencer l'essai gratuit",
+      "back": "Retour"
     },
     "dashboard": {
       "title": "Dashboard",
