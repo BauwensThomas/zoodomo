@@ -1,4 +1,4 @@
-import type { SupabaseClient } from "@supabase/supabase-js";
+import type { PostgrestError, SupabaseClient } from "@supabase/supabase-js";
 import type {
   Account,
   AccountMessage,
@@ -28,9 +28,36 @@ import { slugify } from "@/lib/slugify";
  * (migration complète du 2026-08-22) et `supabase/migrations/0005_full_data_rls.sql`.
  */
 
+/** Nombre de lignes par page, plafond par défaut de l'API REST Supabase/PostgREST sur toute
+ * requête sans `.range()` explicite (silencieux : au-delà, les lignes en trop manquent
+ * purement et simplement, sans erreur). Voir docs/DECISIONS.md. */
+const PAGE_SIZE = 1000;
+
+/** Récupère TOUTES les lignes d'une requête en la paginant automatiquement par blocs de
+ * `PAGE_SIZE`, pour ne jamais perdre silencieusement de données au-delà de la limite par
+ * défaut de l'API REST. `queryPage` reçoit les bornes `[from, to]` d'une page et doit
+ * renvoyer la requête Supabase déjà construite avec `.range(from, to)` appliqué. À utiliser
+ * pour toute liste dont la taille dépend du nombre de comptes ou de fiches (donc sans borne
+ * fixe connue à l'avance), pas pour une liste déjà bornée par nature (photos/badges d'un
+ * animal, par exemple). */
+async function fetchAllPages<T>(
+  queryPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: PostgrestError | null }>
+): Promise<T[]> {
+  const all: T[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await queryPage(from, from + PAGE_SIZE - 1);
+    if (error) throw new Error(error.message);
+    if (!data || data.length === 0) break;
+    all.push(...data);
+    if (data.length < PAGE_SIZE) break;
+    from += PAGE_SIZE;
+  }
+  return all;
+}
+
 export async function listAccounts(supabase: SupabaseClient): Promise<Account[]> {
-  const { data } = await supabase.from("accounts").select("*");
-  return (data as Account[]) ?? [];
+  return fetchAllPages<Account>((from, to) => supabase.from("accounts").select("*").range(from, to));
 }
 
 export async function updateAccountLanguesActives(
@@ -479,12 +506,14 @@ export async function listAnimauxByAccountAll(
   supabase: SupabaseClient,
   accountId: string
 ): Promise<Animal[]> {
-  const { data } = await supabase
-    .from("animaux")
-    .select("*")
-    .eq("account_id", accountId)
-    .order("created_at", { ascending: false });
-  return (data as Animal[]) ?? [];
+  return fetchAllPages<Animal>((from, to) =>
+    supabase
+      .from("animaux")
+      .select("*")
+      .eq("account_id", accountId)
+      .order("created_at", { ascending: false })
+      .range(from, to)
+  );
 }
 
 export async function getAnimalById(supabase: SupabaseClient, id: string): Promise<Animal | undefined> {
