@@ -172,12 +172,21 @@ function LoginPageContent({
                   {t("legalPrefix")}{" "}
                   <Link href="/conditions-utilisation" className="underline">
                     {t("termsOfService")}
-                  </Link>{" "}
-                  {t("legalAnd")}{" "}
+                  </Link>
+                  {", "}
                   <Link href="/politique-confidentialite" className="underline">
                     {t("privacyPolicy")}
+                  </Link>{" "}
+                  {t("legalAnd")}{" "}
+                  <Link href="/politique-remboursement" className="underline">
+                    {t("refundPolicy")}
                   </Link>
                   {t("legalSuffix")}
+                </p>
+                <p className="mt-2 text-center text-xs text-foreground">
+                  <Link href="/tarifs" className="underline">
+                    {t("pricingLink")}
+                  </Link>
                 </p>
               </>
             )}

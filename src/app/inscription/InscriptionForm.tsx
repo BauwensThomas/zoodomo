@@ -247,12 +247,21 @@ export function InscriptionForm({
                   {tLogin("legalPrefix")}{" "}
                   <Link href="/conditions-utilisation" className="underline">
                     {tLogin("termsOfService")}
-                  </Link>{" "}
-                  {tLogin("legalAnd")}{" "}
+                  </Link>
+                  {", "}
                   <Link href="/politique-confidentialite" className="underline">
                     {tLogin("privacyPolicy")}
+                  </Link>{" "}
+                  {tLogin("legalAnd")}{" "}
+                  <Link href="/politique-remboursement" className="underline">
+                    {tLogin("refundPolicy")}
                   </Link>
                   {tLogin("legalSuffix")}
+                </p>
+                <p className="mt-2 text-center text-xs text-foreground">
+                  <Link href="/tarifs" className="underline">
+                    {tLogin("pricingLink")}
+                  </Link>
                 </p>
               </>
             )}
