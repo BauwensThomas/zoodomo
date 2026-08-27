@@ -163,10 +163,11 @@ function AnimalInfo({
       </div>
       {animal.race && <p className="mt-1 text-sm text-foreground">{animal.race}</p>}
 
-      {/* Plus de place disponible dans les dispositions "empilée"/"alternée" (photo à
-          côté du texte plutôt qu'au-dessus) : quelques infos utiles en plus, en icônes,
-          pour ne pas laisser un grand vide à côté de la photo. */}
-      {variant === "row" && (sexeKey || age || animal.prix !== null) && (
+      {/* Sexe/âge/prix affichés dans les 3 dispositions (grille comprise, demande
+          utilisateur du 2026-08-27) : utile en un coup d'œil sans avoir à ouvrir la fiche.
+          Le prix n'a de sens qu'en "row" (plus de place), gardé conditionné à part
+          ci-dessous ; description restée réservée à "row" (pas de place en grille). */}
+      {(sexeKey || age || (variant === "row" && animal.prix !== null)) && (
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-foreground">
           {sexeKey && (
             <span className="inline-flex items-center gap-1.5">
@@ -184,7 +185,7 @@ function AnimalInfo({
               {age}
             </span>
           )}
-          {animal.prix !== null && (
+          {variant === "row" && animal.prix !== null && (
             <span className="inline-flex items-center gap-1.5">
               <Tag className="h-4 w-4 text-(--account-primary)" />
               {animal.prix} €

@@ -79,8 +79,11 @@ export const GRACE_HOURS = 48;
 export function isPublicPageBlocked(account: Account): boolean {
   // Masquage manuel, indépendant du statut d'abonnement (compte de test/démo interne par
   // exemple : dashboard utilisable normalement, mais aucune fiche publique visible par de
-  // vrais visiteurs). Voir docs/DECISIONS.md.
-  if (!account.page_publique_visible) return true;
+  // vrais visiteurs). Uniquement appliqué sur Vercel (`process.env.VERCEL`, posée
+  // automatiquement dans tous ses environnements, jamais en local) : demande utilisateur
+  // explicite de pouvoir continuer à voir sa propre page publique en `npm run dev`. Voir
+  // docs/DECISIONS.md.
+  if (!account.page_publique_visible && process.env.VERCEL === "1") return true;
   if (account.plan === "essai") {
     const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
     return elapsedDays > TRIAL_DAYS + GRACE_HOURS / 24;
