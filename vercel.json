@@ -1,0 +1,10 @@
+{
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [{ "type": "host", "value": "zoodomo.com" }],
+      "destination": "https://www.zoodomo.com/:path*",
+      "permanent": true
+    }
+  ]
+}

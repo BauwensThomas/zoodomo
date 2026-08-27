@@ -12,6 +12,7 @@ import {
 } from "next/font/google";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { NextIntlClientProvider } from "next-intl";
+import { Analytics } from "@vercel/analytics/next";
 import { CookieConsentBanner } from "@/components/CookieConsentBanner";
 import "./globals.css";
 
@@ -69,6 +70,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             button={t("button")}
           />
         </NextIntlClientProvider>
+        <Analytics />
       </body>
     </html>
   );

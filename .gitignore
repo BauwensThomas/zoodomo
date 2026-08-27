@@ -63,3 +63,5 @@ CLAUDE.md
 # Cache local du CLI Supabase (créé par `npx supabase ...`, ex. `projects list`), aucun
 # contenu utile (juste un marqueur de version), rien à committer.
 /supabase/.temp/
+
+.vercel
