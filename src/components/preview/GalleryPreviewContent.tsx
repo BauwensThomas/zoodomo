@@ -172,7 +172,7 @@ export function GalleryPreviewContent({
             })}
           </div>
         ) : (
-          <div className="mt-8 grid gap-6 @min-[640px]:grid-cols-2">
+          <div className="mt-8 grid gap-6 @min-[640px]:grid-cols-2 @min-[1024px]:grid-cols-3">
             {sampleAnimaux.map((animal, index) => {
               const photo = photosByAnimal[animal.id]?.[0];
               const badges = badgesByAnimal[animal.id] ?? [];
