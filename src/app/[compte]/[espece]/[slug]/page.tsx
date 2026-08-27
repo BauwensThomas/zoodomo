@@ -371,15 +371,18 @@ export default async function AnimalPage({
                         <h3 className="font-heading text-sm font-medium text-foreground">
                           {autre.nom}
                         </h3>
-                        <span
-                          className={`h-1.5 w-1.5 shrink-0 rounded-full ${
-                            autre.statut === "disponible"
-                              ? "bg-emerald-500"
-                              : autre.statut === "reserve"
-                                ? "bg-amber-500"
-                                : "bg-neutral-400"
-                          }`}
-                        />
+                        <span className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground">
+                          <span
+                            className={`h-1.5 w-1.5 rounded-full ${
+                              autre.statut === "disponible"
+                                ? "bg-emerald-500"
+                                : autre.statut === "reserve"
+                                  ? "bg-amber-500"
+                                  : "bg-neutral-400"
+                            }`}
+                          />
+                          {tStatus(autre.statut)}
+                        </span>
                       </div>
                       {autre.race && (
                         <p className="mt-0.5 truncate text-xs text-foreground">{autre.race}</p>
