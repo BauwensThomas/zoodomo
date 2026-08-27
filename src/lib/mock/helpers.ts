@@ -1,3 +1,4 @@
+import { cache } from "react";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Account, Animal, Locale } from "@/types";
 import { mockEspeces } from "./especes";
@@ -189,17 +190,26 @@ export function visibiliteState(animal: Animal): VisibiliteResult {
   return { state: "expired" };
 }
 
-export async function getAccountBySlug(
+// `React.cache()` : une page publique de compte appelle `getAccountBySlug`/`getAccountTheme`
+// jusqu'à 3 fois chacune par affichage (layout + `generateMetadata` + composant page, chacun
+// serveur donc sans état partagé par défaut) ; sans dédup, ça multiplie les allers-retours
+// Supabase pour rien. Repose sur `createAdminClient()` renvoyant la même instance de client
+// au sein d'une requête (voir `src/lib/supabase/admin.ts`), sinon la comparaison par
+// référence des arguments de `cache()` ne dédupliquerait jamais. Voir docs/DECISIONS.md.
+export const getAccountBySlug = cache(async function getAccountBySlug(
   supabase: SupabaseClient,
   slug: string
 ): Promise<Account | undefined> {
   const { data } = await supabase.from("accounts").select("*").eq("slug", slug).maybeSingle();
   return (data as Account) ?? undefined;
-}
+});
 
-export async function getAccountTheme(supabase: SupabaseClient, accountId: string) {
+export const getAccountTheme = cache(async function getAccountTheme(
+  supabase: SupabaseClient,
+  accountId: string
+) {
   return getAccountThemeMutable(supabase, accountId);
-}
+});
 
 export async function getAccountPhotos(supabase: SupabaseClient, accountId: string) {
   return listAccountPhotosMutable(supabase, accountId);
