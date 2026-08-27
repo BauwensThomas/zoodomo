@@ -46,6 +46,11 @@ const FONT_VARIABLES = [
 export const metadata: Metadata = {
   title: "Zoodomo",
   description: "Fiches animaux pour refuges et vendeurs professionnels",
+  // Preuve de propriété du site pour Google Search Console (2026-08-27). Injectée par
+  // `verification.google`, Next.js s'occupe du <meta name="google-site-verification">.
+  verification: {
+    google: "WvAK4pQz-kI-9Mt4e2l8q-1U0ZbfBMwmWDO4UV5-i_A",
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
