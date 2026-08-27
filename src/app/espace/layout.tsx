@@ -30,6 +30,13 @@ import { EspaceNav } from "./EspaceNav";
 import { PlanPopup } from "./PlanPopup";
 import { logoutAction } from "./actions";
 import type { Account, Locale } from "@/types";
+import type { Metadata } from "next";
+
+// Espace membre privé : jamais indexé ni exploré (exigence utilisateur explicite,
+// 2026-08-27), en plus du `Disallow` déjà posé dans `src/app/robots.ts`.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 /**
  * Messages automatiques (bienvenue au premier accès, rappel de fiche non mise à jour,

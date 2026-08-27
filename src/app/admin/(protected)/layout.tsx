@@ -7,6 +7,13 @@ import { createClient } from "@/lib/supabase/server";
 import { countUnreadSupportMessages } from "@/lib/mock";
 import { adminLogoutAction } from "../actions";
 import { AdminNav } from "./AdminNav";
+import type { Metadata } from "next";
+
+// Admin privé : jamais indexé ni exploré (exigence utilisateur explicite, 2026-08-27), en
+// plus du `Disallow` déjà posé dans `src/app/robots.ts`.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 // Page admin volontairement en français uniquement (équipe Zoodomo interne), pas de
 // next-intl ici contrairement au reste de l'app.

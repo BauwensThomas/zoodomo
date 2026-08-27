@@ -8,6 +8,20 @@ import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { MONTHLY_PRICE_EUR, ANNUAL_PRICE_EUR } from "@/lib/pricing";
 import { TRIAL_DAYS } from "@/lib/mock/helpers";
 import type { Locale } from "@/types";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Tarifs : Zoodomo",
+  description: `Un seul abonnement, ${MONTHLY_PRICE_EUR} euros par mois ou ${ANNUAL_PRICE_EUR} euros par an, toutes les fonctionnalités incluses. Essai gratuit de ${TRIAL_DAYS} jours, sans carte bancaire.`,
+  openGraph: {
+    title: "Tarifs Zoodomo",
+    description: `Un seul abonnement, toutes les fonctionnalités incluses. Essai gratuit de ${TRIAL_DAYS} jours.`,
+    url: "https://www.zoodomo.com/tarifs",
+    siteName: "Zoodomo",
+    locale: "fr_FR",
+    type: "website",
+  },
+};
 
 // Page tarifs publique, dédiée (pas juste un ancrage sur la page de connexion) : demandée par
 // Paddle lors de la vérification du compte marchand (le formulaire de vérification exige un

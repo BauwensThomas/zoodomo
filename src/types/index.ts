@@ -122,6 +122,10 @@ export interface Account {
    * actif (`isPublicPageBlocked`, `src/lib/mock/helpers.ts`). `null` tant qu'aucun
    * abonnement n'a jamais existé. */
   paddle_subscription_status_changed_at: string | null;
+  /** Masque la page publique du compte indépendamment de son statut d'abonnement (compte de
+   * test/démo interne par exemple). `true` par défaut. Voir `isPublicPageBlocked`,
+   * `src/lib/mock/helpers.ts`, et docs/DECISIONS.md. */
+  page_publique_visible: boolean;
   created_at: string;
 }
 

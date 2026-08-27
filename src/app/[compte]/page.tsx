@@ -15,6 +15,22 @@ import {
 import { getEspeceIcon } from "@/lib/species-icons";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Locale } from "@/types";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ compte: string }>;
+}): Promise<Metadata> {
+  const { compte } = await params;
+  const account = await getAccountBySlug(createAdminClient(), compte);
+  if (!account) return {};
+  const title = `${account.nom_affichage} : animaux disponibles`;
+  return {
+    title,
+    openGraph: { title, url: `https://www.zoodomo.com/${account.slug}`, siteName: "Zoodomo", type: "website" },
+  };
+}
 
 export default async function CompteIndexPage({
   params,

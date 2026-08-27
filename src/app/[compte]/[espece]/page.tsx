@@ -16,6 +16,31 @@ import {
 } from "@/lib/mock";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Animal, AnimalBadge, AnimalPhoto, Locale, TypeBadge } from "@/types";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ compte: string; espece: string }>;
+}): Promise<Metadata> {
+  const { compte, espece: especeSlug } = await params;
+  const espece = getEspeceBySlug(especeSlug);
+  if (!espece) return {};
+  const account = await getAccountBySlug(createAdminClient(), compte);
+  if (!account) return {};
+  const tSpecies = await getTranslations("species");
+  const nom = tSpecies.has(espece.slug) ? tSpecies(espece.slug) : espece.nom;
+  const title = `${nom} disponibles chez ${account.nom_affichage}`;
+  return {
+    title,
+    openGraph: {
+      title,
+      url: `https://www.zoodomo.com/${account.slug}/${espece.slug}`,
+      siteName: "Zoodomo",
+      type: "website",
+    },
+  };
+}
 
 const BADGE_ICONS: Record<TypeBadge, typeof Star> = {
   senior: Star,

@@ -1,5 +1,13 @@
 import { cookies } from "next/headers";
 import { AdminLoginForm } from "./AdminLoginForm";
+import type { Metadata } from "next";
+
+// Admin privé : jamais indexé ni exploré (exigence utilisateur explicite, 2026-08-27), en
+// plus du `Disallow` déjà posé dans `src/app/robots.ts`. Cette page vit hors du groupe
+// `(protected)`, `metadata` posé ici séparément plutôt que sur un layout partagé inexistant.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 // Page admin volontairement en français uniquement (équipe Zoodomo interne), pas de
 // next-intl ici contrairement au reste de l'app. Composant serveur (pour lire le cookie de

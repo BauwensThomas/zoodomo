@@ -34,6 +34,41 @@ import { PrintButton } from "@/components/PrintButton";
 import { ShareButton } from "@/components/ShareButton";
 import { RecordAnimalView } from "@/components/RecordAnimalView";
 import type { Locale } from "@/types";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ compte: string; espece: string; slug: string }>;
+}): Promise<Metadata> {
+  const { compte, espece: especeSlug, slug } = await params;
+  const espece = getEspeceBySlug(especeSlug);
+  if (!espece) return {};
+  const supabase = createAdminClient();
+  const account = await getAccountBySlug(supabase, compte);
+  if (!account) return {};
+  const animal = await getAnimalVisibleBySlug(supabase, account.id, espece.id, slug);
+  if (!animal) return {};
+
+  const locale = (await getLocale()) as Locale;
+  const description = pickLocalized(animal.description, locale, account.langues_actives);
+  const title = `${animal.nom} : à découvrir chez ${account.nom_affichage}`;
+  const photos = await getPhotosForAnimal(supabase, animal.id);
+  const url = `https://www.zoodomo.com/${account.slug}/${espece.slug}/${animal.slug}`;
+
+  return {
+    title,
+    description: description ?? undefined,
+    openGraph: {
+      title,
+      description: description ?? undefined,
+      url,
+      siteName: "Zoodomo",
+      type: "website",
+      images: photos[0] ? [{ url: photos[0].url }] : undefined,
+    },
+  };
+}
 
 export default async function AnimalPage({
   params,

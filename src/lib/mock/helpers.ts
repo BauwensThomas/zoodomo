@@ -77,6 +77,10 @@ export const GRACE_HOURS = 48;
  * (`needsPlanChoice`, coupé immédiatement), la page publique bénéficie toujours de ce délai,
  * décision utilisateur du 2026-08-24 reprenant le mécanisme déjà en place pour l'essai. */
 export function isPublicPageBlocked(account: Account): boolean {
+  // Masquage manuel, indépendant du statut d'abonnement (compte de test/démo interne par
+  // exemple : dashboard utilisable normalement, mais aucune fiche publique visible par de
+  // vrais visiteurs). Voir docs/DECISIONS.md.
+  if (!account.page_publique_visible) return true;
   if (account.plan === "essai") {
     const elapsedDays = (Date.now() - new Date(account.created_at).getTime()) / 86_400_000;
     return elapsedDays > TRIAL_DAYS + GRACE_HOURS / 24;
