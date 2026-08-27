@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AlertTriangle, MailCheck } from "lucide-react";
 import { TurnstileWidget } from "@/components/TurnstileWidget";
@@ -24,6 +24,9 @@ export function ForgotPasswordFields({
 }) {
   const [state, formAction, pending] = useActionState(requestPasswordResetAction, initialState);
   const t = useTranslations("admin.forgotPassword");
+  // Bouton d'envoi désactivé tant que le CAPTCHA n'est pas validé (demande utilisateur,
+  // 2026-08-27).
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   if (state.submitted) {
     return (
@@ -69,11 +72,16 @@ export function ForgotPasswordFields({
 
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
-        <TurnstileWidget action="password_reset" />
+        <TurnstileWidget
+          action="password_reset"
+          onVerify={() => setCaptchaVerified(true)}
+          onExpire={() => setCaptchaVerified(false)}
+          onError={() => setCaptchaVerified(false)}
+        />
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !captchaVerified}
           className="w-full cursor-pointer rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? t("submitting") : t("submit")}

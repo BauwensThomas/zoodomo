@@ -39,6 +39,9 @@ function LoginPageContent({
   // reste une vraie page à part pour les liens directs/la redirection depuis
   // `src/app/auth/confirm/route.ts`, voir docs/DECISIONS.md), demande utilisateur explicite.
   const [forgotPassword, setForgotPassword] = useState(false);
+  // Bouton d'envoi désactivé tant que le CAPTCHA n'est pas validé, plutôt que de laisser
+  // cliquer et échouer après coup (demande utilisateur, 2026-08-27).
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const t = useTranslations("admin.login");
   const tForgot = useTranslations("admin.forgotPassword");
   const locale = useLocale() as Locale;
@@ -67,7 +70,10 @@ function LoginPageContent({
                 <ForgotPasswordFields initialEmail={email} linkInvalid={false} />
                 <button
                   type="button"
-                  onClick={() => setForgotPassword(false)}
+                  onClick={() => {
+                    setForgotPassword(false);
+                    setCaptchaVerified(false);
+                  }}
                   className="mt-6 cursor-pointer text-sm font-medium text-foreground underline transition-opacity hover:opacity-70"
                 >
                   {tForgot("backToLogin")}
@@ -139,22 +145,35 @@ function LoginPageContent({
 
                   {state.error && (
                     <p className="text-sm text-red-600">
-                      {state.error}{" "}
-                      <button
-                        type="button"
-                        onClick={() => setForgotPassword(true)}
-                        className="cursor-pointer font-medium underline"
-                      >
-                        {t("forgotPassword")}
-                      </button>
+                      {state.error}
+                      {/* Un échec du CAPTCHA ne dit rien sur la validité du mot de passe :
+                          proposer "Mot de passe oublié" dans ce cas précis n'a pas de sens
+                          (retour utilisateur, 2026-08-27). */}
+                      {!state.isCaptchaError && (
+                        <>
+                          {" "}
+                          <button
+                            type="button"
+                            onClick={() => setForgotPassword(true)}
+                            className="cursor-pointer font-medium underline"
+                          >
+                            {t("forgotPassword")}
+                          </button>
+                        </>
+                      )}
                     </p>
                   )}
 
-                  <TurnstileWidget action="login" />
+                  <TurnstileWidget
+                    action="login"
+                    onVerify={() => setCaptchaVerified(true)}
+                    onExpire={() => setCaptchaVerified(false)}
+                    onError={() => setCaptchaVerified(false)}
+                  />
 
                   <button
                     type="submit"
-                    disabled={pending}
+                    disabled={pending || !captchaVerified}
                     className="w-full cursor-pointer rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {pending ? t("submitting") : t("submit")}

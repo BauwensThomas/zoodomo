@@ -9,6 +9,10 @@ import { LOCALES, type Locale } from "@/types";
 
 export interface LoginState {
   error?: string;
+  // Distingue un échec du CAPTCHA (aucune information sur la validité du mot de passe, le
+  // lien "Mot de passe oublié" n'a pas de sens dans ce cas précis) d'un vrai échec
+  // d'authentification. Voir `LoginForm.tsx` et docs/DECISIONS.md.
+  isCaptchaError?: boolean;
 }
 
 export async function loginAction(
@@ -42,7 +46,8 @@ export async function loginAction(
 
   if (error || !data.user) {
     const t = await getTranslations("admin.login");
-    if (error?.code === "captcha_failed") return { error: t("captchaFailed") };
+    if (error?.code === "captcha_failed")
+      return { error: t("captchaFailed"), isCaptchaError: true };
     return { error: t("error") };
   }
 

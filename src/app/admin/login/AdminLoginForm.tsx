@@ -12,6 +12,9 @@ const initialState: AdminLoginState = {};
 export function AdminLoginForm() {
   const [state, formAction, pending] = useActionState(adminLoginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  // Bouton d'envoi désactivé tant que le CAPTCHA n'est pas validé (demande utilisateur,
+  // 2026-08-27).
+  const [captchaVerified, setCaptchaVerified] = useState(false);
 
   return (
     <div className="w-full max-w-sm rounded-2xl border border-foreground bg-card p-8">
@@ -62,13 +65,18 @@ export function AdminLoginForm() {
           </div>
         </div>
 
-        <TurnstileWidget action="admin-login" />
+        <TurnstileWidget
+          action="admin-login"
+          onVerify={() => setCaptchaVerified(true)}
+          onExpire={() => setCaptchaVerified(false)}
+          onError={() => setCaptchaVerified(false)}
+        />
 
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
         <button
           type="submit"
-          disabled={pending}
+          disabled={pending || !captchaVerified}
           className="w-full cursor-pointer rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {pending ? "Connexion..." : "Se connecter"}

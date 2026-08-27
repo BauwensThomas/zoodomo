@@ -50,6 +50,9 @@ export function InscriptionForm({
   // Popup des règles de mot de passe : affiché seulement pendant que le champ (ou son bouton
   // afficher/masquer) a le focus, demande utilisateur explicite plutôt que toujours visible.
   const [passwordFocused, setPasswordFocused] = useState(false);
+  // Bouton d'envoi désactivé tant que le CAPTCHA n'est pas validé (demande utilisateur,
+  // 2026-08-27).
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const t = useTranslations("admin.signup");
   const tLogin = useTranslations("admin.login");
   const locale = useLocale() as Locale;
@@ -221,11 +224,16 @@ export function InscriptionForm({
                   {mismatchError && <p className="text-sm text-red-600">{t("passwordMismatchError")}</p>}
                   {state.error && <p className="text-sm text-red-600">{state.error}</p>}
 
-                  <TurnstileWidget action="signup" />
+                  <TurnstileWidget
+                    action="signup"
+                    onVerify={() => setCaptchaVerified(true)}
+                    onExpire={() => setCaptchaVerified(false)}
+                    onError={() => setCaptchaVerified(false)}
+                  />
 
                   <button
                     type="submit"
-                    disabled={pending}
+                    disabled={pending || !captchaVerified}
                     className="w-full cursor-pointer rounded-full bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {pending ? t("submitting") : t("submit")}
