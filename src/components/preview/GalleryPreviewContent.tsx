@@ -45,7 +45,10 @@ function AnimalInfoBlock({
       </div>
       {animal.race && <p className="mt-1 text-sm text-foreground">{animal.race}</p>}
 
-      {variant === "row" && (sexeKey || age || animal.prix !== null) && (
+      {/* Sexe/âge affichés dans les 2 dispositions (grille comprise, demande utilisateur du
+          2026-08-27, même correctif que la vraie galerie publique, `[compte]/[espece]/page.tsx`) ;
+          prix réservé à "row" (pas de place en grille). */}
+      {(sexeKey || age || (variant === "row" && animal.prix !== null)) && (
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-sm text-foreground">
           {sexeKey && (
             <span className="inline-flex items-center gap-1.5">
@@ -63,7 +66,7 @@ function AnimalInfoBlock({
               {age}
             </span>
           )}
-          {animal.prix !== null && (
+          {variant === "row" && animal.prix !== null && (
             <span className="inline-flex items-center gap-1.5">
               <Tag className="h-4 w-4 text-(--account-primary)" />
               {animal.prix} €
