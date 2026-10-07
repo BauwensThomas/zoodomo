@@ -18,7 +18,10 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - run: npm install @supabase/supabase-js
+      # Versions figées du package-lock.json plutôt que la dernière version publiée : le
+      # 2026-10-07, une publication incomplète de supabase-js 2.117.3 (realtime-js introuvable
+      # sur npm) a fait échouer ce workflow.
+      - run: npm ci --ignore-scripts
       - run: node scripts/ping-supabase.mjs
         env:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
