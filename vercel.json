@@ -1,6 +1,12 @@
 {
   "redirects": [
     {
+      "source": "/",
+      "has": [{ "type": "host", "value": "zoodomo.com" }],
+      "destination": "https://www.zoodomo.com/",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [{ "type": "host", "value": "zoodomo.com" }],
       "destination": "https://www.zoodomo.com/:path*",
