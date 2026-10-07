@@ -10,13 +10,18 @@ name: Backup Supabase (database + photos)
 # jours, glissante (le maximum autorisé par GitHub Actions), pour permettre de retrouver un
 # état ancien et pas seulement de restaurer après un incident récent, demande utilisateur du
 # 2026-08-24 (rythme passé de quotidien à hebdomadaire le même jour, pour limiter le nombre de
-# copies des données personnelles conservées en même temps à conservation égale). Dépôt privé :
-# accès aux artefacts réservé aux personnes ayant accès au dépôt.
+# copies des données personnelles conservées en même temps à conservation égale). Le dump et
+# les photos sont chiffrés (AES-256, phrase secrète `BACKUP_PASSPHRASE` dans les secrets du
+# dépôt) avant l'envoi : les artefacts d'un dépôt public sont téléchargeables par n'importe
+# qui, seule l'archive chiffrée quitte donc le runner (demande utilisateur du 2026-10-07, avant
+# passage du dépôt en public).
 #
 # Pour restaurer : télécharger l'artefact le plus récent depuis l'onglet Actions du dépôt,
-# puis `psql <connection-string> -f database.sql` pour la base, et recopier le contenu du
-# dossier `photos/` dans le bucket Storage (ex: via le dashboard Supabase ou un script
-# utilisant `supabase.storage.from("photos").upload(...)`).
+# le déchiffrer avec `gpg --decrypt backup.tar.gz.gpg > backup.tar.gz` (phrase secrète
+# `BACKUP_PASSPHRASE`) puis `tar -xzf backup.tar.gz`, puis `psql <connection-string> -f
+# database.sql` pour la base, et recopier le contenu du dossier `photos/` dans le bucket
+# Storage (ex: via le dashboard Supabase ou un script utilisant
+# `supabase.storage.from("photos").upload(...)`).
 on:
   schedule:
     - cron: "0 3 * * 0"
@@ -60,10 +65,20 @@ jobs:
           npm install @supabase/supabase-js
           node scripts/backup-storage.mjs
 
+      - name: Encrypt backup
+        # Échoue plutôt que d'envoyer une sauvegarde en clair si le secret manque. Les fichiers
+        # en clair sont supprimés avant l'envoi pour qu'aucune étape suivante ne puisse les
+        # publier par erreur.
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          test -n "$BACKUP_PASSPHRASE" || { echo "Secret BACKUP_PASSPHRASE manquant."; exit 1; }
+          tar -czf backup.tar.gz database.sql photos/
+          printf '%s' "$BACKUP_PASSPHRASE" | gpg --batch --yes --pinentry-mode loopback --passphrase-fd 0 --symmetric --cipher-algo AES256 -o backup.tar.gz.gpg backup.tar.gz
+          rm -rf database.sql photos/ backup.tar.gz
+
       - uses: actions/upload-artifact@v6
         with:
           name: supabase-backup-${{ env.BACKUP_DATE }}-${{ github.run_id }}
-          path: |
-            database.sql
-            photos/
+          path: backup.tar.gz.gpg
           retention-days: 90
